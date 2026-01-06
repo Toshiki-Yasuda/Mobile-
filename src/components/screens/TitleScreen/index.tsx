@@ -152,6 +152,7 @@ export const TitleScreen: React.FC = () => {
               { label: '📝 フリー練習', action: () => navigateTo('freePlay') },
               { label: '📊 成績を見る', action: () => navigateTo('statistics') },
               { label: '⚙️ 設定', action: () => navigateTo('settings') },
+              { label: '🔧 管理者モード', action: () => navigateTo('admin') },
             ].map((item, index) => (
               <motion.button
                 key={item.label}

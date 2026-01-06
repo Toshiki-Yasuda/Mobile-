@@ -5,6 +5,7 @@ import { LevelSelectScreen } from './components/screens/LevelSelectScreen';
 import { StageSelectScreen } from './components/screens/StageSelectScreen';
 import { TypingScreen } from './components/screens/TypingScreen';
 import { ResultScreen } from './components/screens/ResultScreen';
+import { AdminScreen } from './components/screens/AdminScreen';
 import { Loading } from './components/common/Loading';
 import { ErrorBoundary } from './components/common/ErrorBoundary';
 
@@ -108,6 +109,8 @@ function App() {
       case 'freePlay':
         // TODO: FreePlayScreen
         return <TypingScreen />;
+      case 'admin':
+        return <AdminScreen />;
       default:
         return <TitleScreen />;
     }

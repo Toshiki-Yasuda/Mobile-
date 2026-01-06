@@ -12,7 +12,8 @@ export type Screen =
   | 'settings'
   | 'statistics'
   | 'timeAttack'
-  | 'freePlay';
+  | 'freePlay'
+  | 'admin';
 
 // ===== ローディング状態 =====
 export interface LoadingState {
