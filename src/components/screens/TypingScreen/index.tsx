@@ -90,10 +90,10 @@ export const TypingScreen: React.FC = () => {
     const remaining = displayRomaji.slice(confirmed.length + current.length);
 
     return (
-      <div className="text-2xl font-mono tracking-wider">
-        <span className="text-success">{confirmed}</span>
-        <span className="text-hunter-gold font-bold">{current}</span>
-        <span className="text-white/40">{remaining}</span>
+      <div className="text-xl font-mono tracking-wider">
+        <span className="text-primary">{confirmed}</span>
+        <span className="text-accent font-medium">{current}</span>
+        <span className="text-muted">{remaining}</span>
       </div>
     );
   };
@@ -101,51 +101,51 @@ export const TypingScreen: React.FC = () => {
   if (!session || !currentWord) {
     return (
       <div className="screen-container">
-        <div className="text-hunter-gold">読み込み中...</div>
+        <div className="text-secondary">読み込み中...</div>
       </div>
     );
   }
 
   return (
-    <div ref={containerRef} className="screen-container bg-hunter-dark">
+    <div ref={containerRef} className="screen-container bg-background">
       {/* ヘッダー */}
-      <div className="w-full max-w-4xl flex justify-between items-center mb-8">
+      <div className="w-full max-w-4xl flex justify-between items-center mb-12">
         <button
           onClick={handleClick(() => navigateTo('stageSelect'))}
-          className="text-hunter-gold/60 hover:text-hunter-gold transition"
+          className="text-secondary hover:text-primary transition-colors text-sm"
         >
           ✕ やめる
         </button>
 
-        <div className="flex gap-8 text-center">
+        <div className="flex gap-12 text-center">
           <div>
-            <div className="text-hunter-gold/60 text-xs">スコア</div>
-            <div className="text-white text-xl font-bold">{score}</div>
+            <div className="text-muted text-xs uppercase tracking-wider mb-1">スコア</div>
+            <div className="text-primary text-2xl font-medium">{score.toLocaleString()}</div>
           </div>
           <div>
-            <div className="text-hunter-gold/60 text-xs">コンボ</div>
-            <div className={`text-xl font-bold ${combo >= 10 ? 'text-hunter-gold' : 'text-white'}`}>
+            <div className="text-muted text-xs uppercase tracking-wider mb-1">コンボ</div>
+            <div className={`text-2xl font-medium ${combo >= 10 ? 'text-accent' : 'text-primary'}`}>
               {combo}
             </div>
           </div>
           <div>
-            <div className="text-hunter-gold/60 text-xs">ミス</div>
-            <div className="text-error text-xl font-bold">{missCount}</div>
+            <div className="text-muted text-xs uppercase tracking-wider mb-1">ミス</div>
+            <div className="text-error text-2xl font-medium">{missCount}</div>
           </div>
         </div>
       </div>
 
       {/* プログレスバー */}
-      <div className="w-full max-w-4xl mb-8">
-        <div className="h-2 bg-hunter-dark-light rounded-full overflow-hidden">
+      <div className="w-full max-w-4xl mb-12">
+        <div className="h-1 bg-surface rounded-full overflow-hidden">
           <motion.div
-            className="h-full bg-hunter-gold"
+            className="h-full bg-accent"
             initial={{ width: 0 }}
             animate={{ width: `${progress}%` }}
-            transition={{ duration: 0.3 }}
+            transition={{ duration: 0.3, ease: [0.25, 0.46, 0.45, 0.94] }}
           />
         </div>
-        <div className="text-right text-hunter-gold/40 text-sm mt-1">
+        <div className="text-right text-muted text-xs mt-2">
           {session.currentWordIndex + 1} / {session.words.length}
         </div>
       </div>
@@ -159,9 +159,9 @@ export const TypingScreen: React.FC = () => {
               initial={{ opacity: 0, scale: 0.5 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.5 }}
-              className="text-hunter-gold text-lg mb-4"
+              className="text-accent text-sm mb-6 font-mono"
             >
-              🔥 {combo} COMBO!
+              {combo} COMBO
             </motion.div>
           )}
         </AnimatePresence>
@@ -171,12 +171,13 @@ export const TypingScreen: React.FC = () => {
           key={currentWord.id}
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="mb-6"
+          transition={{ duration: 0.2, ease: [0.25, 0.46, 0.45, 0.94] }}
+          className="mb-8"
         >
-          <div className="text-5xl font-bold text-white mb-4">
+          <div className="text-5xl md:text-6xl font-medium text-primary mb-6 font-mono">
             {currentWord.display}
           </div>
-          <div className="text-2xl text-hunter-gold/80 mb-4">
+          <div className="text-xl text-secondary mb-6 font-mono">
             {currentWord.hiragana}
           </div>
         </motion.div>
@@ -193,7 +194,7 @@ export const TypingScreen: React.FC = () => {
       )}
 
       {/* 操作説明 */}
-      <div className="text-hunter-gold/40 text-sm mt-8">
+      <div className="text-muted text-xs mt-12 uppercase tracking-wider">
         ESCキーで中断
       </div>
     </div>

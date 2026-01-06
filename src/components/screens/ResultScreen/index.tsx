@@ -87,22 +87,22 @@ export const ResultScreen: React.FC = () => {
   if (!result) {
     return (
       <div className="screen-container">
-        <div className="text-hunter-gold">結果を計算中...</div>
+        <div className="text-secondary">結果を計算中...</div>
       </div>
     );
   }
 
   return (
-    <div className="screen-container bg-hunter-dark">
+    <div className="screen-container bg-background">
       {/* ランク表示 */}
       <motion.div
         initial={{ scale: 0, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
-        transition={{ type: 'spring', duration: 0.8 }}
-        className="mb-8"
+        transition={{ type: 'spring', duration: 0.6, ease: [0.25, 0.46, 0.45, 0.94] }}
+        className="mb-12"
       >
         <div
-          className={`w-32 h-32 rounded-full flex items-center justify-center text-6xl font-bold border-4 ${getRankStyle(
+          className={`w-24 h-24 rounded-full flex items-center justify-center text-5xl font-bold border-2 ${getRankStyle(
             result.rank
           )}`}
         >
@@ -114,8 +114,8 @@ export const ResultScreen: React.FC = () => {
       <motion.h1
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.3 }}
-        className="text-3xl font-bold text-white mb-8"
+        transition={{ delay: 0.2, duration: 0.4 }}
+        className="text-2xl font-medium text-primary mb-12"
       >
         {getRankMessage(result.rank)}
       </motion.h1>
@@ -124,10 +124,10 @@ export const ResultScreen: React.FC = () => {
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.5 }}
-        className="card w-full max-w-md mb-8"
+        transition={{ delay: 0.3, duration: 0.4, ease: [0.25, 0.46, 0.45, 0.94] }}
+        className="card w-full max-w-md mb-12"
       >
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-2 gap-6">
           <ResultItem label="スコア" value={result.score.toLocaleString()} />
           <ResultItem label="正確率" value={`${result.accuracy}%`} />
           <ResultItem label="WPM" value={result.wpm.toString()} />
@@ -144,7 +144,7 @@ export const ResultScreen: React.FC = () => {
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        transition={{ delay: 0.7 }}
+        transition={{ delay: 0.5, duration: 0.4 }}
         className="flex gap-4"
       >
         <button onClick={handleRetry} className="btn-primary">
@@ -164,8 +164,8 @@ const ResultItem: React.FC<{ label: string; value: string }> = ({
   value,
 }) => (
   <div className="text-center">
-    <div className="text-hunter-gold/60 text-sm">{label}</div>
-    <div className="text-white text-xl font-bold">{value}</div>
+    <div className="text-muted text-xs uppercase tracking-wider mb-2">{label}</div>
+    <div className="text-primary text-xl font-medium">{value}</div>
   </div>
 );
 
@@ -173,15 +173,15 @@ const ResultItem: React.FC<{ label: string; value: string }> = ({
 const getRankStyle = (rank: Rank): string => {
   switch (rank) {
     case 'S':
-      return 'border-hunter-gold text-hunter-gold shadow-nen-strong';
+      return 'border-accent text-accent';
     case 'A':
-      return 'border-nen-enhancement text-nen-enhancement';
+      return 'border-accent/70 text-accent/70';
     case 'B':
-      return 'border-nen-transmutation text-nen-transmutation';
+      return 'border-secondary text-secondary';
     case 'C':
-      return 'border-white/40 text-white/60';
+      return 'border-muted text-muted';
     default:
-      return 'border-white/40 text-white/60';
+      return 'border-muted text-muted';
   }
 };
 

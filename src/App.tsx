@@ -119,7 +119,7 @@ function App() {
         {/* エラー通知 */}
         {error.hasError && (
           <div className="fixed top-4 right-4 z-50 animate-slide-down">
-            <div className="bg-error text-white px-4 py-2 rounded-lg shadow-lg">
+            <div className="bg-error text-primary px-4 py-2 rounded-md border border-error/50">
               {error.errorMessage || 'エラーが発生しました'}
             </div>
           </div>

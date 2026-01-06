@@ -100,11 +100,11 @@ export const StageSelectScreen: React.FC = () => {
 
   if (!chapter) {
     return (
-      <div className="screen-container bg-hunter-dark">
-        <div className="text-error">チャプターが見つかりません</div>
+      <div className="screen-container bg-background">
+        <div className="text-error mb-4">チャプターが見つかりません</div>
         <button
           onClick={handleClick(() => navigateTo('levelSelect'))}
-          className="text-hunter-gold hover:text-hunter-gold-light transition mt-4"
+          className="text-secondary hover:text-primary transition-colors text-sm"
         >
           ← チャプター選択に戻る
         </button>
@@ -134,23 +134,23 @@ export const StageSelectScreen: React.FC = () => {
   };
 
   return (
-    <div className="screen-container bg-hunter-dark">
+    <div className="screen-container bg-background">
       {/* ヘッダー */}
-      <div className="w-full max-w-4xl mb-8">
+      <div className="w-full max-w-4xl mb-12">
         <button
           onClick={handleClick(() => navigateTo('levelSelect'))}
-          className="text-hunter-gold hover:text-hunter-gold-light transition"
+          className="text-secondary hover:text-primary transition-colors text-sm mb-6"
         >
           ← チャプター選択に戻る
         </button>
-        <h1 className="text-3xl font-bold text-white mt-4">
+        <h1 className="text-2xl font-bold text-primary mb-1">
           第{chapter.id}章 {chapter.name}
         </h1>
-        <p className="text-hunter-gold/60 text-sm mt-2">{chapter.japaneseName}</p>
+        <p className="text-secondary text-sm">{chapter.japaneseName}</p>
       </div>
 
       {/* ステージリスト */}
-      <div className="w-full max-w-4xl grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="w-full max-w-4xl grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
         {chapter.stages.map((stage, index) => {
           const stageId = `${selectedChapter}-${stage.number}`;
           const unlocked = isStageUnlocked(stage.number);
@@ -167,33 +167,34 @@ export const StageSelectScreen: React.FC = () => {
               disabled={!unlocked}
               className={`card text-left transition-all ${
                 unlocked
-                  ? 'hover:border-hunter-gold/50 cursor-pointer hover:shadow-nen'
-                  : 'opacity-50 cursor-not-allowed grayscale'
+                  ? 'hover:border-accent/50 cursor-pointer hover:shadow-hover'
+                  : 'opacity-40 cursor-not-allowed'
               }`}
             >
               {/* ステージ番号 */}
-              <div className="flex items-start justify-between mb-2">
-                <span className="text-hunter-gold text-sm font-bold">
+              <div className="flex items-start justify-between mb-3">
+                <span className="text-muted text-xs uppercase tracking-wider font-medium">
                   ステージ {stage.number}
                 </span>
                 {!unlocked && (
-                  <span className="text-white/40 text-xl">🔒</span>
+                  <span className="text-muted text-lg">🔒</span>
                 )}
                 {cleared && (
-                  <span className="text-hunter-gold text-xl">⭐</span>
+                  <span className="text-accent text-lg">✓</span>
                 )}
               </div>
 
               {/* タイトル */}
-              <h3 className="text-xl font-bold text-white mb-1">
+              <h3 className="text-lg font-medium text-primary mb-1">
                 {stage.name}
               </h3>
-              <p className="text-white/60 text-sm mb-4">{stage.description}</p>
+              <p className="text-muted text-sm mb-4">{stage.description}</p>
 
               {/* クリア情報 */}
               {cleared && result && (
-                <div className="text-xs text-hunter-gold/60">
-                  スコア: {result.score} | 精度: {result.accuracy.toFixed(1)}%
+                <div className="text-xs text-secondary space-x-3">
+                  <span>スコア: {result.score.toLocaleString()}</span>
+                  <span>精度: {result.accuracy.toFixed(1)}%</span>
                 </div>
               )}
             </motion.button>

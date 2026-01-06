@@ -5,37 +5,31 @@ export default {
   theme: {
     extend: {
       colors: {
-        // HUNTER×HUNTER カラーパレット
-        hunter: {
-          green: '#2D5A27',
-          'green-light': '#3D7A37',
-          'green-dark': '#1D4A17',
-          gold: '#D4AF37',
-          'gold-light': '#E4CF67',
-          'gold-dark': '#B49F27',
-          dark: '#1A1A2E',
-          'dark-light': '#2A2A3E',
-          accent: '#E94560',
-          'accent-light': '#F96580',
-          'accent-dark': '#C93550',
-        },
-        // 念系統カラー
-        nen: {
-          enhancement: '#FF6B6B',    // 強化系（赤）
-          transmutation: '#4ECDC4',  // 変化系（青緑）
-          emission: '#FFE66D',       // 放出系（黄）
-          conjuration: '#95E1D3',    // 具現化系（緑）
-          manipulation: '#A66CFF',   // 操作系（紫）
-          specialization: '#F38181', // 特質系（ピンク）
-        },
+        // Modern Dark Mode Palette (design.md準拠)
+        background: '#09090b',      // Zinc 950
+        surface: '#18181b',          // Zinc 900
+        primary: '#fafafa',         // Zinc 50
+        secondary: '#a1a1aa',       // Zinc 400
+        accent: '#3b82f6',          // Blue 500
+        error: '#ef4444',           // Red 500
+        muted: '#27272a',           // Zinc 800
+        // 後方互換性のためのエイリアス
+        'hunter-dark': '#09090b',
+        'hunter-dark-light': '#18181b',
+        'hunter-gold': '#3b82f6',
+        'hunter-gold-light': '#60a5fa',
+        'hunter-gold-dark': '#2563eb',
+        'hunter-green': '#3b82f6',
+        'hunter-green-light': '#60a5fa',
+        'hunter-green-dark': '#2563eb',
         // UI用
         success: '#10B981',
-        error: '#EF4444',
         warning: '#F59E0B',
       },
       fontFamily: {
-        game: ['"M PLUS Rounded 1c"', 'sans-serif'],
-        mono: ['"Fira Code"', 'monospace'],
+        sans: ['Inter', 'San Francisco', 'Helvetica Neue', 'system-ui', 'sans-serif'],
+        mono: ['JetBrains Mono', 'Fira Code', 'Roboto Mono', 'Consolas', 'monospace'],
+        game: ['Inter', 'San Francisco', 'Helvetica Neue', 'system-ui', 'sans-serif'],
       },
       animation: {
         'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
@@ -80,8 +74,15 @@ export default {
         },
       },
       boxShadow: {
-        'nen': '0 0 15px rgba(212, 175, 55, 0.5)',
-        'nen-strong': '0 0 30px rgba(212, 175, 55, 0.8)',
+        'sm': '0 1px 2px 0 rgba(0, 0, 0, 0.3)',
+        'md': '0 4px 6px -1px rgba(0, 0, 0, 0.3)',
+        'lg': '0 10px 15px -3px rgba(0, 0, 0, 0.3)',
+        'hover': '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+      },
+      borderRadius: {
+        'sm': '6px',
+        'md': '8px',
+        'lg': '12px',
       },
     },
   },

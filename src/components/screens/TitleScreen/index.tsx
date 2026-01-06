@@ -15,77 +15,61 @@ export const TitleScreen: React.FC = () => {
   const { handleClick } = useButtonClick();
 
   return (
-    <div className="screen-container bg-hunter-dark">
-      {/* 背景エフェクト */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-hunter-gold/5 rounded-full blur-3xl" />
-        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-nen-enhancement/5 rounded-full blur-3xl" />
-      </div>
-
+    <div className="screen-container bg-background">
       {/* コンテンツ */}
-      <div className="relative z-10 text-center">
+      <div className="relative z-10 text-center max-w-2xl">
         {/* タイトル */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
+          transition={{ duration: 0.4, ease: [0.25, 0.46, 0.45, 0.94] }}
         >
-          <h1 className="text-4xl md:text-6xl font-bold font-game mb-2">
-            <span className="text-gradient">✦ HUNTER×HUNTER ✦</span>
+          <h1 className="text-4xl md:text-5xl font-bold mb-3 text-primary">
+            HUNTER×HUNTER
           </h1>
-          <h2 className="text-2xl md:text-3xl font-bold text-white mb-8">
+          <h2 className="text-xl md:text-2xl font-medium mb-12 text-secondary">
             タイピングマスター
           </h2>
         </motion.div>
-
-        {/* サブタイトル */}
-        <motion.p
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.3, duration: 0.6 }}
-          className="text-hunter-gold/80 text-lg mb-12"
-        >
-          念能力を習得するように、タイピングを習得しよう
-        </motion.p>
 
         {/* メニュー */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.5, duration: 0.6 }}
-          className="space-y-4"
+          transition={{ delay: 0.2, duration: 0.4, ease: [0.25, 0.46, 0.45, 0.94] }}
+          className="space-y-3"
         >
           {/* メインボタン */}
           <button
             onClick={handleClick(() => navigateTo('levelSelect'))}
-            className="btn-primary w-64 text-lg nen-glow"
+            className="btn-primary w-64 text-base"
           >
-            ▶ 修行を始める
+            修行を始める
           </button>
 
           {/* サブメニュー */}
           <div className="flex flex-col items-center space-y-2">
             <button
               onClick={handleClick(() => navigateTo('timeAttack'))}
-              className="btn-ghost w-48"
+              className="btn-ghost w-48 text-sm"
             >
               タイムアタック
             </button>
             <button
               onClick={handleClick(() => navigateTo('freePlay'))}
-              className="btn-ghost w-48"
+              className="btn-ghost w-48 text-sm"
             >
               フリー練習
             </button>
             <button
               onClick={handleClick(() => navigateTo('statistics'))}
-              className="btn-ghost w-48"
+              className="btn-ghost w-48 text-sm"
             >
               成績を見る
             </button>
             <button
               onClick={handleClick(() => navigateTo('settings'))}
-              className="btn-ghost w-48"
+              className="btn-ghost w-48 text-sm"
             >
               設定
             </button>
@@ -96,19 +80,19 @@ export const TitleScreen: React.FC = () => {
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ delay: 0.7, duration: 0.6 }}
-          className="flex justify-center gap-6 mt-12"
+          transition={{ delay: 0.4, duration: 0.4 }}
+          className="flex justify-center gap-6 mt-16"
         >
           <button
             onClick={() => setSoundEnabled(!soundEnabled)}
-            className={`text-2xl ${soundEnabled ? '' : 'opacity-50'}`}
+            className={`text-xl ${soundEnabled ? 'text-primary' : 'text-muted'}`}
             aria-label={soundEnabled ? '効果音オン' : '効果音オフ'}
           >
             {soundEnabled ? '🔊' : '🔇'}
           </button>
           <button
             onClick={() => setBgmEnabled(!bgmEnabled)}
-            className={`text-2xl ${bgmEnabled ? '' : 'opacity-50'}`}
+            className={`text-xl ${bgmEnabled ? 'text-primary' : 'text-muted'}`}
             aria-label={bgmEnabled ? 'BGMオン' : 'BGMオフ'}
           >
             {bgmEnabled ? '🎵' : '🔕'}
@@ -117,7 +101,7 @@ export const TitleScreen: React.FC = () => {
       </div>
 
       {/* フッター */}
-      <div className="absolute bottom-4 left-0 right-0 text-center text-hunter-gold/40 text-sm">
+      <div className="absolute bottom-6 left-0 right-0 text-center text-muted text-xs">
         © HUNTER×HUNTER Typing Master
       </div>
     </div>

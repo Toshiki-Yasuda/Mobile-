@@ -74,20 +74,20 @@ export const LevelSelectScreen: React.FC = () => {
   };
 
   return (
-    <div className="screen-container bg-hunter-dark">
+    <div className="screen-container bg-background">
       {/* ヘッダー */}
-      <div className="w-full max-w-4xl mb-8">
+      <div className="w-full max-w-4xl mb-12">
         <button
           onClick={handleClick(() => navigateTo('title'))}
-          className="text-hunter-gold hover:text-hunter-gold-light transition"
+          className="text-secondary hover:text-primary transition-colors text-sm mb-6"
         >
           ← タイトルに戻る
         </button>
-        <h1 className="text-3xl font-bold text-white mt-4">修行の章を選択</h1>
+        <h1 className="text-2xl font-bold text-primary">修行の章を選択</h1>
       </div>
 
       {/* チャプターリスト */}
-      <div className="w-full max-w-4xl grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="w-full max-w-4xl grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
         {CHAPTERS.map((chapter, index) => {
           const unlocked = isChapterUnlocked(chapter.id);
           const progress = getChapterProgress(chapter.id);
@@ -102,46 +102,46 @@ export const LevelSelectScreen: React.FC = () => {
               disabled={!unlocked}
               className={`card text-left transition-all ${
                 unlocked
-                  ? 'hover:border-hunter-gold/50 cursor-pointer hover:shadow-nen'
-                  : 'opacity-50 cursor-not-allowed grayscale'
+                  ? 'hover:border-accent/50 cursor-pointer hover:shadow-hover'
+                  : 'opacity-40 cursor-not-allowed'
               }`}
             >
               {/* チャプター番号 */}
-              <div className="flex items-start justify-between mb-2">
-                <span className="text-hunter-gold text-sm font-bold">
+              <div className="flex items-start justify-between mb-3">
+                <span className="text-muted text-xs uppercase tracking-wider font-medium">
                   第{chapter.id}章
                 </span>
                 {!unlocked && (
-                  <span className="text-white/40 text-xl">🔒</span>
+                  <span className="text-muted text-lg">🔒</span>
                 )}
                 {unlocked && progress.cleared === progress.total && (
-                  <span className="text-hunter-gold text-xl">⭐</span>
+                  <span className="text-accent text-lg">✓</span>
                 )}
               </div>
 
               {/* タイトル */}
-              <h3 className="text-xl font-bold text-white mb-1">
+              <h3 className="text-lg font-medium text-primary mb-1">
                 {chapter.name}
               </h3>
-              <p className="text-hunter-gold/60 text-sm mb-2">
+              <p className="text-secondary text-sm mb-3">
                 {chapter.japaneseName}
               </p>
 
               {/* 説明 */}
-              <p className="text-white/60 text-sm mb-4">{chapter.description}</p>
+              <p className="text-muted text-sm mb-4">{chapter.description}</p>
 
               {/* 進捗バー */}
               {unlocked && (
                 <div>
-                  <div className="flex justify-between text-xs text-white/40 mb-1">
-                    <span>進捗</span>
+                  <div className="flex justify-between text-xs text-muted mb-2">
+                    <span className="uppercase tracking-wider">進捗</span>
                     <span>
                       {progress.cleared}/{progress.total}
                     </span>
                   </div>
-                  <div className="h-2 bg-hunter-dark rounded-full overflow-hidden">
+                  <div className="h-1 bg-background rounded-full overflow-hidden">
                     <div
-                      className="h-full bg-hunter-gold transition-all"
+                      className="h-full bg-accent transition-all"
                       style={{
                         width: `${(progress.cleared / progress.total) * 100}%`,
                       }}
