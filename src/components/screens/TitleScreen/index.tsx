@@ -10,9 +10,16 @@ import { useButtonClick } from '@/utils/soundUtils';
 
 export const TitleScreen: React.FC = () => {
   const { navigateTo } = useGameStore();
-  const { soundEnabled, bgmEnabled, setSoundEnabled, setBgmEnabled } =
-    useSettingsStore();
+  const { 
+    soundEnabled, 
+    bgmEnabled, 
+    soundVolume,
+    setSoundEnabled, 
+    setBgmEnabled,
+    setSoundVolume 
+  } = useSettingsStore();
   const { handleClick } = useButtonClick();
+  const [showVolumeSlider, setShowVolumeSlider] = React.useState(false);
 
   return (
     <div className="screen-container relative overflow-hidden">
@@ -36,7 +43,7 @@ export const TitleScreen: React.FC = () => {
           animate={{ opacity: 1, y: 0, scale: 1 }}
           transition={{ duration: 0.6, ease: [0.25, 0.46, 0.45, 0.94] }}
         >
-          <h1 className="text-4xl md:text-5xl font-extrabold mb-4 text-gradient">
+          <h1 className="text-4xl md:text-5xl font-extrabold mb-4 text-primary drop-shadow-lg">
             ✨ HUNTER×HUNTER ✨
           </h1>
           <motion.h2 
@@ -95,22 +102,58 @@ export const TitleScreen: React.FC = () => {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.4, duration: 0.4 }}
-          className="flex justify-center gap-6 mt-12"
+          className="flex flex-col items-center gap-4 mt-12"
         >
-          <button
-            onClick={() => setSoundEnabled(!soundEnabled)}
-            className={`text-2xl p-2 rounded-full transition-all ${soundEnabled ? 'bg-pop-pink/20' : 'bg-gray-200'}`}
-            aria-label={soundEnabled ? '効果音オン' : '効果音オフ'}
-          >
-            {soundEnabled ? '🔊' : '🔇'}
-          </button>
-          <button
-            onClick={() => setBgmEnabled(!bgmEnabled)}
-            className={`text-2xl p-2 rounded-full transition-all ${bgmEnabled ? 'bg-pop-purple/20' : 'bg-gray-200'}`}
-            aria-label={bgmEnabled ? 'BGMオン' : 'BGMオフ'}
-          >
-            {bgmEnabled ? '🎵' : '🔕'}
-          </button>
+          <div className="flex justify-center gap-6">
+            <button
+              onClick={() => {
+                setSoundEnabled(!soundEnabled);
+                setShowVolumeSlider(soundEnabled ? false : true);
+              }}
+              className={`text-2xl p-2 rounded-full transition-all ${soundEnabled ? 'bg-pop-pink/20' : 'bg-gray-200'}`}
+              aria-label={soundEnabled ? '効果音オン' : '効果音オフ'}
+            >
+              {soundEnabled ? '🔊' : '🔇'}
+            </button>
+            <button
+              onClick={() => setBgmEnabled(!bgmEnabled)}
+              className={`text-2xl p-2 rounded-full transition-all ${bgmEnabled ? 'bg-pop-purple/20' : 'bg-gray-200'}`}
+              aria-label={bgmEnabled ? 'BGMオン' : 'BGMオフ'}
+            >
+              {bgmEnabled ? '🎵' : '🔕'}
+            </button>
+          </div>
+
+          {/* 音量スライダー */}
+          {soundEnabled && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+              className="flex items-center gap-3 bg-white/80 backdrop-blur-sm rounded-xl px-4 py-3 border-2 border-pop-purple/20"
+            >
+              <span className="text-sm">🔈</span>
+              <input
+                type="range"
+                min="0"
+                max="100"
+                value={soundVolume}
+                onChange={(e) => setSoundVolume(Number(e.target.value))}
+                className="w-32 h-2 bg-muted rounded-full appearance-none cursor-pointer
+                  [&::-webkit-slider-thumb]:appearance-none
+                  [&::-webkit-slider-thumb]:w-5
+                  [&::-webkit-slider-thumb]:h-5
+                  [&::-webkit-slider-thumb]:rounded-full
+                  [&::-webkit-slider-thumb]:bg-gradient-to-r
+                  [&::-webkit-slider-thumb]:from-pop-pink
+                  [&::-webkit-slider-thumb]:to-pop-purple
+                  [&::-webkit-slider-thumb]:shadow-md
+                  [&::-webkit-slider-thumb]:cursor-pointer"
+              />
+              <span className="text-sm">🔊</span>
+              <span className="text-sm font-bold text-pop-purple w-10">{soundVolume}%</span>
+            </motion.div>
+          )}
         </motion.div>
       </div>
 

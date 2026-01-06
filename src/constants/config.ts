@@ -54,8 +54,8 @@ export const APP_CONFIG = {
 export const DEFAULT_SETTINGS = {
   soundEnabled: true,
   bgmEnabled: true,
-  soundVolume: 80,
-  bgmVolume: 50,
+  soundVolume: 100,  // デフォルト音量を最大に
+  bgmVolume: 70,
   keyboardVisible: true,
   romajiGuideLevel: 'full' as const,
 } as const;
