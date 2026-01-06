@@ -9,6 +9,7 @@ import { useGameStore } from '@/stores/gameStore';
 import { useProgressStore } from '@/stores/progressStore';
 import { useSettingsStore } from '@/stores/settingsStore';
 import { useButtonClick } from '@/utils/soundUtils';
+import { bgmManager } from '@/utils/bgmManager';
 
 // チャプターデータ
 const CHAPTERS = [
@@ -32,8 +33,13 @@ export const AdminScreen: React.FC = () => {
   const { handleClick } = useButtonClick();
   const adminBgmRef = useRef<HTMLAudioElement | null>(null);
 
-  // 管理者モード専用BGMを再生
+  // 管理者モード専用BGMを再生（メインBGMは一時停止）
   useEffect(() => {
+    // メインBGMを一時停止
+    const wasPlaying = bgmManager.isPlaying();
+    bgmManager.pause();
+
+    // 管理者モード専用BGMを再生
     const audio = new Audio('/Mobile-/march.mp3');
     audio.loop = true;
     audio.volume = soundEnabled ? (soundVolume / 100) * 0.5 : 0;
@@ -44,11 +50,17 @@ export const AdminScreen: React.FC = () => {
     });
 
     return () => {
+      // 管理者モードBGMを停止
       audio.pause();
       audio.currentTime = 0;
       adminBgmRef.current = null;
+
+      // メインBGMを再開（元々再生中だった場合）
+      if (wasPlaying) {
+        bgmManager.play();
+      }
     };
-  }, [soundEnabled, soundVolume]);
+  }, []);
 
   // 章をロック/アンロック
   const toggleChapter = (chapterId: number) => {
