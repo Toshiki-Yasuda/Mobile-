@@ -15,7 +15,6 @@ export const ResultScreen: React.FC = () => {
   const { saveStageResult, updateStatistics, updateStreak } = useProgressStore();
   const { handleClick } = useButtonClick();
   const { playSuccessSound, playResultSound } = useSound();
-  const { playSuccessSound, playResultSound } = useSound();
 
   // 結果を計算
   const result = useMemo(() => {
