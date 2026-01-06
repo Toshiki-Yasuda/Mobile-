@@ -1,5 +1,6 @@
 /**
  * ステージ選択画面コンポーネント
+ * ダークテーマ
  */
 
 import React from 'react';
@@ -7,6 +8,7 @@ import { motion } from 'framer-motion';
 import { useGameStore } from '@/stores/gameStore';
 import { useProgressStore } from '@/stores/progressStore';
 import { useButtonClick, useStageSelect } from '@/utils/soundUtils';
+import { BackgroundEffect } from '@/components/common/BackgroundEffect';
 import { getWordsForStage } from '@/data/words';
 
 // チャプター情報
@@ -101,14 +103,16 @@ export const StageSelectScreen: React.FC = () => {
 
   if (!chapter) {
     return (
-      <div className="screen-container bg-background">
-        <div className="text-error mb-4">チャプターが見つかりません</div>
-        <button
-          onClick={handleClick(() => navigateTo('levelSelect'))}
-          className="text-secondary hover:text-primary transition-colors text-sm"
-        >
-          ← チャプター選択に戻る
-        </button>
+      <div className="min-h-screen bg-hunter-dark flex items-center justify-center">
+        <div className="text-center">
+          <div className="text-error mb-4">チャプターが見つかりません</div>
+          <button
+            onClick={handleClick(() => navigateTo('levelSelect'))}
+            className="text-hunter-gold hover:text-hunter-gold-light transition"
+          >
+            ← チャプター選択に戻る
+          </button>
+        </div>
       </div>
     );
   }
@@ -127,7 +131,7 @@ export const StageSelectScreen: React.FC = () => {
     navigateTo('typing');
   };
 
-  // ステージの解放状態を判定（最初のステージは常に解放、それ以降は前のステージをクリアしていれば解放）
+  // ステージの解放状態を判定
   const isStageUnlocked = (stageNumber: number) => {
     if (stageNumber === 1) return true;
     const previousStageId = `${selectedChapter}-${stageNumber - 1}`;
@@ -135,84 +139,93 @@ export const StageSelectScreen: React.FC = () => {
   };
 
   return (
-    <div className="screen-container relative overflow-hidden">
-      {/* 背景デコレーション */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-10 left-20 w-28 h-28 bg-pop-mint/15 rounded-full blur-2xl" />
-        <div className="absolute bottom-20 right-10 w-36 h-36 bg-pop-sky/15 rounded-full blur-2xl" />
-      </div>
+    <div className="min-h-screen bg-hunter-dark relative overflow-hidden">
+      <BackgroundEffect variant="default" />
 
       {/* ヘッダー */}
-      <div className="relative z-10 w-full max-w-4xl mb-8">
-        <button
-          onClick={handleClick(() => navigateTo('levelSelect'))}
-          className="text-pop-purple hover:text-accent transition-colors text-base mb-4 font-bold"
-        >
-          ← チャプター選択に戻る
-        </button>
-        <h1 className="text-3xl font-extrabold text-primary mb-2">
-          📖 第{chapter.id}章 {chapter.name}
-        </h1>
-        <p className="text-pop-purple text-base font-medium">{chapter.japaneseName}</p>
-      </div>
+      <header className="relative z-10 p-4 lg:p-6 border-b border-hunter-gold/10">
+        <div className="max-w-6xl mx-auto">
+          <button
+            onClick={handleClick(() => navigateTo('levelSelect'))}
+            className="text-hunter-gold/60 hover:text-hunter-gold transition mb-4"
+          >
+            ← チャプター選択に戻る
+          </button>
+          <h1 className="text-2xl lg:text-3xl font-bold text-white mb-2">
+            第{chapter.id}章 {chapter.name}
+          </h1>
+          <p className="text-hunter-gold/60">{chapter.japaneseName}</p>
+        </div>
+      </header>
 
-      {/* ステージリスト */}
-      <div className="relative z-10 w-full max-w-4xl grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
-        {chapter.stages.map((stage, index) => {
-          const stageId = `${selectedChapter}-${stage.number}`;
-          const unlocked = isStageUnlocked(stage.number);
-          const cleared = isStageCleared(stageId);
-          const result = getStageResult(stageId);
+      {/* ステージグリッド */}
+      <main className="relative z-10 p-4 lg:p-8">
+        <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 lg:gap-6">
+          {chapter.stages.map((stage, index) => {
+            const stageId = `${selectedChapter}-${stage.number}`;
+            const unlocked = isStageUnlocked(stage.number);
+            const cleared = isStageCleared(stageId);
+            const result = getStageResult(stageId);
 
-          return (
-            <motion.button
-              key={stage.number}
-              initial={{ opacity: 0, y: 30, scale: 0.95 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              transition={{ delay: index * 0.1, duration: 0.4, ease: [0.25, 0.46, 0.45, 0.94] }}
-              onClick={unlocked ? handleStageClick(() => handleStageSelect(stage.number)) : undefined}
-              disabled={!unlocked}
-              whileHover={unlocked ? { scale: 1.02, y: -2 } : {}}
-              whileTap={unlocked ? { scale: 0.98 } : {}}
-              className={`card text-left transition-all ${
-                unlocked
-                  ? 'hover:border-accent cursor-pointer hover:shadow-lg'
-                  : 'opacity-50 cursor-not-allowed'
-              }`}
-            >
-              {/* ステージ番号 */}
-              <div className="flex items-start justify-between mb-3">
-                <span className="text-pop-purple text-sm uppercase tracking-wider font-bold">
-                  ステージ {stage.number}
-                </span>
-                {!unlocked && (
-                  <span className="text-2xl">🔒</span>
-                )}
+            return (
+              <motion.button
+                key={stage.number}
+                initial={{ opacity: 0, y: 30, scale: 0.95 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                transition={{ delay: index * 0.1, duration: 0.4 }}
+                onClick={unlocked ? handleStageClick(() => handleStageSelect(stage.number)) : undefined}
+                disabled={!unlocked}
+                whileHover={unlocked ? { scale: 1.02, y: -2 } : {}}
+                whileTap={unlocked ? { scale: 0.98 } : {}}
+                className={`relative text-left p-6 rounded-xl transition-all ${
+                  unlocked
+                    ? 'bg-hunter-dark-light/50 border border-hunter-gold/20 hover:border-hunter-gold/40 cursor-pointer'
+                    : 'bg-hunter-dark-light/20 border border-white/5 opacity-50 cursor-not-allowed'
+                }`}
+              >
+                {/* クリアバッジ */}
                 {cleared && (
-                  <span className="text-2xl">⭐</span>
+                  <div className="absolute top-4 right-4">
+                    <span className="text-2xl">⭐</span>
+                  </div>
                 )}
-              </div>
 
-              {/* タイトル */}
-              <h3 className="text-xl font-bold text-primary mb-1">
-                {stage.name}
-              </h3>
-              <p className="text-primary/70 text-base mb-4">{stage.description}</p>
+                {/* ロックアイコン */}
+                {!unlocked && (
+                  <div className="absolute top-4 right-4">
+                    <span className="text-2xl">🔒</span>
+                  </div>
+                )}
 
-              {/* クリア情報 */}
-              {cleared && result && (
-                <div className="text-sm text-pop-purple font-bold space-x-3">
-                  <span>🏆 {result.score.toLocaleString()}</span>
-                  <span>🎯 {result.accuracy.toFixed(1)}%</span>
+                {/* ステージ番号 */}
+                <div className="text-hunter-gold/60 text-xs uppercase tracking-widest mb-2">
+                  ステージ {stage.number}
                 </div>
-              )}
-            </motion.button>
-          );
-        })}
-      </div>
+
+                {/* タイトル */}
+                <h3 className="text-xl font-bold text-white mb-1">
+                  {stage.name}
+                </h3>
+                <p className="text-white/50 text-sm mb-4">{stage.description}</p>
+
+                {/* クリア情報 */}
+                {cleared && result && (
+                  <div className="flex gap-4 text-sm">
+                    <span className="text-hunter-gold">
+                      🏆 {result.score.toLocaleString()}
+                    </span>
+                    <span className="text-success">
+                      🎯 {result.accuracy.toFixed(1)}%
+                    </span>
+                  </div>
+                )}
+              </motion.button>
+            );
+          })}
+        </div>
+      </main>
     </div>
   );
 };
 
 export default StageSelectScreen;
-

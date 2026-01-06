@@ -1,5 +1,6 @@
 /**
  * 結果画面コンポーネント
+ * ダークテーマ
  */
 
 import React, { useMemo, useEffect, useCallback } from 'react';
@@ -8,6 +9,7 @@ import { useGameStore } from '@/stores/gameStore';
 import { useProgressStore } from '@/stores/progressStore';
 import { useButtonClick } from '@/utils/soundUtils';
 import { useSound } from '@/hooks/useSound';
+import { BackgroundEffect } from '@/components/common/BackgroundEffect';
 import { chapter1Stages, chapter2Stages } from '@/data/words';
 import type { Rank } from '@/types/game';
 
@@ -15,10 +17,10 @@ import type { Rank } from '@/types/game';
 const CHAPTER_STAGE_COUNTS: Record<number, number> = {
   1: Object.keys(chapter1Stages).length,
   2: Object.keys(chapter2Stages).length,
-  3: 6, // 第3章: 絶（ゼツ）
-  4: 6, // 第4章: 練（レン）
-  5: 6, // 第5章: 発（ハツ）
-  6: 6, // 第6章: 極意
+  3: 6,
+  4: 6,
+  5: 6,
+  6: 6,
 };
 
 export const ResultScreen: React.FC = () => {
@@ -40,7 +42,6 @@ export const ResultScreen: React.FC = () => {
     const wpm =
       totalTime > 0 ? (session.correctCount / (totalTime / 60000)) : 0;
 
-    // ランク計算
     let rank: Rank = 'C';
     if (accuracy >= 98 && wpm >= 100) rank = 'S';
     else if (accuracy >= 95 && wpm >= 80) rank = 'A';
@@ -59,14 +60,12 @@ export const ResultScreen: React.FC = () => {
   }, [session]);
 
   // 結果を保存と達成音の再生
-  React.useEffect(() => {
+  useEffect(() => {
     if (result && selectedChapter && selectedStage) {
       const stageId = `${selectedChapter}-${selectedStage}`;
       
-      // 達成音を再生（少し遅延させて確実に鳴るように）
       setTimeout(() => {
         playSuccessSound();
-        // ランクに応じた音も再生
         setTimeout(() => {
           playResultSound(result.rank);
         }, 400);
@@ -74,7 +73,7 @@ export const ResultScreen: React.FC = () => {
       
       updateStreak();
       updateStatistics({
-        totalPlays: 1, // インクリメントは store 側で行う
+        totalPlays: 1,
         totalTypedChars: result.correctCount + result.missCount,
         totalCorrect: result.correctCount,
         totalMiss: result.missCount,
@@ -82,7 +81,6 @@ export const ResultScreen: React.FC = () => {
         bestWPM: result.wpm,
       });
 
-      // ステージ結果を保存
       saveStageResult(stageId, {
         stageId,
         score: result.score,
@@ -94,18 +92,12 @@ export const ResultScreen: React.FC = () => {
         clearedAt: new Date().toISOString(),
       });
 
-      // チャプターの全ステージをクリアしたか確認して、次のチャプターを解放
       const totalStagesInChapter = CHAPTER_STAGE_COUNTS[selectedChapter] || 0;
-      
-      // 現在のステージを含めてクリア済みステージをカウント
       const clearedStagesInChapter = Object.keys(clearedStages).filter(
         id => id.startsWith(`${selectedChapter}-`)
       ).length;
-      
-      // 今回クリアしたステージがまだカウントされていない場合を考慮
       const willBeCleared = clearedStagesInChapter + (clearedStages[stageId] ? 0 : 1);
       
-      // 全ステージクリアしたら次のチャプターを解放
       if (willBeCleared >= totalStagesInChapter) {
         const nextChapter = selectedChapter + 1;
         if (CHAPTER_STAGE_COUNTS[nextChapter]) {
@@ -115,27 +107,22 @@ export const ResultScreen: React.FC = () => {
     }
   }, [result, updateStreak, updateStatistics, saveStageResult, selectedChapter, selectedStage, playSuccessSound, playResultSound, playAchievementSound, clearedStages, unlockChapter]);
 
-  // チャプター内のステージ数を取得
   const getStageCount = useCallback((chapter: number): number => {
     return CHAPTER_STAGE_COUNTS[chapter] || 0;
   }, []);
 
-  // 次のステージがあるかどうか
   const hasNextStage = useMemo(() => {
     const stageCount = getStageCount(selectedChapter);
     return selectedStage < stageCount;
   }, [selectedChapter, selectedStage, getStageCount]);
 
-  // 次のステージへ進む
   const handleNextStage = useCallback(() => {
     resetSession();
     if (hasNextStage) {
-      // 次のステージへ
       const { selectStage, navigateTo: nav } = useGameStore.getState();
       selectStage(selectedChapter, selectedStage + 1);
       nav('typing');
     } else {
-      // 最後のステージだったのでステージ選択へ
       navigateTo('stageSelect');
     }
   }, [resetSession, hasNextStage, selectedChapter, selectedStage, navigateTo]);
@@ -165,162 +152,262 @@ export const ResultScreen: React.FC = () => {
 
   if (!result) {
     return (
-      <div className="screen-container">
-        <div className="text-secondary">結果を計算中...</div>
+      <div className="min-h-screen bg-hunter-dark flex items-center justify-center">
+        <div className="text-hunter-gold">結果を計算中...</div>
       </div>
     );
   }
 
+  const rankConfig = getRankConfig(result.rank);
+
   return (
-    <div className="screen-container relative overflow-hidden">
-      {/* 背景デコレーション */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-10 left-10 w-40 h-40 bg-pop-pink/15 rounded-full blur-2xl animate-float" />
-        <div className="absolute bottom-20 right-10 w-36 h-36 bg-pop-purple/15 rounded-full blur-2xl animate-float" style={{ animationDelay: '1s' }} />
-      </div>
+    <div className="min-h-screen bg-hunter-dark relative overflow-hidden">
+      <BackgroundEffect variant="result" />
 
-      {/* ランク表示 */}
-      <motion.div
-        initial={{ scale: 0, opacity: 0, rotate: -180 }}
-        animate={{ scale: 1, opacity: 1, rotate: 0 }}
-        transition={{ type: 'spring', stiffness: 200, damping: 15, duration: 0.8 }}
-        className="relative z-10 mb-8"
-      >
-        <motion.div
-          className={`w-32 h-32 rounded-full flex items-center justify-center text-6xl font-extrabold border-4 ${getRankStyle(
-            result.rank
-          )}`}
-          animate={{ 
-            boxShadow: result.rank === 'S' 
-              ? '0 0 30px rgba(236, 72, 153, 0.6), 0 0 60px rgba(168, 85, 247, 0.3)'
-              : '0 0 20px rgba(168, 85, 247, 0.4), 0 0 40px rgba(236, 72, 153, 0.2)'
-          }}
-          transition={{ duration: 2, repeat: Infinity, repeatType: 'reverse' }}
-        >
-          {result.rank}
-        </motion.div>
-      </motion.div>
+      {/* ランクSの特別パーティクル */}
+      {result.rank === 'S' && <GoldParticles />}
 
-      {/* タイトル */}
-      <motion.h1
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.3, duration: 0.5 }}
-        onAnimationComplete={() => {
-          // ランクメッセージ表示時に達成感のある音を再生
-          setTimeout(() => {
-            playAchievementSound(result.rank);
-          }, 100);
-        }}
-        className="relative z-10 text-3xl md:text-4xl font-extrabold text-primary mb-8"
-      >
-        {getRankMessage(result.rank)}
-      </motion.h1>
-
-      {/* 結果詳細 */}
-      <motion.div
-        initial={{ opacity: 0, y: 30, scale: 0.95 }}
-        animate={{ opacity: 1, y: 0, scale: 1 }}
-        transition={{ delay: 0.4, duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] }}
-        className="relative z-10 card w-full max-w-md mb-8"
-      >
-        <div className="grid grid-cols-2 gap-6">
-          <ResultItem label="⭐ スコア" value={result.score.toLocaleString()} />
-          <ResultItem label="🎯 正確率" value={`${result.accuracy}%`} />
-          <ResultItem label="⚡ WPM" value={result.wpm.toString()} />
-          <ResultItem label="⏱️ タイム" value={`${result.totalTime}秒`} />
-          <ResultItem label="🔥 最大コンボ" value={result.maxCombo.toString()} />
-          <ResultItem
-            label="✅ 正解/ミス"
-            value={`${result.correctCount}/${result.missCount}`}
-          />
-        </div>
-      </motion.div>
-
-      {/* ボタン */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.6, duration: 0.4 }}
-        className="relative z-10 flex flex-col items-center gap-4"
-      >
-        {/* メインボタン：次のステージへ */}
-        <motion.button 
-          onClick={handleNextStage} 
-          className="btn-primary text-xl px-10 py-4"
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-        >
-          {hasNextStage ? '➡️ 次のステージへ！' : '🏠 ステージ選択へ'}
-          <span className="ml-2 text-base opacity-75">(Enter)</span>
-        </motion.button>
-
-        {/* サブボタン */}
-        <div className="flex gap-4">
-          <motion.button 
-            onClick={handleRetry} 
-            className="btn-ghost"
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
+      {/* メインコンテンツ */}
+      <div className="relative z-10 min-h-screen flex flex-col lg:flex-row items-center justify-center p-4 lg:p-8">
+        {/* 左側 - ランク表示 */}
+        <div className="flex-1 flex flex-col items-center justify-center lg:pr-8 xl:pr-16 mb-8 lg:mb-0">
+          {/* ランクバッジ */}
+          <motion.div
+            initial={{ scale: 0, rotate: -180 }}
+            animate={{ scale: 1, rotate: 0 }}
+            transition={{ type: 'spring', duration: 1, bounce: 0.4 }}
+            className="mb-6 lg:mb-8"
           >
-            🔄 もう一度
-          </motion.button>
-          {hasNextStage && (
-            <motion.button 
-              onClick={handleBackToSelect} 
-              className="btn-ghost"
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
+            <div
+              className={`w-32 h-32 lg:w-40 lg:h-40 rounded-full flex items-center justify-center text-6xl lg:text-7xl font-bold border-4 ${rankConfig.borderColor} ${rankConfig.bgColor}`}
+              style={{
+                boxShadow: `0 0 30px ${rankConfig.glowColor}`,
+              }}
             >
-              📚 ステージ選択
-            </motion.button>
-          )}
+              <span className={rankConfig.textColor}>{result.rank}</span>
+            </div>
+          </motion.div>
+
+          {/* ランクメッセージ */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.5 }}
+            onAnimationComplete={() => {
+              setTimeout(() => {
+                playAchievementSound(result.rank);
+              }, 100);
+            }}
+            className="text-center"
+          >
+            <h1 className={`text-2xl lg:text-3xl xl:text-4xl font-bold mb-2 ${rankConfig.textColor}`}>
+              {rankConfig.message}
+            </h1>
+            <p className="text-white/60 text-sm lg:text-base">
+              {rankConfig.subMessage}
+            </p>
+          </motion.div>
+
+          {/* スコア（PC用） */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.7 }}
+            className="hidden lg:block mt-8"
+          >
+            <div className="text-center">
+              <div className="text-hunter-gold/60 text-sm uppercase tracking-wider mb-1">
+                Total Score
+              </div>
+              <div className="text-5xl xl:text-6xl font-bold text-white tracking-tight">
+                {result.score.toLocaleString()}
+              </div>
+            </div>
+          </motion.div>
         </div>
-      </motion.div>
+
+        {/* 右側 - 詳細結果 */}
+        <motion.div
+          initial={{ opacity: 0, x: 30 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ delay: 0.3 }}
+          className="w-full max-w-md lg:max-w-lg xl:max-w-xl"
+        >
+          {/* 結果カード */}
+          <div className="relative">
+            <div className="absolute inset-0 bg-gradient-to-br from-hunter-gold/10 to-transparent rounded-2xl lg:rounded-3xl" />
+            <div className="absolute inset-0 border-2 border-hunter-gold/20 rounded-2xl lg:rounded-3xl" />
+
+            <div className="relative p-6 lg:p-8">
+              {/* モバイル用スコア */}
+              <div className="lg:hidden text-center mb-6 pb-6 border-b border-hunter-gold/10">
+                <div className="text-hunter-gold/60 text-xs uppercase tracking-wider mb-1">
+                  Total Score
+                </div>
+                <div className="text-4xl font-bold text-white">
+                  {result.score.toLocaleString()}
+                </div>
+              </div>
+
+              {/* 統計グリッド */}
+              <div className="grid grid-cols-2 gap-4 lg:gap-6 mb-6 lg:mb-8">
+                <StatCard
+                  label="正確率"
+                  value={`${result.accuracy}%`}
+                  icon="🎯"
+                  highlight={result.accuracy >= 95}
+                />
+                <StatCard
+                  label="WPM"
+                  value={result.wpm.toString()}
+                  icon="⚡"
+                  highlight={result.wpm >= 80}
+                />
+                <StatCard
+                  label="最大コンボ"
+                  value={result.maxCombo.toString()}
+                  icon="🔥"
+                  highlight={result.maxCombo >= 20}
+                />
+                <StatCard label="タイム" value={`${result.totalTime}秒`} icon="⏱" />
+              </div>
+
+              {/* 詳細統計 */}
+              <div className="space-y-3 mb-6 lg:mb-8 p-4 bg-hunter-dark/50 rounded-xl">
+                <div className="flex justify-between items-center">
+                  <span className="text-white/50 text-sm">正解タイプ数</span>
+                  <span className="text-success font-bold">{result.correctCount}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-white/50 text-sm">ミスタイプ数</span>
+                  <span className="text-error font-bold">{result.missCount}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-white/50 text-sm">総タイプ数</span>
+                  <span className="text-white font-bold">
+                    {result.correctCount + result.missCount}
+                  </span>
+                </div>
+              </div>
+
+              {/* アクションボタン */}
+              <div className="flex flex-col sm:flex-row gap-3">
+                <button onClick={handleNextStage} className="flex-1 relative group">
+                  <div className="absolute inset-0 bg-hunter-green rounded-xl blur-md opacity-50 group-hover:opacity-80 transition-opacity" />
+                  <div className="relative bg-hunter-green hover:bg-hunter-green-light text-white font-bold py-3 lg:py-4 px-6 rounded-xl transition-all flex items-center justify-center gap-2">
+                    <span>{hasNextStage ? '➡️ 次へ' : '📚 ステージ選択'}</span>
+                    <span className="text-xs opacity-75">(Enter)</span>
+                  </div>
+                </button>
+
+                <button
+                  onClick={handleRetry}
+                  className="flex-1 bg-transparent border-2 border-hunter-gold/30 hover:border-hunter-gold/60 hover:bg-hunter-gold/10 text-white font-bold py-3 lg:py-4 px-6 rounded-xl transition-all flex items-center justify-center gap-2"
+                >
+                  <span>🔄</span>
+                  <span>もう一度</span>
+                </button>
+
+                {hasNextStage && (
+                  <button
+                    onClick={handleBackToSelect}
+                    className="sm:hidden bg-transparent border-2 border-hunter-gold/30 hover:border-hunter-gold/60 hover:bg-hunter-gold/10 text-white font-bold py-3 px-6 rounded-xl transition-all flex items-center justify-center gap-2"
+                  >
+                    <span>📚</span>
+                    <span>ステージ選択</span>
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
+        </motion.div>
+      </div>
     </div>
   );
 };
 
-// 結果項目コンポーネント
-const ResultItem: React.FC<{ label: string; value: string }> = ({
-  label,
-  value,
-}) => (
-  <div className="text-center">
-    <div className="text-pop-purple text-sm font-bold mb-2">{label}</div>
-    <div className="text-primary text-2xl font-extrabold">{value}</div>
+// 統計カード
+const StatCard: React.FC<{
+  label: string;
+  value: string;
+  icon: string;
+  highlight?: boolean;
+}> = ({ label, value, icon, highlight }) => (
+  <div className={`text-center p-4 rounded-xl ${highlight ? 'bg-hunter-gold/10' : 'bg-hunter-dark/30'}`}>
+    <div className="text-2xl mb-1">{icon}</div>
+    <div className="text-hunter-gold/60 text-xs mb-1">{label}</div>
+    <div className={`text-xl font-bold ${highlight ? 'text-hunter-gold' : 'text-white'}`}>
+      {value}
+    </div>
   </div>
 );
 
-// ランクスタイル
-const getRankStyle = (rank: Rank): string => {
-  switch (rank) {
-    case 'S':
-      return 'border-pop-yellow bg-gradient-to-br from-pop-yellow/20 to-pop-pink/20 text-pop-yellow';
-    case 'A':
-      return 'border-pop-pink bg-gradient-to-br from-pop-pink/20 to-pop-purple/20 text-pop-pink';
-    case 'B':
-      return 'border-pop-purple bg-gradient-to-br from-pop-purple/20 to-pop-sky/20 text-pop-purple';
-    case 'C':
-      return 'border-pop-sky bg-gradient-to-br from-pop-sky/20 to-pop-mint/20 text-pop-sky';
-    default:
-      return 'border-pop-purple/50 text-pop-purple/50';
-  }
-};
+// ゴールドパーティクル
+const GoldParticles: React.FC = () => (
+  <div className="absolute inset-0 pointer-events-none">
+    {[...Array(20)].map((_, i) => (
+      <motion.div
+        key={i}
+        className="absolute w-1 h-1 bg-hunter-gold rounded-full"
+        style={{
+          left: `${Math.random() * 100}%`,
+          top: `${Math.random() * 100}%`,
+        }}
+        animate={{
+          y: [0, -100],
+          opacity: [0, 1, 0],
+          scale: [0, 1.5, 0],
+        }}
+        transition={{
+          duration: 2 + Math.random() * 2,
+          repeat: Infinity,
+          delay: Math.random() * 2,
+        }}
+      />
+    ))}
+  </div>
+);
 
-// ランクメッセージ
-const getRankMessage = (rank: Rank): string => {
+// ランク設定
+const getRankConfig = (rank: Rank) => {
   switch (rank) {
     case 'S':
-      return '🌟 すっごーい！天才だね！🌟';
+      return {
+        borderColor: 'border-hunter-gold',
+        bgColor: 'bg-gradient-to-br from-hunter-gold/30 to-hunter-gold/10',
+        textColor: 'text-hunter-gold',
+        glowColor: 'rgba(212,175,55,0.5)',
+        message: '素晴らしい！完璧な念の修行です！',
+        subMessage: 'あなたは真のハンターです',
+      };
     case 'A':
-      return '✨ とってもよくできました！✨';
+      return {
+        borderColor: 'border-hunter-green',
+        bgColor: 'bg-gradient-to-br from-hunter-green/30 to-hunter-green/10',
+        textColor: 'text-hunter-green',
+        glowColor: 'rgba(45,90,39,0.5)',
+        message: 'とても良い！あと少しでマスター！',
+        subMessage: '念能力が安定してきました',
+      };
     case 'B':
-      return '👍 なかなかの腕前だね！';
+      return {
+        borderColor: 'border-nen-transmutation',
+        bgColor: 'bg-gradient-to-br from-nen-transmutation/30 to-nen-transmutation/10',
+        textColor: 'text-nen-transmutation',
+        glowColor: 'rgba(78,205,196,0.5)',
+        message: 'なかなかの腕前だね！',
+        subMessage: 'もっと練習すれば上達するよ',
+      };
     case 'C':
-      return '💪 もっと練習しよう！';
     default:
-      return 'お疲れ様でした！';
+      return {
+        borderColor: 'border-white/30',
+        bgColor: 'bg-gradient-to-br from-white/10 to-white/5',
+        textColor: 'text-white',
+        glowColor: 'rgba(255,255,255,0.2)',
+        message: 'もっと練習しよう！',
+        subMessage: '継続は力なり',
+      };
   }
 };
 

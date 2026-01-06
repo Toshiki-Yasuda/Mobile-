@@ -1,5 +1,6 @@
 /**
  * レベル選択画面コンポーネント
+ * ダークテーマ
  */
 
 import React from 'react';
@@ -7,6 +8,7 @@ import { motion } from 'framer-motion';
 import { useGameStore } from '@/stores/gameStore';
 import { useProgressStore } from '@/stores/progressStore';
 import { useButtonClick, useMenuSelect } from '@/utils/soundUtils';
+import { BackgroundEffect } from '@/components/common/BackgroundEffect';
 
 // チャプターデータ
 const CHAPTERS = [
@@ -74,98 +76,104 @@ export const LevelSelectScreen: React.FC = () => {
     navigateTo('stageSelect');
   };
 
-  const handleChapterClick = handleSelect(() => {
-    // この関数は実際には使わない（個別のボタンで使用）
-  });
-
   return (
-    <div className="screen-container relative overflow-hidden">
-      {/* 背景デコレーション */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-20 right-10 w-32 h-32 bg-pop-pink/15 rounded-full blur-2xl" />
-        <div className="absolute bottom-20 left-10 w-40 h-40 bg-pop-purple/15 rounded-full blur-2xl" />
-      </div>
+    <div className="min-h-screen bg-hunter-dark relative overflow-hidden">
+      <BackgroundEffect variant="default" />
 
       {/* ヘッダー */}
-      <div className="relative z-10 w-full max-w-4xl mb-8">
-        <button
-          onClick={handleClick(() => navigateTo('title'))}
-          className="text-pop-purple hover:text-accent transition-colors text-base mb-4 font-bold"
-        >
-          ← タイトルに戻る
-        </button>
-        <h1 className="text-3xl font-extrabold text-primary">📚 修行の章を選択</h1>
-      </div>
+      <header className="relative z-10 p-4 lg:p-6 border-b border-hunter-gold/10">
+        <div className="max-w-6xl mx-auto flex items-center justify-between">
+          <button
+            onClick={handleClick(() => navigateTo('title'))}
+            className="text-hunter-gold/60 hover:text-hunter-gold transition"
+          >
+            ← 戻る
+          </button>
+          <h1 className="text-xl lg:text-2xl font-bold text-white">
+            修行の章を選択
+          </h1>
+          <div className="w-16" /> {/* spacer */}
+        </div>
+      </header>
 
-      {/* チャプターリスト */}
-      <div className="relative z-10 w-full max-w-4xl grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
-        {CHAPTERS.map((chapter, index) => {
-          const unlocked = isChapterUnlocked(chapter.id);
-          const progress = getChapterProgress(chapter.id);
+      {/* チャプターグリッド */}
+      <main className="relative z-10 p-4 lg:p-8">
+        <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 lg:gap-6">
+          {CHAPTERS.map((chapter, index) => {
+            const unlocked = isChapterUnlocked(chapter.id);
+            const progress = getChapterProgress(chapter.id);
+            const isCompleted = progress.cleared === progress.total;
 
-          return (
-            <motion.button
-              key={chapter.id}
-              initial={{ opacity: 0, y: 30, scale: 0.95 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              transition={{ delay: index * 0.1, duration: 0.4, ease: [0.25, 0.46, 0.45, 0.94] }}
-              onClick={unlocked ? handleSelect(() => handleChapterSelect(chapter.id)) : undefined}
-              disabled={!unlocked}
-              whileHover={unlocked ? { scale: 1.02, y: -2 } : {}}
-              whileTap={unlocked ? { scale: 0.98 } : {}}
-              className={`card text-left transition-all ${
-                unlocked
-                  ? 'hover:border-accent cursor-pointer hover:shadow-lg'
-                  : 'opacity-50 cursor-not-allowed'
-              }`}
-            >
-              {/* チャプター番号 */}
-              <div className="flex items-start justify-between mb-3">
-                <span className="text-pop-purple text-sm uppercase tracking-wider font-bold">
-                  第{chapter.id}章
-                </span>
+            return (
+              <motion.button
+                key={chapter.id}
+                initial={{ opacity: 0, y: 30, scale: 0.95 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                transition={{ delay: index * 0.1, duration: 0.4 }}
+                onClick={unlocked ? handleSelect(() => handleChapterSelect(chapter.id)) : undefined}
+                disabled={!unlocked}
+                whileHover={unlocked ? { scale: 1.02, y: -2 } : {}}
+                whileTap={unlocked ? { scale: 0.98 } : {}}
+                className={`relative text-left p-6 rounded-xl transition-all ${
+                  unlocked
+                    ? 'bg-hunter-dark-light/50 border border-hunter-gold/20 hover:border-hunter-gold/40 cursor-pointer'
+                    : 'bg-hunter-dark-light/20 border border-white/5 opacity-50 cursor-not-allowed'
+                }`}
+              >
+                {/* 完了バッジ */}
+                {isCompleted && (
+                  <div className="absolute top-4 right-4">
+                    <span className="text-2xl">⭐</span>
+                  </div>
+                )}
+
+                {/* ロックアイコン */}
                 {!unlocked && (
-                  <span className="text-2xl">🔒</span>
-                )}
-                {unlocked && progress.cleared === progress.total && (
-                  <span className="text-2xl">⭐</span>
-                )}
-              </div>
-
-              {/* タイトル */}
-              <h3 className="text-xl font-bold text-primary mb-1">
-                {chapter.name}
-              </h3>
-              <p className="text-pop-purple text-base mb-3 font-medium">
-                {chapter.japaneseName}
-              </p>
-
-              {/* 説明 */}
-              <p className="text-primary/70 text-base mb-4">{chapter.description}</p>
-
-              {/* 進捗バー */}
-              {unlocked && (
-                <div>
-                  <div className="flex justify-between text-sm text-pop-purple mb-2">
-                    <span className="font-bold">進捗</span>
-                    <span className="font-bold">
-                      {progress.cleared}/{progress.total}
-                    </span>
+                  <div className="absolute top-4 right-4">
+                    <span className="text-2xl">🔒</span>
                   </div>
-                  <div className="h-3 bg-muted rounded-full overflow-hidden">
-                    <div
-                      className="h-full bg-gradient-to-r from-pop-pink to-pop-purple transition-all rounded-full"
-                      style={{
-                        width: `${(progress.cleared / progress.total) * 100}%`,
-                      }}
-                    />
-                  </div>
+                )}
+
+                {/* チャプター番号 */}
+                <div className="text-hunter-gold/60 text-xs uppercase tracking-widest mb-2">
+                  第{chapter.id}章
                 </div>
-              )}
-            </motion.button>
-          );
-        })}
-      </div>
+
+                {/* タイトル */}
+                <h3 className="text-xl font-bold text-white mb-1">
+                  {chapter.name}
+                </h3>
+                <p className="text-hunter-gold/60 text-sm mb-3">
+                  {chapter.japaneseName}
+                </p>
+
+                {/* 説明 */}
+                <p className="text-white/50 text-sm mb-4">{chapter.description}</p>
+
+                {/* 進捗バー */}
+                {unlocked && (
+                  <div>
+                    <div className="flex justify-between text-xs text-hunter-gold/60 mb-2">
+                      <span>進捗</span>
+                      <span>
+                        {progress.cleared}/{progress.total}
+                      </span>
+                    </div>
+                    <div className="h-2 bg-hunter-dark rounded-full overflow-hidden">
+                      <motion.div
+                        className="h-full bg-gradient-to-r from-hunter-green to-hunter-gold"
+                        initial={{ width: 0 }}
+                        animate={{ width: `${(progress.cleared / progress.total) * 100}%` }}
+                        transition={{ duration: 0.5, delay: index * 0.1 + 0.3 }}
+                      />
+                    </div>
+                  </div>
+                )}
+              </motion.button>
+            );
+          })}
+        </div>
+      </main>
     </div>
   );
 };

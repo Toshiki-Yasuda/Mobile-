@@ -5,28 +5,24 @@
 /* ===== Base Styles ===== */
 @layer base {
   html {
-    font-family: 'M PLUS Rounded 1c', 'Nunito', 'Inter', system-ui, sans-serif;
-    font-size: 18px; /* ベースフォントサイズを大きく */
+    font-family: 'M PLUS Rounded 1c', sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
 
   body {
-    @apply bg-background text-primary;
+    @apply bg-hunter-dark text-white;
     overflow-x: hidden;
-    background: linear-gradient(135deg, #fef7ff 0%, #fdf4ff 50%, #fae8ff 100%);
-    font-size: 1.1rem; /* 本文も少し大きく */
-    line-height: 1.6;
   }
 
   /* フォーカス時のアウトライン */
   :focus-visible {
-    @apply outline-2 outline-offset-2 outline-accent;
+    @apply outline-2 outline-offset-2 outline-hunter-gold;
   }
 
   /* 選択時のスタイル */
   ::selection {
-    @apply bg-accent/30 text-primary;
+    @apply bg-hunter-gold/30 text-white;
   }
 }
 
@@ -34,112 +30,52 @@
 @layer components {
   /* ボタン基本スタイル */
   .btn {
-    @apply px-6 py-3 rounded-xl font-bold transition-all duration-300;
-    @apply focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2 focus:ring-offset-background;
+    @apply px-6 py-3 rounded-lg font-bold transition-all duration-200;
+    @apply focus:outline-none focus:ring-2 focus:ring-hunter-gold focus:ring-offset-2 focus:ring-offset-hunter-dark;
     @apply disabled:opacity-50 disabled:cursor-not-allowed;
-    position: relative;
-    overflow: hidden;
   }
 
   .btn-primary {
-    @apply btn text-white;
-    background: linear-gradient(135deg, #ec4899 0%, #a855f7 100%);
-    box-shadow: 0 4px 14px 0 rgba(236, 72, 153, 0.4);
-    @apply hover:shadow-lg hover:-translate-y-1 active:translate-y-0;
-  }
-
-  .btn-primary::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
-    transition: left 0.5s;
-  }
-
-  .btn-primary:hover::before {
-    left: 100%;
+    @apply btn bg-hunter-green text-white;
+    @apply hover:bg-hunter-green-light active:bg-hunter-green-dark;
   }
 
   .btn-secondary {
-    @apply btn text-white;
-    background: linear-gradient(135deg, #34d399 0%, #38bdf8 100%);
-    box-shadow: 0 4px 14px 0 rgba(52, 211, 153, 0.3);
-    @apply hover:shadow-lg hover:-translate-y-1;
+    @apply btn bg-hunter-gold text-hunter-dark;
+    @apply hover:bg-hunter-gold-light active:bg-hunter-gold-dark;
   }
 
   .btn-ghost {
-    @apply btn bg-white/80 text-primary border-2 border-pop-purple/30 backdrop-blur-sm;
-    @apply hover:bg-white hover:border-accent hover:shadow-md;
-    @apply hover:-translate-y-1 transition-all;
+    @apply btn bg-transparent text-hunter-gold border-2 border-hunter-gold;
+    @apply hover:bg-hunter-gold/10;
   }
 
   /* カードスタイル */
   .card {
-    @apply bg-white rounded-2xl p-6;
-    @apply border-2 border-pop-purple/20;
-    @apply transition-all duration-300;
-    gap: 16px;
-    position: relative;
-    overflow: hidden;
-    box-shadow: 0 4px 20px rgba(168, 85, 247, 0.1);
-  }
-
-  .card::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 4px;
-    background: linear-gradient(90deg, #ec4899, #a855f7, #38bdf8, #34d399);
-    opacity: 0;
-    transition: opacity 0.3s;
-  }
-
-  .card:hover::before {
-    opacity: 1;
-  }
-
-  .card:hover {
-    @apply border-accent/50;
-    transform: translateY(-4px);
-    box-shadow: 0 12px 30px rgba(168, 85, 247, 0.2);
+    @apply bg-hunter-dark-light rounded-xl p-6;
+    @apply border border-hunter-gold/20;
+    @apply shadow-lg;
   }
 
   /* タイピング表示エリア */
   .typing-area {
-    @apply bg-white rounded-2xl p-8;
-    @apply border-2 border-pop-purple/20;
-    position: relative;
-    box-shadow: 0 4px 20px rgba(168, 85, 247, 0.1);
-  }
-
-  .typing-area::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 4px;
-    background: linear-gradient(90deg, #ec4899, #a855f7, #38bdf8, #34d399);
-    border-radius: 16px 16px 0 0;
+    @apply bg-hunter-dark rounded-xl p-8;
+    @apply border-2 border-hunter-gold/30;
+    @apply shadow-nen;
   }
 
   /* 文字表示 */
   .char-pending {
-    @apply text-muted;
+    @apply text-white/60;
   }
 
   .char-current {
-    @apply text-accent font-bold;
-    transition: all 0.1s ease;
+    @apply text-hunter-gold font-bold;
+    @apply animate-pulse-slow;
   }
 
   .char-correct {
-    @apply text-pop-mint;
+    @apply text-success;
   }
 
   .char-incorrect {
@@ -148,25 +84,22 @@
 
   /* キーボードキー */
   .keyboard-key {
-    @apply w-11 h-11 rounded-lg;
-    @apply bg-white border-2 border-pop-purple/30;
+    @apply w-10 h-10 rounded-md;
+    @apply bg-hunter-dark-light border border-hunter-gold/30;
     @apply flex items-center justify-center;
-    @apply text-sm font-bold text-primary;
-    @apply transition-all duration-200;
-    box-shadow: 0 2px 8px rgba(168, 85, 247, 0.1);
+    @apply text-sm font-mono text-white/80;
+    @apply transition-all duration-100;
   }
 
   .keyboard-key-active {
     @apply keyboard-key;
-    @apply bg-accent text-white border-accent;
+    @apply bg-hunter-gold text-hunter-dark;
     @apply scale-95;
-    box-shadow: 0 0 15px rgba(236, 72, 153, 0.5);
   }
 
   .keyboard-key-highlight {
     @apply keyboard-key;
-    @apply border-accent bg-accent/20;
-    box-shadow: 0 0 15px rgba(236, 72, 153, 0.3);
+    @apply border-hunter-gold bg-hunter-gold/20;
   }
 }
 
@@ -175,23 +108,22 @@
   /* テキストグラデーション */
   .text-gradient {
     @apply bg-clip-text text-transparent;
-    background: linear-gradient(135deg, #ec4899 0%, #a855f7 50%, #38bdf8 100%);
-    background-size: 200% auto;
-    animation: gradient-shift 3s ease infinite;
+    @apply bg-gradient-to-r from-hunter-gold to-hunter-gold-light;
   }
 
-  @keyframes gradient-shift {
-    0%, 100% { background-position: 0% center; }
-    50% { background-position: 100% center; }
+  /* 念オーラエフェクト */
+  .nen-glow {
+    box-shadow: 0 0 15px rgba(212, 175, 55, 0.5);
+    animation: nen-pulse 2s ease-in-out infinite;
   }
 
-  /* グロー効果 */
-  .glow-text {
-    text-shadow: 0 0 20px rgba(236, 72, 153, 0.5), 0 0 40px rgba(168, 85, 247, 0.3);
-  }
-
-  .glow-accent {
-    box-shadow: 0 0 20px rgba(236, 72, 153, 0.4), 0 0 40px rgba(168, 85, 247, 0.2);
+  @keyframes nen-pulse {
+    0%, 100% {
+      box-shadow: 0 0 10px rgba(212, 175, 55, 0.3);
+    }
+    50% {
+      box-shadow: 0 0 25px rgba(212, 175, 55, 0.6);
+    }
   }
 
   /* スクロールバー非表示 */
@@ -207,15 +139,7 @@
   .screen-container {
     @apply min-h-screen w-full;
     @apply flex flex-col items-center justify-center;
-    @apply p-6 md:p-8;
-    background: linear-gradient(135deg, #fef7ff 0%, #fdf4ff 50%, #fae8ff 100%);
-  }
-
-  /* 背景デコレーション */
-  .bg-decoration {
-    position: fixed;
-    pointer-events: none;
-    z-index: 0;
+    @apply p-4;
   }
 }
 
@@ -249,36 +173,4 @@
   0%, 100% { transform: translateX(0); }
   20%, 60% { transform: translateX(-5px); }
   40%, 80% { transform: translateX(5px); }
-}
-
-/* フローティングアニメーション */
-@keyframes float {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-10px); }
-}
-
-.animate-float {
-  animation: float 3s ease-in-out infinite;
-}
-
-/* スパークルアニメーション */
-@keyframes sparkle {
-  0%, 100% { opacity: 0.5; transform: scale(1); }
-  50% { opacity: 1; transform: scale(1.2); }
-}
-
-.animate-sparkle {
-  animation: sparkle 1.5s ease-in-out infinite;
-}
-
-/* レインボーボーダー */
-.rainbow-border {
-  background: linear-gradient(90deg, #ec4899, #a855f7, #38bdf8, #34d399, #fbbf24, #ec4899);
-  background-size: 200% 100%;
-  animation: rainbow 3s linear infinite;
-}
-
-@keyframes rainbow {
-  0% { background-position: 0% 50%; }
-  100% { background-position: 200% 50%; }
 }
