@@ -3,22 +3,22 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="HUNTER×HUNTER タイピングマスター - 念能力を習得するようにタイピングを習得しよう！" />
+    <meta name="description" content="HUNTER×HUNTER タイピングマスター - 念能力を習得するようにタイピングを習得しよう" />
     <meta name="theme-color" content="#1A1A2E" />
     
     <!-- PWA -->
     <link rel="manifest" href="/Mobile-/manifest.webmanifest" />
     <link rel="apple-touch-icon" href="/Mobile-/icons/icon-192x192.png" />
     
-    <!-- Fonts -->
+    <!-- Fonts - Sharp & Cool -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;500;700;800&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Orbitron:wght@400;500;600;700;800;900&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet" />
     
     <!-- Favicon -->
     <link rel="icon" type="image/x-icon" href="/Mobile-/favicon.ico" />
     
-    <title>HUNTER×HUNTER タイピングマスター</title>
+    <title>HUNTER×HUNTER TYPING MASTER</title>
     
     <style>
       /* 初期ローディング時のスタイル */
@@ -26,7 +26,7 @@
         margin: 0;
         padding: 0;
         background: #1A1A2E;
-        font-family: 'M PLUS Rounded 1c', system-ui, sans-serif;
+        font-family: 'Rajdhani', system-ui, sans-serif;
       }
       
       #root {
@@ -41,6 +41,9 @@
         font-size: 1.2rem;
         text-align: center;
         font-weight: 600;
+        font-family: 'Orbitron', monospace;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
       }
       
       .initial-loader::after {
@@ -58,7 +61,7 @@
   </head>
   <body>
     <div id="root">
-      <div class="initial-loader">読み込み中</div>
+      <div class="initial-loader">LOADING</div>
     </div>
     <script type="module" src="/src/main.tsx"></script>
   </body>

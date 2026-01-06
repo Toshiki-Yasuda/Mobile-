@@ -1,6 +1,6 @@
 /**
  * タイピングカードコンポーネント
- * メインのタイピング表示エリア
+ * クールデザイン
  */
 
 import React from 'react';
@@ -32,10 +32,10 @@ export const TypingCard: React.FC<TypingCardProps> = ({
     const remaining = displayRomaji.slice(confirmed.length + current.length);
 
     return (
-      <div className="text-2xl lg:text-3xl font-mono tracking-wider">
+      <div className="font-mono text-2xl lg:text-3xl tracking-wider">
         <span className="text-success">{confirmed}</span>
         <span className="text-hunter-gold font-bold">{current}</span>
-        <span className="text-white/40">{remaining}</span>
+        <span className="text-white/30">{remaining}</span>
       </div>
     );
   };
@@ -48,8 +48,8 @@ export const TypingCard: React.FC<TypingCardProps> = ({
     >
       <div className="relative">
         {/* カード背景 */}
-        <div className="absolute inset-0 bg-gradient-to-br from-hunter-gold/5 to-transparent rounded-2xl lg:rounded-3xl" />
-        <div className="absolute inset-0 border-2 border-hunter-gold/20 rounded-2xl lg:rounded-3xl" />
+        <div className="absolute inset-0 bg-gradient-to-br from-hunter-gold/5 to-transparent rounded-lg" />
+        <div className="absolute inset-0 border border-hunter-gold/20 rounded-lg" />
 
         {/* コンテンツ */}
         <div className="relative p-8 lg:p-12 xl:p-16 text-center">
@@ -60,9 +60,9 @@ export const TypingCard: React.FC<TypingCardProps> = ({
                 initial={{ opacity: 0, scale: 0.5, y: -20 }}
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.5 }}
-                className="absolute top-4 left-1/2 -translate-x-1/2 text-hunter-gold text-lg font-bold"
+                className="absolute top-4 left-1/2 -translate-x-1/2 font-title text-hunter-gold text-lg font-bold tracking-wider"
               >
-                🔥 {combo} COMBO!
+                {combo} COMBO
               </motion.div>
             )}
           </AnimatePresence>
@@ -77,7 +77,7 @@ export const TypingCard: React.FC<TypingCardProps> = ({
             <div className="text-5xl lg:text-6xl xl:text-7xl font-bold text-white mb-4 lg:mb-6">
               {currentWord.display}
             </div>
-            <div className="text-2xl lg:text-3xl text-hunter-gold/80 mb-6 lg:mb-8">
+            <div className="text-2xl lg:text-3xl text-hunter-gold/70 mb-6 lg:mb-8">
               {currentWord.hiragana}
             </div>
           </motion.div>
@@ -91,4 +91,3 @@ export const TypingCard: React.FC<TypingCardProps> = ({
 };
 
 export default TypingCard;
-

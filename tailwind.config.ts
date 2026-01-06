@@ -34,7 +34,8 @@ export default {
         warning: '#F59E0B',
       },
       fontFamily: {
-        game: ['"M PLUS Rounded 1c"', 'sans-serif'],
+        sans: ['Rajdhani', 'system-ui', 'sans-serif'],
+        title: ['Orbitron', 'monospace'],
         mono: ['"Fira Code"', 'monospace'],
       },
       animation: {

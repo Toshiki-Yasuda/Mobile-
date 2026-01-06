@@ -1,6 +1,6 @@
 /**
  * レベル選択画面コンポーネント
- * ダークテーマ
+ * クールデザイン
  */
 
 import React from 'react';
@@ -10,50 +10,13 @@ import { useProgressStore } from '@/stores/progressStore';
 import { useButtonClick, useMenuSelect } from '@/utils/soundUtils';
 import { BackgroundEffect } from '@/components/common/BackgroundEffect';
 
-// チャプターデータ
 const CHAPTERS = [
-  {
-    id: 1,
-    name: '念の基礎',
-    japaneseName: 'ホームポジション編',
-    description: 'ハンター試験・一次試験',
-    stages: 6,
-  },
-  {
-    id: 2,
-    name: '纏（テン）',
-    japaneseName: '基本入力編',
-    description: 'ハンター試験・最終試験',
-    stages: 6,
-  },
-  {
-    id: 3,
-    name: '絶（ゼツ）',
-    japaneseName: '天空闘技場編',
-    description: 'キーボードを見ない練習',
-    stages: 6,
-  },
-  {
-    id: 4,
-    name: '練（レン）',
-    japaneseName: 'ヨークシン編',
-    description: 'スピードと正確性の向上',
-    stages: 6,
-  },
-  {
-    id: 5,
-    name: '発（ハツ）',
-    japaneseName: 'グリードアイランド編',
-    description: '自分のスタイル確立',
-    stages: 6,
-  },
-  {
-    id: 6,
-    name: '極意',
-    japaneseName: 'キメラアント編',
-    description: 'マスターレベル',
-    stages: 6,
-  },
+  { id: 1, name: 'BASICS', subtitle: 'Home Position', description: 'Hunter Exam - Phase 1', stages: 6 },
+  { id: 2, name: 'TEN', subtitle: '纏', description: 'Hunter Exam - Final', stages: 6 },
+  { id: 3, name: 'ZETSU', subtitle: '絶', description: 'Heavens Arena', stages: 6 },
+  { id: 4, name: 'REN', subtitle: '練', description: 'Yorknew City', stages: 6 },
+  { id: 5, name: 'HATSU', subtitle: '発', description: 'Greed Island', stages: 6 },
+  { id: 6, name: 'MASTER', subtitle: '極意', description: 'Chimera Ant', stages: 6 },
 ];
 
 export const LevelSelectScreen: React.FC = () => {
@@ -62,7 +25,6 @@ export const LevelSelectScreen: React.FC = () => {
   const { handleClick } = useButtonClick();
   const { handleSelect } = useMenuSelect();
 
-  // チャプターの進捗を計算
   const getChapterProgress = (chapterId: number) => {
     const cleared = Object.keys(clearedStages).filter((id) =>
       id.startsWith(`${chapterId}-`)
@@ -85,14 +47,14 @@ export const LevelSelectScreen: React.FC = () => {
         <div className="max-w-6xl mx-auto flex items-center justify-between">
           <button
             onClick={handleClick(() => navigateTo('title'))}
-            className="text-hunter-gold/60 hover:text-hunter-gold transition"
+            className="font-title text-hunter-gold/60 hover:text-hunter-gold transition tracking-wider text-sm uppercase"
           >
-            ← 戻る
+            ← BACK
           </button>
-          <h1 className="text-xl lg:text-2xl font-bold text-white">
-            修行の章を選択
+          <h1 className="font-title text-xl lg:text-2xl font-bold text-white tracking-wider">
+            SELECT CHAPTER
           </h1>
-          <div className="w-16" /> {/* spacer */}
+          <div className="w-16" />
         </div>
       </header>
 
@@ -107,64 +69,64 @@ export const LevelSelectScreen: React.FC = () => {
             return (
               <motion.button
                 key={chapter.id}
-                initial={{ opacity: 0, y: 30, scale: 0.95 }}
-                animate={{ opacity: 1, y: 0, scale: 1 }}
-                transition={{ delay: index * 0.1, duration: 0.4 }}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.08 }}
                 onClick={unlocked ? handleSelect(() => handleChapterSelect(chapter.id)) : undefined}
                 disabled={!unlocked}
                 whileHover={unlocked ? { scale: 1.02, y: -2 } : {}}
                 whileTap={unlocked ? { scale: 0.98 } : {}}
-                className={`relative text-left p-6 rounded-xl transition-all ${
+                className={`relative text-left p-5 rounded-lg transition-all ${
                   unlocked
-                    ? 'bg-hunter-dark-light/50 border border-hunter-gold/20 hover:border-hunter-gold/40 cursor-pointer'
-                    : 'bg-hunter-dark-light/20 border border-white/5 opacity-50 cursor-not-allowed'
+                    ? 'bg-hunter-dark-light/40 border border-hunter-gold/20 hover:border-hunter-gold/50 cursor-pointer'
+                    : 'bg-hunter-dark-light/10 border border-white/5 opacity-40 cursor-not-allowed'
                 }`}
               >
-                {/* 完了バッジ */}
+                {/* 完了マーク */}
                 {isCompleted && (
-                  <div className="absolute top-4 right-4">
-                    <span className="text-2xl">⭐</span>
+                  <div className="absolute top-3 right-3 w-6 h-6 bg-hunter-gold/20 rounded flex items-center justify-center">
+                    <span className="text-hunter-gold text-xs">✓</span>
                   </div>
                 )}
 
-                {/* ロックアイコン */}
+                {/* ロック */}
                 {!unlocked && (
-                  <div className="absolute top-4 right-4">
-                    <span className="text-2xl">🔒</span>
+                  <div className="absolute top-3 right-3 text-white/30 text-lg">
+                    ⬡
                   </div>
                 )}
 
                 {/* チャプター番号 */}
-                <div className="text-hunter-gold/60 text-xs uppercase tracking-widest mb-2">
-                  第{chapter.id}章
+                <div className="font-title text-hunter-gold/50 text-xs tracking-[0.3em] mb-2">
+                  CHAPTER {String(chapter.id).padStart(2, '0')}
                 </div>
 
                 {/* タイトル */}
-                <h3 className="text-xl font-bold text-white mb-1">
+                <h3 className="font-title text-2xl font-bold text-white mb-1 tracking-wider">
                   {chapter.name}
                 </h3>
-                <p className="text-hunter-gold/60 text-sm mb-3">
-                  {chapter.japaneseName}
+                <p className="text-hunter-gold/60 text-sm mb-2 font-title">
+                  {chapter.subtitle}
                 </p>
 
                 {/* 説明 */}
-                <p className="text-white/50 text-sm mb-4">{chapter.description}</p>
+                <p className="text-white/40 text-sm mb-4">{chapter.description}</p>
 
                 {/* 進捗バー */}
                 {unlocked && (
                   <div>
-                    <div className="flex justify-between text-xs text-hunter-gold/60 mb-2">
-                      <span>進捗</span>
-                      <span>
+                    <div className="flex justify-between text-xs mb-1">
+                      <span className="text-white/40 font-title tracking-wider">PROGRESS</span>
+                      <span className="text-hunter-gold font-title">
                         {progress.cleared}/{progress.total}
                       </span>
                     </div>
-                    <div className="h-2 bg-hunter-dark rounded-full overflow-hidden">
+                    <div className="h-1 bg-hunter-dark rounded-full overflow-hidden">
                       <motion.div
                         className="h-full bg-gradient-to-r from-hunter-green to-hunter-gold"
                         initial={{ width: 0 }}
                         animate={{ width: `${(progress.cleared / progress.total) * 100}%` }}
-                        transition={{ duration: 0.5, delay: index * 0.1 + 0.3 }}
+                        transition={{ duration: 0.5, delay: index * 0.08 + 0.2 }}
                       />
                     </div>
                   </div>

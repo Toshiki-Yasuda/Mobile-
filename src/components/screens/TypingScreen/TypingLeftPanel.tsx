@@ -1,5 +1,6 @@
 /**
  * タイピング画面 - 左サイドパネル（進捗情報）
+ * クールデザイン
  */
 
 import React from 'react';
@@ -28,29 +29,28 @@ export const TypingLeftPanel: React.FC<TypingLeftPanelProps> = ({
 }) => {
   return (
     <SidePanel position="left">
-      <SidePanelHeader onBack={onBack} backLabel="やめる" />
+      <SidePanelHeader onBack={onBack} backLabel="EXIT" />
 
       {/* 章情報 */}
       <SidePanelSection borderBottom>
-        <div className="text-hunter-gold/50 text-xs uppercase tracking-widest mb-2">
-          Chapter
+        <div className="font-title text-hunter-gold/50 text-xs tracking-[0.3em] mb-2">
+          CHAPTER
         </div>
-        <h2 className="text-white text-xl font-bold mb-1">{chapterName}</h2>
-        <p className="text-hunter-gold/60 text-sm">{stageName}</p>
+        <h2 className="font-title text-white text-xl font-bold tracking-wider mb-1">{chapterName}</h2>
+        <p className="text-hunter-gold/60 text-sm font-title">{stageName}</p>
       </SidePanelSection>
 
       {/* 進捗 */}
-      <SidePanelSection title="Progress" className="flex-1">
-        {/* 問題数 */}
+      <SidePanelSection title="PROGRESS" className="flex-1">
         <div className="mb-6">
           <div className="flex justify-between items-end mb-2">
-            <span className="text-white/60 text-sm">問題</span>
-            <span className="text-white text-2xl font-bold">
+            <span className="text-white/50 text-sm font-title tracking-wider">WORD</span>
+            <span className="font-title text-white text-2xl font-bold">
               {currentIndex + 1}
               <span className="text-white/40 text-lg">/{totalWords}</span>
             </span>
           </div>
-          <div className="h-2 bg-hunter-dark rounded-full overflow-hidden">
+          <div className="h-1.5 bg-hunter-dark rounded-full overflow-hidden">
             <motion.div
               className="h-full bg-gradient-to-r from-hunter-green to-hunter-gold"
               initial={{ width: 0 }}
@@ -69,36 +69,32 @@ export const TypingLeftPanel: React.FC<TypingLeftPanelProps> = ({
             return (
               <div
                 key={word.id}
-                className={`flex items-center gap-3 p-2 rounded-lg transition-all ${
+                className={`flex items-center gap-3 p-2 rounded transition-all ${
                   isCurrent
-                    ? 'bg-hunter-gold/20 border border-hunter-gold/40'
-                    : isCompleted
-                      ? 'opacity-50'
-                      : 'opacity-30'
+                    ? 'bg-hunter-gold/10 border border-hunter-gold/30'
+                    : isCompleted ? 'opacity-40' : 'opacity-20'
                 }`}
               >
                 <div
-                  className={`w-6 h-6 rounded-full flex items-center justify-center text-xs ${
+                  className={`w-6 h-6 rounded flex items-center justify-center text-xs font-title ${
                     isCompleted
-                      ? 'bg-success text-white'
+                      ? 'bg-success/20 text-success'
                       : isCurrent
-                        ? 'bg-hunter-gold text-hunter-dark'
-                        : 'bg-white/10 text-white/40'
+                        ? 'bg-hunter-gold/20 text-hunter-gold'
+                        : 'bg-white/5 text-white/30'
                   }`}
                 >
-                  {isCompleted ? '✓' : index + 1}
+                  {isCompleted ? '✓' : String(index + 1).padStart(2, '0')}
                 </div>
-                <span
-                  className={`text-sm ${isCurrent ? 'text-white font-bold' : 'text-white/60'}`}
-                >
+                <span className={`text-sm ${isCurrent ? 'text-white font-bold' : 'text-white/50'}`}>
                   {word.display}
                 </span>
               </div>
             );
           })}
           {words.length > 8 && (
-            <div className="text-center text-white/30 text-sm py-2">
-              ...他 {words.length - 8} 問
+            <div className="text-center text-white/20 text-sm py-2 font-title">
+              +{words.length - 8} MORE
             </div>
           )}
         </div>
@@ -106,13 +102,8 @@ export const TypingLeftPanel: React.FC<TypingLeftPanelProps> = ({
 
       {/* 操作説明 */}
       <SidePanelSection borderTop>
-        <div className="text-white/30 text-xs space-y-1">
-          <p>
-            <kbd className="px-1.5 py-0.5 bg-white/10 rounded text-[10px]">
-              ESC
-            </kbd>{' '}
-            中断
-          </p>
+        <div className="text-white/20 text-xs font-title tracking-wider">
+          <kbd className="px-1.5 py-0.5 bg-white/5 rounded text-[10px]">ESC</kbd> EXIT
         </div>
       </SidePanelSection>
     </SidePanel>
@@ -120,4 +111,3 @@ export const TypingLeftPanel: React.FC<TypingLeftPanelProps> = ({
 };
 
 export default TypingLeftPanel;
-

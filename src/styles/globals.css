@@ -5,7 +5,7 @@
 /* ===== Base Styles ===== */
 @layer base {
   html {
-    font-family: 'M PLUS Rounded 1c', sans-serif;
+    font-family: 'Rajdhani', system-ui, sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
@@ -33,11 +33,14 @@
     @apply px-6 py-3 rounded-lg font-bold transition-all duration-200;
     @apply focus:outline-none focus:ring-2 focus:ring-hunter-gold focus:ring-offset-2 focus:ring-offset-hunter-dark;
     @apply disabled:opacity-50 disabled:cursor-not-allowed;
+    @apply uppercase tracking-wider;
+    font-family: 'Rajdhani', system-ui, sans-serif;
   }
 
   .btn-primary {
     @apply btn bg-hunter-green text-white;
     @apply hover:bg-hunter-green-light active:bg-hunter-green-dark;
+    @apply border border-hunter-green-light/50;
   }
 
   .btn-secondary {
@@ -46,20 +49,20 @@
   }
 
   .btn-ghost {
-    @apply btn bg-transparent text-hunter-gold border-2 border-hunter-gold;
-    @apply hover:bg-hunter-gold/10;
+    @apply btn bg-transparent text-hunter-gold border-2 border-hunter-gold/50;
+    @apply hover:bg-hunter-gold/10 hover:border-hunter-gold;
   }
 
   /* カードスタイル */
   .card {
-    @apply bg-hunter-dark-light rounded-xl p-6;
+    @apply bg-hunter-dark-light rounded-lg p-6;
     @apply border border-hunter-gold/20;
     @apply shadow-lg;
   }
 
   /* タイピング表示エリア */
   .typing-area {
-    @apply bg-hunter-dark rounded-xl p-8;
+    @apply bg-hunter-dark rounded-lg p-8;
     @apply border-2 border-hunter-gold/30;
     box-shadow: 0 0 15px rgba(212, 175, 55, 0.5);
   }
@@ -84,11 +87,12 @@
 
   /* キーボードキー */
   .keyboard-key {
-    @apply w-10 h-10 rounded-md;
+    @apply w-10 h-10 rounded;
     @apply bg-hunter-dark-light border border-hunter-gold/30;
     @apply flex items-center justify-center;
     @apply text-sm font-mono text-white/80;
     @apply transition-all duration-100;
+    font-family: 'Fira Code', monospace;
   }
 
   .keyboard-key-active {
@@ -100,6 +104,15 @@
   .keyboard-key-highlight {
     @apply keyboard-key;
     @apply border-hunter-gold bg-hunter-gold/20;
+  }
+
+  /* タイトルフォント */
+  .font-title {
+    font-family: 'Orbitron', monospace;
+  }
+
+  .font-display {
+    font-family: 'Rajdhani', system-ui, sans-serif;
   }
 }
 
@@ -174,4 +187,22 @@
   0%, 100% { transform: translateX(0); }
   20%, 60% { transform: translateX(-5px); }
   40%, 80% { transform: translateX(5px); }
+}
+
+/* スキャンライン効果 */
+.scanline {
+  position: relative;
+}
+.scanline::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0, 0, 0, 0.1) 2px,
+    rgba(0, 0, 0, 0.1) 4px
+  );
+  pointer-events: none;
 }
