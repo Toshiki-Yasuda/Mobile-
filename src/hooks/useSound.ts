@@ -47,16 +47,23 @@ export function useSound() {
 
     try {
       const ctx = await getAudioContext();
+      
+      // AudioContextの状態を確認してresume
+      if (ctx.state === 'suspended') {
+        await ctx.resume();
+      }
+
       const oscillator = ctx.createOscillator();
       const gainNode = ctx.createGain();
 
       oscillator.type = type;
       oscillator.frequency.setValueAtTime(frequency, ctx.currentTime);
 
-      // 音量の設定 (0-100 を 0-1 に変換)
+      // 音量の設定 (0-100 を 0-1 に変換、より聞こえやすい音量に)
       const volume = soundVolume / 100;
-      gainNode.gain.setValueAtTime(volume * 0.1, ctx.currentTime);
-      gainNode.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + duration);
+      const baseVolume = volume * 0.5; // 0.5に設定して音量を上げる
+      gainNode.gain.setValueAtTime(baseVolume, ctx.currentTime);
+      gainNode.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + duration);
 
       oscillator.connect(gainNode);
       gainNode.connect(ctx.destination);

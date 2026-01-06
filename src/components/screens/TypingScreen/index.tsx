@@ -2,7 +2,7 @@
  * タイピング画面コンポーネント
  */
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useGameStore } from '@/stores/gameStore';
 import { useSettingsStore } from '@/stores/settingsStore';
@@ -13,6 +13,7 @@ import { getWordsForStage } from '@/data/words';
 export const TypingScreen: React.FC = () => {
   const { session, startSession, navigateTo, selectedChapter, selectedStage } = useGameStore();
   const { keyboardVisible, romajiGuideLevel } = useSettingsStore();
+  const containerRef = useRef<HTMLDivElement>(null);
   const {
     currentWord,
     typingState,
@@ -23,6 +24,38 @@ export const TypingScreen: React.FC = () => {
     validKeys,
     displayRomaji,
   } = useTyping();
+
+  // AudioContextを初期化するためのクリックハンドラー
+  useEffect(() => {
+    const handleClick = async () => {
+      // AudioContextを初期化するために、一度だけ音を鳴らす
+      try {
+        const AudioContext = window.AudioContext || (window as any).webkitAudioContext;
+        const ctx = new AudioContext();
+        if (ctx.state === 'suspended') {
+          await ctx.resume();
+        }
+        // テスト音を鳴らしてAudioContextを有効化
+        const oscillator = ctx.createOscillator();
+        const gainNode = ctx.createGain();
+        oscillator.connect(gainNode);
+        gainNode.connect(ctx.destination);
+        oscillator.frequency.setValueAtTime(440, ctx.currentTime);
+        gainNode.gain.setValueAtTime(0.01, ctx.currentTime);
+        oscillator.start();
+        oscillator.stop(ctx.currentTime + 0.01);
+        ctx.close();
+      } catch (error) {
+        console.warn('AudioContext initialization failed:', error);
+      }
+    };
+
+    const container = containerRef.current;
+    if (container) {
+      container.addEventListener('click', handleClick, { once: true });
+      return () => container.removeEventListener('click', handleClick);
+    }
+  }, []);
 
   // セッション開始
   useEffect(() => {
@@ -66,7 +99,7 @@ export const TypingScreen: React.FC = () => {
   }
 
   return (
-    <div className="screen-container bg-hunter-dark">
+    <div ref={containerRef} className="screen-container bg-hunter-dark">
       {/* ヘッダー */}
       <div className="w-full max-w-4xl flex justify-between items-center mb-8">
         <button
