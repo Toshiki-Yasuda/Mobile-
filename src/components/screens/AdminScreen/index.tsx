@@ -3,10 +3,11 @@
  * 各章の解放状態を手動で管理できる
  */
 
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { useGameStore } from '@/stores/gameStore';
 import { useProgressStore } from '@/stores/progressStore';
+import { useSettingsStore } from '@/stores/settingsStore';
 import { useButtonClick } from '@/utils/soundUtils';
 
 // チャプターデータ
@@ -27,7 +28,27 @@ export const AdminScreen: React.FC = () => {
     clearedStages,
     resetProgress 
   } = useProgressStore();
+  const { soundVolume, soundEnabled } = useSettingsStore();
   const { handleClick } = useButtonClick();
+  const adminBgmRef = useRef<HTMLAudioElement | null>(null);
+
+  // 管理者モード専用BGMを再生
+  useEffect(() => {
+    const audio = new Audio('/Mobile-/march.mp3');
+    audio.loop = true;
+    audio.volume = soundEnabled ? (soundVolume / 100) * 0.5 : 0;
+    adminBgmRef.current = audio;
+
+    audio.play().catch(err => {
+      console.warn('管理者モードBGM再生エラー:', err);
+    });
+
+    return () => {
+      audio.pause();
+      audio.currentTime = 0;
+      adminBgmRef.current = null;
+    };
+  }, [soundEnabled, soundVolume]);
 
   // 章をロック/アンロック
   const toggleChapter = (chapterId: number) => {
