@@ -127,7 +127,7 @@ export const AdminScreen: React.FC = () => {
                     : 'bg-green-100 text-green-600 hover:bg-green-200'
                 }`}
               >
-                {chapter.id === 1 ? '常に解放' : isUnlocked ? 'ロック' : '解放'}
+                {chapter.id === 1 ? '🔓 常に解放' : isUnlocked ? '🔒 ロックする' : '🔓 解放する'}
               </button>
             </motion.div>
           );
