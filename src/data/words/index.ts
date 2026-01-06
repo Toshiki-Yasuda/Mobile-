@@ -4,12 +4,20 @@
 
 import { chapter1Stages } from './chapter1';
 import { chapter2Stages } from './chapter2';
+import { chapter3Stages } from './chapter3';
+import { chapter4Stages } from './chapter4';
+import { chapter5Stages } from './chapter5';
+import { chapter6Stages } from './chapter6';
 import type { Word } from '@/types/game';
 
 // 全チャプターのステージデータ
 export const allStages: Record<string, Word[]> = {
   ...chapter1Stages,
   ...chapter2Stages,
+  ...chapter3Stages,
+  ...chapter4Stages,
+  ...chapter5Stages,
+  ...chapter6Stages,
 };
 
 // ステージIDから単語を取得
@@ -39,4 +47,4 @@ export function getRandomWords(count: number, maxDifficulty: number = 5): Word[]
   return shuffled.slice(0, count);
 }
 
-export { chapter1Stages, chapter2Stages };
+export { chapter1Stages, chapter2Stages, chapter3Stages, chapter4Stages, chapter5Stages, chapter6Stages };
