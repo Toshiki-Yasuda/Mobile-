@@ -9,7 +9,7 @@ import { useProgressStore } from '@/stores/progressStore';
 import type { Rank } from '@/types/game';
 
 export const ResultScreen: React.FC = () => {
-  const { session, navigateTo, resetSession } = useGameStore();
+  const { session, navigateTo, resetSession, selectedChapter, selectedStage } = useGameStore();
   const { saveStageResult, updateStatistics, updateStreak } = useProgressStore();
 
   // 結果を計算
@@ -45,7 +45,9 @@ export const ResultScreen: React.FC = () => {
 
   // 結果を保存
   React.useEffect(() => {
-    if (result) {
+    if (result && selectedChapter && selectedStage) {
+      const stageId = `${selectedChapter}-${selectedStage}`;
+      
       updateStreak();
       updateStatistics({
         totalPlays: 1, // インクリメントは store 側で行う
@@ -55,8 +57,20 @@ export const ResultScreen: React.FC = () => {
         totalPlayTime: result.totalTime * 1000,
         bestWPM: result.wpm,
       });
+
+      // ステージ結果を保存
+      saveStageResult(stageId, {
+        stageId,
+        score: result.score,
+        accuracy: result.accuracy,
+        wpm: result.wpm,
+        totalTime: result.totalTime * 1000,
+        maxCombo: result.maxCombo,
+        rank: result.rank,
+        clearedAt: new Date().toISOString(),
+      });
     }
-  }, [result, updateStreak, updateStatistics]);
+  }, [result, updateStreak, updateStatistics, saveStageResult, selectedChapter, selectedStage]);
 
   const handleRetry = () => {
     resetSession();
@@ -65,7 +79,7 @@ export const ResultScreen: React.FC = () => {
 
   const handleBackToSelect = () => {
     resetSession();
-    navigateTo('levelSelect');
+    navigateTo('stageSelect');
   };
 
   if (!result) {

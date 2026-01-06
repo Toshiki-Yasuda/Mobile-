@@ -139,7 +139,7 @@ export function useTyping() {
       // 特殊キーを無視
       if (e.metaKey || e.ctrlKey || e.altKey) return;
       if (e.key === 'Escape') {
-        navigateTo('levelSelect');
+        navigateTo('stageSelect');
         return;
       }
 

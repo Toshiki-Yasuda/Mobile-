@@ -1,0 +1,206 @@
+/**
+ * ステージ選択画面コンポーネント
+ */
+
+import React from 'react';
+import { motion } from 'framer-motion';
+import { useGameStore } from '@/stores/gameStore';
+import { useProgressStore } from '@/stores/progressStore';
+import { getWordsForStage } from '@/data/words';
+
+// チャプター情報
+const CHAPTERS = [
+  {
+    id: 1,
+    name: '念の基礎',
+    japaneseName: 'ホームポジション編',
+    stages: [
+      { number: 1, name: '基本の母音', description: 'あいうえおの基礎' },
+      { number: 2, name: 'ホームポジション基礎', description: '基本の指使い' },
+      { number: 3, name: 'キャラクター名（短め）', description: 'ゴン、ジンなど' },
+      { number: 4, name: '主要キャラクター', description: 'キルア、クラピカなど' },
+      { number: 5, name: 'ハンター試験用語', description: '試験関連の単語' },
+      { number: 6, name: 'ボスステージ', description: '複合的な単語' },
+    ],
+  },
+  {
+    id: 2,
+    name: '纏（テン）',
+    japaneseName: '基本入力編',
+    stages: [
+      { number: 1, name: 'ステージ2-1', description: '基本入力編のステージ1' },
+      { number: 2, name: 'ステージ2-2', description: '基本入力編のステージ2' },
+      { number: 3, name: 'ステージ2-3', description: '基本入力編のステージ3' },
+      { number: 4, name: 'ステージ2-4', description: '基本入力編のステージ4' },
+      { number: 5, name: 'ステージ2-5', description: '基本入力編のステージ5' },
+      { number: 6, name: 'ステージ2-6', description: '基本入力編のステージ6' },
+    ],
+  },
+  {
+    id: 3,
+    name: '絶（ゼツ）',
+    japaneseName: '天空闘技場編',
+    stages: [
+      { number: 1, name: 'ステージ3-1', description: '天空闘技場編のステージ1' },
+      { number: 2, name: 'ステージ3-2', description: '天空闘技場編のステージ2' },
+      { number: 3, name: 'ステージ3-3', description: '天空闘技場編のステージ3' },
+      { number: 4, name: 'ステージ3-4', description: '天空闘技場編のステージ4' },
+      { number: 5, name: 'ステージ3-5', description: '天空闘技場編のステージ5' },
+      { number: 6, name: 'ステージ3-6', description: '天空闘技場編のステージ6' },
+    ],
+  },
+  {
+    id: 4,
+    name: '練（レン）',
+    japaneseName: 'ヨークシン編',
+    stages: [
+      { number: 1, name: 'ステージ4-1', description: 'ヨークシン編のステージ1' },
+      { number: 2, name: 'ステージ4-2', description: 'ヨークシン編のステージ2' },
+      { number: 3, name: 'ステージ4-3', description: 'ヨークシン編のステージ3' },
+      { number: 4, name: 'ステージ4-4', description: 'ヨークシン編のステージ4' },
+      { number: 5, name: 'ステージ4-5', description: 'ヨークシン編のステージ5' },
+      { number: 6, name: 'ステージ4-6', description: 'ヨークシン編のステージ6' },
+    ],
+  },
+  {
+    id: 5,
+    name: '発（ハツ）',
+    japaneseName: 'グリードアイランド編',
+    stages: [
+      { number: 1, name: 'ステージ5-1', description: 'グリードアイランド編のステージ1' },
+      { number: 2, name: 'ステージ5-2', description: 'グリードアイランド編のステージ2' },
+      { number: 3, name: 'ステージ5-3', description: 'グリードアイランド編のステージ3' },
+      { number: 4, name: 'ステージ5-4', description: 'グリードアイランド編のステージ4' },
+      { number: 5, name: 'ステージ5-5', description: 'グリードアイランド編のステージ5' },
+      { number: 6, name: 'ステージ5-6', description: 'グリードアイランド編のステージ6' },
+    ],
+  },
+  {
+    id: 6,
+    name: '極意',
+    japaneseName: 'キメラアント編',
+    stages: [
+      { number: 1, name: 'ステージ6-1', description: 'キメラアント編のステージ1' },
+      { number: 2, name: 'ステージ6-2', description: 'キメラアント編のステージ2' },
+      { number: 3, name: 'ステージ6-3', description: 'キメラアント編のステージ3' },
+      { number: 4, name: 'ステージ6-4', description: 'キメラアント編のステージ4' },
+      { number: 5, name: 'ステージ6-5', description: 'キメラアント編のステージ5' },
+      { number: 6, name: 'ステージ6-6', description: 'キメラアント編のステージ6' },
+    ],
+  },
+];
+
+export const StageSelectScreen: React.FC = () => {
+  const { selectedChapter, selectStage, navigateTo, startSession } = useGameStore();
+  const { isStageCleared, getStageResult } = useProgressStore();
+
+  const chapter = CHAPTERS.find((c) => c.id === selectedChapter);
+
+  if (!chapter) {
+    return (
+      <div className="screen-container bg-hunter-dark">
+        <div className="text-error">チャプターが見つかりません</div>
+        <button
+          onClick={() => navigateTo('levelSelect')}
+          className="text-hunter-gold hover:text-hunter-gold-light transition mt-4"
+        >
+          ← チャプター選択に戻る
+        </button>
+      </div>
+    );
+  }
+
+  const handleStageSelect = (stageNumber: number) => {
+    const stageId = `${selectedChapter}-${stageNumber}`;
+    const words = getWordsForStage(stageId);
+    
+    if (words.length === 0) {
+      console.warn(`ステージ ${stageId} の単語データが見つかりません`);
+      return;
+    }
+
+    selectStage(selectedChapter, stageNumber);
+    startSession(words);
+    navigateTo('typing');
+  };
+
+  // ステージの解放状態を判定（最初のステージは常に解放、それ以降は前のステージをクリアしていれば解放）
+  const isStageUnlocked = (stageNumber: number) => {
+    if (stageNumber === 1) return true;
+    const previousStageId = `${selectedChapter}-${stageNumber - 1}`;
+    return isStageCleared(previousStageId);
+  };
+
+  return (
+    <div className="screen-container bg-hunter-dark">
+      {/* ヘッダー */}
+      <div className="w-full max-w-4xl mb-8">
+        <button
+          onClick={() => navigateTo('levelSelect')}
+          className="text-hunter-gold hover:text-hunter-gold-light transition"
+        >
+          ← チャプター選択に戻る
+        </button>
+        <h1 className="text-3xl font-bold text-white mt-4">
+          第{chapter.id}章 {chapter.name}
+        </h1>
+        <p className="text-hunter-gold/60 text-sm mt-2">{chapter.japaneseName}</p>
+      </div>
+
+      {/* ステージリスト */}
+      <div className="w-full max-w-4xl grid grid-cols-1 md:grid-cols-2 gap-4">
+        {chapter.stages.map((stage, index) => {
+          const stageId = `${selectedChapter}-${stage.number}`;
+          const unlocked = isStageUnlocked(stage.number);
+          const cleared = isStageCleared(stageId);
+          const result = getStageResult(stageId);
+
+          return (
+            <motion.button
+              key={stage.number}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: index * 0.1 }}
+              onClick={() => unlocked && handleStageSelect(stage.number)}
+              disabled={!unlocked}
+              className={`card text-left transition-all ${
+                unlocked
+                  ? 'hover:border-hunter-gold/50 cursor-pointer hover:shadow-nen'
+                  : 'opacity-50 cursor-not-allowed grayscale'
+              }`}
+            >
+              {/* ステージ番号 */}
+              <div className="flex items-start justify-between mb-2">
+                <span className="text-hunter-gold text-sm font-bold">
+                  ステージ {stage.number}
+                </span>
+                {!unlocked && (
+                  <span className="text-white/40 text-xl">🔒</span>
+                )}
+                {cleared && (
+                  <span className="text-hunter-gold text-xl">⭐</span>
+                )}
+              </div>
+
+              {/* タイトル */}
+              <h3 className="text-xl font-bold text-white mb-1">
+                {stage.name}
+              </h3>
+              <p className="text-white/60 text-sm mb-4">{stage.description}</p>
+
+              {/* クリア情報 */}
+              {cleared && result && (
+                <div className="text-xs text-hunter-gold/60">
+                  スコア: {result.score} | 精度: {result.accuracy.toFixed(1)}%
+                </div>
+              )}
+            </motion.button>
+          );
+        })}
+      </div>
+    </div>
+  );
+};
+
+export default StageSelectScreen;
+

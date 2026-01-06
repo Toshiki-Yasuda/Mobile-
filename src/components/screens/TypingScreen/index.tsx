@@ -8,23 +8,10 @@ import { useGameStore } from '@/stores/gameStore';
 import { useSettingsStore } from '@/stores/settingsStore';
 import { useTyping } from '@/hooks/useTyping';
 import { APP_CONFIG } from '@/constants/config';
-
-// 仮の単語データ（後で正式なデータに置き換え）
-const SAMPLE_WORDS = [
-  { id: '1', display: 'ゴン', hiragana: 'ごん', category: 'character' as const, difficulty: 1 },
-  { id: '2', display: 'キルア', hiragana: 'きるあ', category: 'character' as const, difficulty: 1 },
-  { id: '3', display: 'クラピカ', hiragana: 'くらぴか', category: 'character' as const, difficulty: 1 },
-  { id: '4', display: 'レオリオ', hiragana: 'れおりお', category: 'character' as const, difficulty: 1 },
-  { id: '5', display: 'ヒソカ', hiragana: 'ひそか', category: 'character' as const, difficulty: 1 },
-  { id: '6', display: 'ハンター', hiragana: 'はんたー', category: 'term' as const, difficulty: 1 },
-  { id: '7', display: 'ネン', hiragana: 'ねん', category: 'term' as const, difficulty: 1 },
-  { id: '8', display: 'オーラ', hiragana: 'おーら', category: 'term' as const, difficulty: 1 },
-  { id: '9', display: 'ジン', hiragana: 'じん', category: 'character' as const, difficulty: 1 },
-  { id: '10', display: 'くじら島', hiragana: 'くじらじま', category: 'location' as const, difficulty: 2 },
-];
+import { getWordsForStage } from '@/data/words';
 
 export const TypingScreen: React.FC = () => {
-  const { session, startSession, navigateTo } = useGameStore();
+  const { session, startSession, navigateTo, selectedChapter, selectedStage } = useGameStore();
   const { keyboardVisible, romajiGuideLevel } = useSettingsStore();
   const {
     currentWord,
@@ -40,9 +27,18 @@ export const TypingScreen: React.FC = () => {
   // セッション開始
   useEffect(() => {
     if (!session) {
-      startSession(SAMPLE_WORDS);
+      const stageId = `${selectedChapter}-${selectedStage}`;
+      const words = getWordsForStage(stageId);
+      
+      if (words.length === 0) {
+        console.error(`ステージ ${stageId} の単語データが見つかりません`);
+        navigateTo('stageSelect');
+        return;
+      }
+
+      startSession(words);
     }
-  }, [session, startSession]);
+  }, [session, startSession, selectedChapter, selectedStage, navigateTo]);
 
   // ローマ字の表示を生成
   const renderRomaji = () => {
@@ -74,7 +70,7 @@ export const TypingScreen: React.FC = () => {
       {/* ヘッダー */}
       <div className="w-full max-w-4xl flex justify-between items-center mb-8">
         <button
-          onClick={() => navigateTo('levelSelect')}
+          onClick={() => navigateTo('stageSelect')}
           className="text-hunter-gold/60 hover:text-hunter-gold transition"
         >
           ✕ やめる

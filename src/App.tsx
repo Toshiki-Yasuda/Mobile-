@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { useGameStore } from './stores/gameStore';
 import { TitleScreen } from './components/screens/TitleScreen';
 import { LevelSelectScreen } from './components/screens/LevelSelectScreen';
+import { StageSelectScreen } from './components/screens/StageSelectScreen';
 import { TypingScreen } from './components/screens/TypingScreen';
 import { ResultScreen } from './components/screens/ResultScreen';
 import { Loading } from './components/common/Loading';
@@ -42,8 +43,7 @@ function App() {
       case 'levelSelect':
         return <LevelSelectScreen />;
       case 'stageSelect':
-        // TODO: StageSelectScreen
-        return <LevelSelectScreen />;
+        return <StageSelectScreen />;
       case 'typing':
         return <TypingScreen />;
       case 'result':
