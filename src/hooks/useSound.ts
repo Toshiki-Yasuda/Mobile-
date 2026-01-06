@@ -176,20 +176,89 @@ export function useSound() {
   }, [playOscillator]);
 
   /**
-   * メニュー選択音（チャプター選択など）
+   * メニュー選択音（チャプター選択など）- 気持ちの良い上昇音
    */
-  const playMenuSelectSound = useCallback(() => {
-    // 上昇する音で選択感を出す
-    playRichSound([400, 500, 600], 'sine', 0.15);
-  }, [playRichSound]);
+  const playMenuSelectSound = useCallback(async () => {
+    if (!soundEnabled) return;
+    
+    try {
+      const ctx = await getAudioContext();
+      if (ctx.state === 'suspended') await ctx.resume();
+      
+      const volume = soundVolume / 100;
+      const baseVolume = volume * 0.5;
+      
+      // 気持ちの良い2音の上昇メロディー
+      const notes = [
+        { freq: 523.25, delay: 0, duration: 0.12 },    // C5
+        { freq: 783.99, delay: 60, duration: 0.15 },   // G5
+      ];
+      
+      notes.forEach((note) => {
+        setTimeout(() => {
+          const oscillator = ctx.createOscillator();
+          const gainNode = ctx.createGain();
+          oscillator.type = 'sine';
+          oscillator.frequency.setValueAtTime(note.freq, ctx.currentTime);
+          
+          gainNode.gain.setValueAtTime(0, ctx.currentTime);
+          gainNode.gain.linearRampToValueAtTime(baseVolume, ctx.currentTime + 0.02);
+          gainNode.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + note.duration);
+          
+          oscillator.connect(gainNode);
+          gainNode.connect(ctx.destination);
+          oscillator.start();
+          oscillator.stop(ctx.currentTime + note.duration);
+        }, note.delay);
+      });
+    } catch (error) {
+      console.warn('Menu select sound failed:', error);
+    }
+  }, [getAudioContext, soundEnabled, soundVolume]);
 
   /**
-   * ステージ選択音
+   * ステージ選択音 - より印象的で気持ちの良い音
    */
-  const playStageSelectSound = useCallback(() => {
-    // より重厚な選択音
-    playRichSound([500, 650, 800], 'square', 0.2);
-  }, [playRichSound]);
+  const playStageSelectSound = useCallback(async () => {
+    if (!soundEnabled) return;
+    
+    try {
+      const ctx = await getAudioContext();
+      if (ctx.state === 'suspended') await ctx.resume();
+      
+      const volume = soundVolume / 100;
+      const baseVolume = volume * 0.6;
+      
+      // 気持ちの良い3音の上昇メロディー（決意感のある音）
+      const notes = [
+        { freq: 392, delay: 0, duration: 0.1 },       // G4
+        { freq: 523.25, delay: 50, duration: 0.12 },   // C5
+        { freq: 659.25, delay: 100, duration: 0.18 },  // E5
+      ];
+      
+      notes.forEach((note) => {
+        setTimeout(() => {
+          const oscillator = ctx.createOscillator();
+          const gainNode = ctx.createGain();
+          oscillator.type = 'sine';
+          oscillator.frequency.setValueAtTime(note.freq, ctx.currentTime);
+          
+          // エンベロープ
+          gainNode.gain.setValueAtTime(0, ctx.currentTime);
+          gainNode.gain.linearRampToValueAtTime(baseVolume, ctx.currentTime + 0.015);
+          gainNode.gain.setValueAtTime(baseVolume * 0.9, ctx.currentTime + note.duration * 0.5);
+          gainNode.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + note.duration);
+          
+          oscillator.connect(gainNode);
+          gainNode.connect(ctx.destination);
+          oscillator.start();
+          oscillator.stop(ctx.currentTime + note.duration);
+        }, note.delay);
+      });
+    } catch (error) {
+      console.warn('Stage select sound failed:', error);
+    }
+  }, [getAudioContext, soundEnabled, soundVolume]);
 
   /**
    * 達成音（ステージクリア時）
@@ -223,6 +292,76 @@ export function useSound() {
         });
       } catch (error) {
         console.warn('Success sound failed:', error);
+      }
+    };
+    playSequence();
+  }, [getAudioContext, soundEnabled, soundVolume]);
+
+  /**
+   * 達成感のある音（ランクメッセージ表示時）
+   */
+  const playAchievementSound = useCallback((rank: 'S' | 'A' | 'B' | 'C') => {
+    if (!soundEnabled) return;
+    
+    const playSequence = async () => {
+      try {
+        const ctx = await getAudioContext();
+        if (ctx.state === 'suspended') await ctx.resume();
+        
+        const volume = soundVolume / 100;
+        const baseVolume = volume * 0.7; // より大きく聞こえるように
+        
+        // ランクに応じた達成感のあるメロディー
+        const rankMelodies = {
+          'S': [
+            { freq: 523.25, delay: 0, duration: 0.25 },    // C5
+            { freq: 659.25, delay: 50, duration: 0.25 },    // E5
+            { freq: 783.99, delay: 100, duration: 0.3 },    // G5
+            { freq: 987.77, delay: 150, duration: 0.3 },    // B5
+            { freq: 1174.66, delay: 200, duration: 0.4 },  // D6
+          ],
+          'A': [
+            { freq: 440, delay: 0, duration: 0.2 },        // A4
+            { freq: 523.25, delay: 50, duration: 0.25 },    // C5
+            { freq: 659.25, delay: 100, duration: 0.3 },    // E5
+            { freq: 783.99, delay: 150, duration: 0.35 },  // G5
+          ],
+          'B': [
+            { freq: 392, delay: 0, duration: 0.2 },         // G4
+            { freq: 493.88, delay: 60, duration: 0.25 },    // B4
+            { freq: 587.33, delay: 120, duration: 0.3 },    // D5
+            { freq: 659.25, delay: 180, duration: 0.35 },  // E5
+            { freq: 783.99, delay: 240, duration: 0.4 },   // G5 (達成感のある上昇)
+          ],
+          'C': [
+            { freq: 349.23, delay: 0, duration: 0.2 },      // F4
+            { freq: 392, delay: 50, duration: 0.25 },      // G4
+            { freq: 440, delay: 100, duration: 0.3 },      // A4
+          ],
+        };
+        
+        const melody = rankMelodies[rank];
+        melody.forEach((note) => {
+          setTimeout(() => {
+            const oscillator = ctx.createOscillator();
+            const gainNode = ctx.createGain();
+            oscillator.type = rank === 'S' || rank === 'B' ? 'sine' : 'square';
+            oscillator.frequency.setValueAtTime(note.freq, ctx.currentTime);
+            
+            // エンベロープ: アタック → サステイン → リリース
+            gainNode.gain.setValueAtTime(0, ctx.currentTime);
+            gainNode.gain.linearRampToValueAtTime(baseVolume, ctx.currentTime + 0.05);
+            gainNode.gain.setValueAtTime(baseVolume, ctx.currentTime + note.duration * 0.7);
+            gainNode.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + note.duration);
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(ctx.destination);
+            oscillator.start();
+            oscillator.stop(ctx.currentTime + note.duration);
+          }, note.delay);
+        });
+      } catch (error) {
+        console.warn('Achievement sound failed:', error);
       }
     };
     playSequence();
@@ -282,6 +421,7 @@ export function useSound() {
     playStageSelectSound,
     playSuccessSound,
     playResultSound,
+    playAchievementSound,
   };
 }
 

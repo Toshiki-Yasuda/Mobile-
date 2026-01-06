@@ -14,7 +14,7 @@ export const ResultScreen: React.FC = () => {
   const { session, navigateTo, resetSession, selectedChapter, selectedStage } = useGameStore();
   const { saveStageResult, updateStatistics, updateStreak } = useProgressStore();
   const { handleClick } = useButtonClick();
-  const { playSuccessSound, playResultSound } = useSound();
+  const { playSuccessSound, playResultSound, playAchievementSound } = useSound();
 
   // 結果を計算
   const result = useMemo(() => {
@@ -83,7 +83,7 @@ export const ResultScreen: React.FC = () => {
         clearedAt: new Date().toISOString(),
       });
     }
-  }, [result, updateStreak, updateStatistics, saveStageResult, selectedChapter, selectedStage, playSuccessSound, playResultSound]);
+  }, [result, updateStreak, updateStatistics, saveStageResult, selectedChapter, selectedStage, playSuccessSound, playResultSound, playAchievementSound]);
 
   const handleRetry = handleClick(() => {
     resetSession();
@@ -132,6 +132,12 @@ export const ResultScreen: React.FC = () => {
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.3, duration: 0.5 }}
+        onAnimationComplete={() => {
+          // ランクメッセージ表示時に達成感のある音を再生
+          setTimeout(() => {
+            playAchievementSound(result.rank);
+          }, 100);
+        }}
         className="text-2xl md:text-3xl font-semibold text-primary mb-12 glow-text"
       >
         {getRankMessage(result.rank)}
