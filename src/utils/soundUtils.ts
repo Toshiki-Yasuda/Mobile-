@@ -25,3 +25,39 @@ export function useButtonClick() {
   return { handleClick };
 }
 
+/**
+ * メニュー選択ハンドラーを作成するフック
+ */
+export function useMenuSelect() {
+  const { playMenuSelectSound } = useSound();
+
+  const handleSelect = (callback: () => void) => {
+    return () => {
+      playMenuSelectSound();
+      setTimeout(() => {
+        callback();
+      }, 50);
+    };
+  };
+
+  return { handleSelect };
+}
+
+/**
+ * ステージ選択ハンドラーを作成するフック
+ */
+export function useStageSelect() {
+  const { playStageSelectSound } = useSound();
+
+  const handleSelect = (callback: () => void) => {
+    return () => {
+      playStageSelectSound();
+      setTimeout(() => {
+        callback();
+      }, 50);
+    };
+  };
+
+  return { handleSelect };
+}
+

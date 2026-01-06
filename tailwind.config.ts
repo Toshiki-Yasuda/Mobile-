@@ -5,17 +5,17 @@ export default {
   theme: {
     extend: {
       colors: {
-        // Modern Dark Mode Palette (design.md準拠)
-        background: '#09090b',      // Zinc 950
-        surface: '#18181b',          // Zinc 900
+        // Modern Dark Mode Palette (明るめに調整)
+        background: '#18181b',      // Zinc 900 (より明るく)
+        surface: '#27272a',          // Zinc 800 (より明るく)
         primary: '#fafafa',         // Zinc 50
         secondary: '#a1a1aa',       // Zinc 400
         accent: '#3b82f6',          // Blue 500
         error: '#ef4444',           // Red 500
-        muted: '#27272a',           // Zinc 800
+        muted: '#3f3f46',           // Zinc 700 (より明るく)
         // 後方互換性のためのエイリアス
-        'hunter-dark': '#09090b',
-        'hunter-dark-light': '#18181b',
+        'hunter-dark': '#18181b',
+        'hunter-dark-light': '#27272a',
         'hunter-gold': '#3b82f6',
         'hunter-gold-light': '#60a5fa',
         'hunter-gold-dark': '#2563eb',
@@ -78,6 +78,8 @@ export default {
         'md': '0 4px 6px -1px rgba(0, 0, 0, 0.3)',
         'lg': '0 10px 15px -3px rgba(0, 0, 0, 0.3)',
         'hover': '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+        'glow': '0 0 20px rgba(59, 130, 246, 0.4), 0 0 40px rgba(59, 130, 246, 0.2)',
+        'glow-strong': '0 0 30px rgba(59, 130, 246, 0.6), 0 0 60px rgba(59, 130, 246, 0.3)',
       },
       borderRadius: {
         'sm': '6px',

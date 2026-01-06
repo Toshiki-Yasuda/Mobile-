@@ -7,12 +7,15 @@ import { motion } from 'framer-motion';
 import { useGameStore } from '@/stores/gameStore';
 import { useProgressStore } from '@/stores/progressStore';
 import { useButtonClick } from '@/utils/soundUtils';
+import { useSound } from '@/hooks/useSound';
 import type { Rank } from '@/types/game';
 
 export const ResultScreen: React.FC = () => {
   const { session, navigateTo, resetSession, selectedChapter, selectedStage } = useGameStore();
   const { saveStageResult, updateStatistics, updateStreak } = useProgressStore();
   const { handleClick } = useButtonClick();
+  const { playSuccessSound, playResultSound } = useSound();
+  const { playSuccessSound, playResultSound } = useSound();
 
   // 結果を計算
   const result = useMemo(() => {
@@ -45,10 +48,19 @@ export const ResultScreen: React.FC = () => {
     };
   }, [session]);
 
-  // 結果を保存
+  // 結果を保存と達成音の再生
   React.useEffect(() => {
     if (result && selectedChapter && selectedStage) {
       const stageId = `${selectedChapter}-${selectedStage}`;
+      
+      // 達成音を再生（少し遅延させて確実に鳴るように）
+      setTimeout(() => {
+        playSuccessSound();
+        // ランクに応じた音も再生
+        setTimeout(() => {
+          playResultSound(result.rank);
+        }, 400);
+      }, 300);
       
       updateStreak();
       updateStatistics({
@@ -72,7 +84,7 @@ export const ResultScreen: React.FC = () => {
         clearedAt: new Date().toISOString(),
       });
     }
-  }, [result, updateStreak, updateStatistics, saveStageResult, selectedChapter, selectedStage]);
+  }, [result, updateStreak, updateStatistics, saveStageResult, selectedChapter, selectedStage, playSuccessSound, playResultSound]);
 
   const handleRetry = handleClick(() => {
     resetSession();
@@ -96,38 +108,44 @@ export const ResultScreen: React.FC = () => {
     <div className="screen-container bg-background">
       {/* ランク表示 */}
       <motion.div
-        initial={{ scale: 0, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        transition={{ type: 'spring', duration: 0.6, ease: [0.25, 0.46, 0.45, 0.94] }}
+        initial={{ scale: 0, opacity: 0, rotate: -180 }}
+        animate={{ scale: 1, opacity: 1, rotate: 0 }}
+        transition={{ type: 'spring', stiffness: 200, damping: 15, duration: 0.8 }}
         className="mb-12"
       >
-        <div
-          className={`w-24 h-24 rounded-full flex items-center justify-center text-5xl font-bold border-2 ${getRankStyle(
+        <motion.div
+          className={`w-28 h-28 rounded-full flex items-center justify-center text-6xl font-bold border-2 ${getRankStyle(
             result.rank
-          )}`}
+          )} glow-accent`}
+          animate={{ 
+            boxShadow: result.rank === 'S' 
+              ? '0 0 30px rgba(59, 130, 246, 0.6), 0 0 60px rgba(59, 130, 246, 0.3), inset 0 0 20px rgba(59, 130, 246, 0.2)'
+              : '0 0 20px rgba(59, 130, 246, 0.4), 0 0 40px rgba(59, 130, 246, 0.2)'
+          }}
+          transition={{ duration: 2, repeat: Infinity, repeatType: 'reverse' }}
         >
           {result.rank}
-        </div>
+        </motion.div>
       </motion.div>
 
       {/* タイトル */}
       <motion.h1
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.2, duration: 0.4 }}
-        className="text-2xl font-medium text-primary mb-12"
+        transition={{ delay: 0.3, duration: 0.5 }}
+        className="text-2xl md:text-3xl font-semibold text-primary mb-12 glow-text"
       >
         {getRankMessage(result.rank)}
       </motion.h1>
 
       {/* 結果詳細 */}
       <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.3, duration: 0.4, ease: [0.25, 0.46, 0.45, 0.94] }}
-        className="card w-full max-w-md mb-12"
+        initial={{ opacity: 0, y: 30, scale: 0.95 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        transition={{ delay: 0.4, duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] }}
+        className="card w-full max-w-md mb-12 glow-accent"
       >
-        <div className="grid grid-cols-2 gap-6">
+        <div className="grid grid-cols-2 gap-8">
           <ResultItem label="スコア" value={result.score.toLocaleString()} />
           <ResultItem label="正確率" value={`${result.accuracy}%`} />
           <ResultItem label="WPM" value={result.wpm.toString()} />
@@ -142,17 +160,27 @@ export const ResultScreen: React.FC = () => {
 
       {/* ボタン */}
       <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.5, duration: 0.4 }}
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.6, duration: 0.4 }}
         className="flex gap-4"
       >
-        <button onClick={handleRetry} className="btn-primary">
+        <motion.button 
+          onClick={handleRetry} 
+          className="btn-primary"
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.98 }}
+        >
           もう一度
-        </button>
-        <button onClick={handleBackToSelect} className="btn-ghost">
+        </motion.button>
+        <motion.button 
+          onClick={handleBackToSelect} 
+          className="btn-ghost"
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.98 }}
+        >
           ステージ選択へ
-        </button>
+        </motion.button>
       </motion.div>
     </div>
   );

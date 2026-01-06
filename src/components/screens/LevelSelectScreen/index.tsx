@@ -6,7 +6,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { useGameStore } from '@/stores/gameStore';
 import { useProgressStore } from '@/stores/progressStore';
-import { useButtonClick } from '@/utils/soundUtils';
+import { useButtonClick, useMenuSelect } from '@/utils/soundUtils';
 
 // チャプターデータ
 const CHAPTERS = [
@@ -58,6 +58,7 @@ export const LevelSelectScreen: React.FC = () => {
   const { navigateTo, selectChapter } = useGameStore();
   const { isChapterUnlocked, clearedStages } = useProgressStore();
   const { handleClick } = useButtonClick();
+  const { handleSelect } = useMenuSelect();
 
   // チャプターの進捗を計算
   const getChapterProgress = (chapterId: number) => {
@@ -72,6 +73,10 @@ export const LevelSelectScreen: React.FC = () => {
     selectChapter(chapterId);
     navigateTo('stageSelect');
   };
+
+  const handleChapterClick = handleSelect(() => {
+    // この関数は実際には使わない（個別のボタンで使用）
+  });
 
   return (
     <div className="screen-container bg-background">
@@ -95,14 +100,16 @@ export const LevelSelectScreen: React.FC = () => {
           return (
             <motion.button
               key={chapter.id}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.1 }}
-              onClick={unlocked ? handleClick(() => handleChapterSelect(chapter.id)) : undefined}
+              initial={{ opacity: 0, y: 30, scale: 0.95 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              transition={{ delay: index * 0.1, duration: 0.4, ease: [0.25, 0.46, 0.45, 0.94] }}
+              onClick={unlocked ? handleSelect(() => handleChapterSelect(chapter.id)) : undefined}
               disabled={!unlocked}
+              whileHover={unlocked ? { scale: 1.02, y: -2 } : {}}
+              whileTap={unlocked ? { scale: 0.98 } : {}}
               className={`card text-left transition-all ${
                 unlocked
-                  ? 'hover:border-accent/50 cursor-pointer hover:shadow-hover'
+                  ? 'hover:border-accent/50 cursor-pointer hover:shadow-glow'
                   : 'opacity-40 cursor-not-allowed'
               }`}
             >

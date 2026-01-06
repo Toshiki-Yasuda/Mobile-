@@ -15,64 +15,72 @@ export const TitleScreen: React.FC = () => {
   const { handleClick } = useButtonClick();
 
   return (
-    <div className="screen-container bg-background">
+    <div className="screen-container bg-background relative overflow-hidden">
+      {/* 背景グラデーションエフェクト */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-accent/10 rounded-full blur-3xl animate-pulse-slow" />
+        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-accent/5 rounded-full blur-3xl animate-pulse-slow" style={{ animationDelay: '1s' }} />
+      </div>
+
       {/* コンテンツ */}
       <div className="relative z-10 text-center max-w-2xl">
         {/* タイトル */}
         <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4, ease: [0.25, 0.46, 0.45, 0.94] }}
+          initial={{ opacity: 0, y: -30, scale: 0.9 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          transition={{ duration: 0.6, ease: [0.25, 0.46, 0.45, 0.94] }}
         >
-          <h1 className="text-4xl md:text-5xl font-bold mb-3 text-primary">
+          <h1 className="text-5xl md:text-6xl font-bold mb-4 text-gradient glow-text">
             HUNTER×HUNTER
           </h1>
-          <h2 className="text-xl md:text-2xl font-medium mb-12 text-secondary">
+          <motion.h2 
+            className="text-xl md:text-2xl font-medium mb-16 text-secondary"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.3, duration: 0.5 }}
+          >
             タイピングマスター
-          </h2>
+          </motion.h2>
         </motion.div>
 
         {/* メニュー */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2, duration: 0.4, ease: [0.25, 0.46, 0.45, 0.94] }}
-          className="space-y-3"
+          transition={{ delay: 0.4, duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] }}
+          className="space-y-4"
         >
           {/* メインボタン */}
-          <button
+          <motion.button
             onClick={handleClick(() => navigateTo('levelSelect'))}
-            className="btn-primary w-64 text-base"
+            className="btn-primary w-72 text-base font-semibold glow-accent"
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.98 }}
           >
             修行を始める
-          </button>
+          </motion.button>
 
           {/* サブメニュー */}
-          <div className="flex flex-col items-center space-y-2">
-            <button
-              onClick={handleClick(() => navigateTo('timeAttack'))}
-              className="btn-ghost w-48 text-sm"
-            >
-              タイムアタック
-            </button>
-            <button
-              onClick={handleClick(() => navigateTo('freePlay'))}
-              className="btn-ghost w-48 text-sm"
-            >
-              フリー練習
-            </button>
-            <button
-              onClick={handleClick(() => navigateTo('statistics'))}
-              className="btn-ghost w-48 text-sm"
-            >
-              成績を見る
-            </button>
-            <button
-              onClick={handleClick(() => navigateTo('settings'))}
-              className="btn-ghost w-48 text-sm"
-            >
-              設定
-            </button>
+          <div className="flex flex-col items-center space-y-3">
+            {[
+              { label: 'タイムアタック', action: () => navigateTo('timeAttack') },
+              { label: 'フリー練習', action: () => navigateTo('freePlay') },
+              { label: '成績を見る', action: () => navigateTo('statistics') },
+              { label: '設定', action: () => navigateTo('settings') },
+            ].map((item, index) => (
+              <motion.button
+                key={item.label}
+                onClick={handleClick(item.action)}
+                className="btn-ghost w-56 text-sm"
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.5 + index * 0.1, duration: 0.4 }}
+                whileHover={{ scale: 1.02, x: 4 }}
+                whileTap={{ scale: 0.98 }}
+              >
+                {item.label}
+              </motion.button>
+            ))}
           </div>
         </motion.div>
 

@@ -115,7 +115,7 @@ function App() {
 
   return (
     <ErrorBoundary>
-      <div className="min-h-screen bg-hunter-dark">
+      <div className="min-h-screen bg-background">
         {/* エラー通知 */}
         {error.hasError && (
           <div className="fixed top-4 right-4 z-50 animate-slide-down">

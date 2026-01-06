@@ -6,7 +6,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { useGameStore } from '@/stores/gameStore';
 import { useProgressStore } from '@/stores/progressStore';
-import { useButtonClick } from '@/utils/soundUtils';
+import { useButtonClick, useStageSelect } from '@/utils/soundUtils';
 import { getWordsForStage } from '@/data/words';
 
 // チャプター情報
@@ -95,6 +95,7 @@ export const StageSelectScreen: React.FC = () => {
   const { selectedChapter, selectStage, navigateTo, startSession } = useGameStore();
   const { isStageCleared, getStageResult } = useProgressStore();
   const { handleClick } = useButtonClick();
+  const { handleSelect: handleStageClick } = useStageSelect();
 
   const chapter = CHAPTERS.find((c) => c.id === selectedChapter);
 
@@ -160,14 +161,16 @@ export const StageSelectScreen: React.FC = () => {
           return (
             <motion.button
               key={stage.number}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.1 }}
-              onClick={unlocked ? handleClick(() => handleStageSelect(stage.number)) : undefined}
+              initial={{ opacity: 0, y: 30, scale: 0.95 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              transition={{ delay: index * 0.1, duration: 0.4, ease: [0.25, 0.46, 0.45, 0.94] }}
+              onClick={unlocked ? handleStageClick(() => handleStageSelect(stage.number)) : undefined}
               disabled={!unlocked}
+              whileHover={unlocked ? { scale: 1.02, y: -2 } : {}}
+              whileTap={unlocked ? { scale: 0.98 } : {}}
               className={`card text-left transition-all ${
                 unlocked
-                  ? 'hover:border-accent/50 cursor-pointer hover:shadow-hover'
+                  ? 'hover:border-accent/50 cursor-pointer hover:shadow-glow'
                   : 'opacity-40 cursor-not-allowed'
               }`}
             >
