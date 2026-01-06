@@ -91,22 +91,18 @@ export const TypingScreen: React.FC = () => {
 
     return (
       <motion.div 
-        className="text-xl font-mono tracking-wider bg-surface/50 backdrop-blur-sm border border-muted rounded-lg px-6 py-3 inline-block"
+        className="text-xl tracking-wider bg-white/80 backdrop-blur-sm border-2 border-pop-purple/20 rounded-xl px-6 py-3 inline-block shadow-card"
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.2 }}
       >
-        <span className="text-primary">{confirmed}</span>
+        <span className="text-pop-mint font-bold">{confirmed}</span>
         <motion.span 
-          className="text-accent font-semibold"
-          animate={{ 
-            textShadow: '0 0 10px rgba(59, 130, 246, 0.6)'
-          }}
-          transition={{ duration: 0.5, repeat: Infinity, repeatType: 'reverse' }}
+          className="text-pop-pink font-extrabold"
         >
           {current}
         </motion.span>
-        <span className="text-muted">{remaining}</span>
+        <span className="text-pop-purple/40 font-medium">{remaining}</span>
       </motion.div>
     );
   };
@@ -114,36 +110,42 @@ export const TypingScreen: React.FC = () => {
   if (!session || !currentWord) {
     return (
       <div className="screen-container">
-        <div className="text-secondary">読み込み中...</div>
+        <div className="text-pop-purple font-bold">読み込み中... ✨</div>
       </div>
     );
   }
 
   return (
-    <div ref={containerRef} className="screen-container bg-background">
+    <div ref={containerRef} className="screen-container relative overflow-hidden">
+      {/* 背景デコレーション */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-10 right-10 w-24 h-24 bg-pop-pink/10 rounded-full blur-2xl" />
+        <div className="absolute bottom-20 left-10 w-32 h-32 bg-pop-purple/10 rounded-full blur-2xl" />
+      </div>
+
       {/* ヘッダー */}
-      <div className="w-full max-w-4xl flex justify-between items-center mb-12">
+      <div className="relative z-10 w-full max-w-4xl flex justify-between items-center mb-8">
         <button
           onClick={handleClick(() => navigateTo('stageSelect'))}
-          className="text-secondary hover:text-primary transition-colors text-sm"
+          className="text-pop-purple hover:text-accent transition-colors text-sm font-bold"
         >
           ✕ やめる
         </button>
 
-        <div className="flex gap-6 text-center">
+        <div className="flex gap-4 text-center">
           <motion.div 
-            className="bg-surface/80 backdrop-blur-sm border border-muted rounded-lg px-6 py-3 min-w-[100px]"
+            className="bg-white border-2 border-pop-purple/30 rounded-xl px-5 py-3 min-w-[100px] shadow-card"
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 0.1 }}
             whileHover={{ scale: 1.05 }}
           >
-            <div className="text-muted text-xs uppercase tracking-wider mb-1">スコア</div>
-            <div className="text-primary text-2xl font-bold font-mono">{score.toLocaleString()}</div>
+            <div className="text-pop-purple text-xs font-bold mb-1">⭐ スコア</div>
+            <div className="text-primary text-2xl font-extrabold">{score.toLocaleString()}</div>
           </motion.div>
           <motion.div 
-            className={`bg-surface/80 backdrop-blur-sm border rounded-lg px-6 py-3 min-w-[100px] ${
-              combo >= 10 ? 'border-accent/50 glow-accent' : 'border-muted'
+            className={`bg-white border-2 rounded-xl px-5 py-3 min-w-[100px] shadow-card ${
+              combo >= 10 ? 'border-pop-pink' : 'border-pop-purple/30'
             }`}
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ 
@@ -153,53 +155,44 @@ export const TypingScreen: React.FC = () => {
             transition={{ delay: 0.2, repeat: combo >= 10 ? Infinity : 0, repeatDelay: 1 }}
             whileHover={{ scale: 1.05 }}
           >
-            <div className="text-muted text-xs uppercase tracking-wider mb-1">コンボ</div>
-            <div className={`text-2xl font-bold font-mono ${combo >= 10 ? 'text-accent glow-text' : 'text-primary'}`}>
+            <div className="text-pop-purple text-xs font-bold mb-1">🔥 コンボ</div>
+            <div className={`text-2xl font-extrabold ${combo >= 10 ? 'text-pop-pink' : 'text-primary'}`}>
               {combo}
             </div>
           </motion.div>
           <motion.div 
-            className="bg-surface/80 backdrop-blur-sm border border-muted rounded-lg px-6 py-3 min-w-[100px]"
+            className="bg-white border-2 border-pop-coral/30 rounded-xl px-5 py-3 min-w-[100px] shadow-card"
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 0.3 }}
             whileHover={{ scale: 1.05 }}
           >
-            <div className="text-muted text-xs uppercase tracking-wider mb-1">ミス</div>
-            <div className="text-error text-2xl font-bold font-mono">{missCount}</div>
+            <div className="text-pop-coral text-xs font-bold mb-1">💔 ミス</div>
+            <div className="text-error text-2xl font-extrabold">{missCount}</div>
           </motion.div>
         </div>
       </div>
 
       {/* プログレスバー */}
-      <div className="w-full max-w-4xl mb-12">
-        <div className="h-1.5 bg-surface rounded-full overflow-hidden relative">
+      <div className="relative z-10 w-full max-w-4xl mb-8">
+        <div className="h-3 bg-muted rounded-full overflow-hidden relative">
           <motion.div
-            className="h-full bg-gradient-to-r from-accent via-blue-400 to-accent rounded-full"
+            className="h-full bg-gradient-to-r from-pop-pink via-pop-purple to-pop-sky rounded-full"
             initial={{ width: 0 }}
             animate={{ width: `${progress}%` }}
             transition={{ duration: 0.4, ease: [0.25, 0.46, 0.45, 0.94] }}
             style={{
-              boxShadow: '0 0 10px rgba(59, 130, 246, 0.5)',
-            }}
-          />
-          <motion.div
-            className="absolute top-0 right-0 h-full w-1 bg-accent"
-            animate={{ opacity: [0.5, 1, 0.5] }}
-            transition={{ duration: 1, repeat: Infinity }}
-            style={{ 
-              boxShadow: '0 0 10px rgba(59, 130, 246, 0.8)',
-              transform: `translateX(${progress}%)`
+              boxShadow: '0 0 10px rgba(236, 72, 153, 0.5)',
             }}
           />
         </div>
-        <div className="text-right text-muted text-xs mt-2 font-mono">
-          {session.currentWordIndex + 1} / {session.words.length}
+        <div className="text-right text-pop-purple text-xs mt-2 font-bold">
+          {session.currentWordIndex + 1} / {session.words.length} 📝
         </div>
       </div>
 
       {/* タイピングエリア */}
-      <div className="typing-area w-full max-w-4xl text-center py-12">
+      <div className="relative z-10 typing-area w-full max-w-4xl text-center py-10">
         {/* コンボ表示 */}
         <AnimatePresence>
           {combo >= APP_CONFIG.COMBO_DISPLAY_THRESHOLD && (
@@ -209,15 +202,12 @@ export const TypingScreen: React.FC = () => {
                 opacity: 1, 
                 scale: 1, 
                 y: 0,
-                textShadow: combo >= 20 
-                  ? '0 0 20px rgba(59, 130, 246, 0.8), 0 0 40px rgba(59, 130, 246, 0.4)'
-                  : '0 0 10px rgba(59, 130, 246, 0.5)'
               }}
               exit={{ opacity: 0, scale: 0.5 }}
               transition={{ type: 'spring', stiffness: 300, damping: 20 }}
-              className="text-accent text-lg md:text-xl font-bold mb-6 font-mono glow-text"
+              className="text-pop-pink text-lg md:text-xl font-extrabold mb-6"
             >
-              {combo} COMBO
+              🔥 {combo} COMBO! 🔥
             </motion.div>
           )}
         </AnimatePresence>
@@ -231,16 +221,11 @@ export const TypingScreen: React.FC = () => {
           className="mb-8"
         >
           <motion.div 
-            className="text-5xl md:text-6xl font-semibold text-primary mb-6 font-mono"
-            initial={{ textShadow: 'none' }}
-            animate={{ 
-              textShadow: '0 0 20px rgba(250, 250, 250, 0.3)'
-            }}
-            transition={{ duration: 0.3 }}
+            className="text-4xl md:text-5xl font-extrabold text-primary mb-4"
           >
             {currentWord.display}
           </motion.div>
-          <div className="text-xl text-secondary mb-6 font-mono tracking-wider">
+          <div className="text-xl text-pop-purple mb-6 font-bold tracking-wider">
             {currentWord.hiragana}
           </div>
         </motion.div>
@@ -257,8 +242,8 @@ export const TypingScreen: React.FC = () => {
       )}
 
       {/* 操作説明 */}
-      <div className="text-muted text-xs mt-12 uppercase tracking-wider">
-        ESCキーで中断
+      <div className="relative z-10 text-pop-purple/60 text-xs mt-8 font-bold">
+        ESCキーで中断 🔙
       </div>
     </div>
   );
@@ -273,7 +258,7 @@ const VirtualKeyboard: React.FC<{ activeKeys: string[] }> = ({ activeKeys }) => 
   ];
 
   return (
-    <div className="flex flex-col items-center gap-2 p-4 bg-surface/50 backdrop-blur-sm border border-muted rounded-lg">
+    <div className="flex flex-col items-center gap-2 p-4 bg-white/80 backdrop-blur-sm border-2 border-pop-purple/20 rounded-xl shadow-card">
       {rows.map((row, rowIndex) => (
         <div
           key={rowIndex}
@@ -288,7 +273,7 @@ const VirtualKeyboard: React.FC<{ activeKeys: string[] }> = ({ activeKeys }) => 
                 className={isActive ? 'keyboard-key-highlight' : 'keyboard-key'}
                 animate={isActive ? { 
                   scale: 1.1,
-                  boxShadow: '0 0 10px rgba(59, 130, 246, 0.5)'
+                  boxShadow: '0 0 10px rgba(236, 72, 153, 0.5)'
                 } : { scale: 1 }}
                 transition={{ duration: 0.1 }}
               >

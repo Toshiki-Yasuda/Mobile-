@@ -135,23 +135,29 @@ export const StageSelectScreen: React.FC = () => {
   };
 
   return (
-    <div className="screen-container bg-background">
+    <div className="screen-container relative overflow-hidden">
+      {/* 背景デコレーション */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-10 left-20 w-28 h-28 bg-pop-mint/15 rounded-full blur-2xl" />
+        <div className="absolute bottom-20 right-10 w-36 h-36 bg-pop-sky/15 rounded-full blur-2xl" />
+      </div>
+
       {/* ヘッダー */}
-      <div className="w-full max-w-4xl mb-12">
+      <div className="relative z-10 w-full max-w-4xl mb-8">
         <button
           onClick={handleClick(() => navigateTo('levelSelect'))}
-          className="text-secondary hover:text-primary transition-colors text-sm mb-6"
+          className="text-pop-purple hover:text-accent transition-colors text-sm mb-4 font-bold"
         >
           ← チャプター選択に戻る
         </button>
-        <h1 className="text-2xl font-bold text-primary mb-1">
-          第{chapter.id}章 {chapter.name}
+        <h1 className="text-2xl font-extrabold text-gradient mb-2">
+          📖 第{chapter.id}章 {chapter.name}
         </h1>
-        <p className="text-secondary text-sm">{chapter.japaneseName}</p>
+        <p className="text-pop-purple text-sm font-medium">{chapter.japaneseName}</p>
       </div>
 
       {/* ステージリスト */}
-      <div className="w-full max-w-4xl grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+      <div className="relative z-10 w-full max-w-4xl grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
         {chapter.stages.map((stage, index) => {
           const stageId = `${selectedChapter}-${stage.number}`;
           const unlocked = isStageUnlocked(stage.number);
@@ -170,34 +176,34 @@ export const StageSelectScreen: React.FC = () => {
               whileTap={unlocked ? { scale: 0.98 } : {}}
               className={`card text-left transition-all ${
                 unlocked
-                  ? 'hover:border-accent/50 cursor-pointer hover:shadow-glow'
-                  : 'opacity-40 cursor-not-allowed'
+                  ? 'hover:border-accent cursor-pointer hover:shadow-lg'
+                  : 'opacity-50 cursor-not-allowed'
               }`}
             >
               {/* ステージ番号 */}
               <div className="flex items-start justify-between mb-3">
-                <span className="text-muted text-xs uppercase tracking-wider font-medium">
+                <span className="text-pop-purple text-xs uppercase tracking-wider font-bold">
                   ステージ {stage.number}
                 </span>
                 {!unlocked && (
-                  <span className="text-muted text-lg">🔒</span>
+                  <span className="text-xl">🔒</span>
                 )}
                 {cleared && (
-                  <span className="text-accent text-lg">✓</span>
+                  <span className="text-xl">⭐</span>
                 )}
               </div>
 
               {/* タイトル */}
-              <h3 className="text-lg font-medium text-primary mb-1">
+              <h3 className="text-lg font-bold text-primary mb-1">
                 {stage.name}
               </h3>
-              <p className="text-muted text-sm mb-4">{stage.description}</p>
+              <p className="text-primary/70 text-sm mb-4">{stage.description}</p>
 
               {/* クリア情報 */}
               {cleared && result && (
-                <div className="text-xs text-secondary space-x-3">
-                  <span>スコア: {result.score.toLocaleString()}</span>
-                  <span>精度: {result.accuracy.toFixed(1)}%</span>
+                <div className="text-xs text-pop-purple font-bold space-x-3">
+                  <span>🏆 {result.score.toLocaleString()}</span>
+                  <span>🎯 {result.accuracy.toFixed(1)}%</span>
                 </div>
               )}
             </motion.button>

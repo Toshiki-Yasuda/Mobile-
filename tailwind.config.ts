@@ -5,31 +5,38 @@ export default {
   theme: {
     extend: {
       colors: {
-        // Modern Dark Mode Palette (明るめに調整)
-        background: '#18181b',      // Zinc 900 (より明るく)
-        surface: '#27272a',          // Zinc 800 (より明るく)
-        primary: '#fafafa',         // Zinc 50
-        secondary: '#a1a1aa',       // Zinc 400
-        accent: '#3b82f6',          // Blue 500
-        error: '#ef4444',           // Red 500
-        muted: '#3f3f46',           // Zinc 700 (より明るく)
+        // ポップで明るいカラーパレット（小学生向け）
+        background: '#fef7ff',      // ライトピンクホワイト
+        surface: '#ffffff',          // 純白
+        primary: '#4a1d6a',         // ディープパープル（テキスト）
+        secondary: '#7c3aed',       // バイオレット
+        accent: '#ec4899',          // ビビッドピンク
+        error: '#f43f5e',           // ローズレッド
+        muted: '#e9d5ff',           // ライトパープル
+        // ポップカラー
+        'pop-pink': '#f472b6',
+        'pop-purple': '#a855f7',
+        'pop-mint': '#34d399',
+        'pop-sky': '#38bdf8',
+        'pop-yellow': '#fbbf24',
+        'pop-coral': '#fb7185',
         // 後方互換性のためのエイリアス
-        'hunter-dark': '#18181b',
-        'hunter-dark-light': '#27272a',
-        'hunter-gold': '#3b82f6',
-        'hunter-gold-light': '#60a5fa',
-        'hunter-gold-dark': '#2563eb',
-        'hunter-green': '#3b82f6',
-        'hunter-green-light': '#60a5fa',
-        'hunter-green-dark': '#2563eb',
+        'hunter-dark': '#fef7ff',
+        'hunter-dark-light': '#ffffff',
+        'hunter-gold': '#ec4899',
+        'hunter-gold-light': '#f9a8d4',
+        'hunter-gold-dark': '#db2777',
+        'hunter-green': '#34d399',
+        'hunter-green-light': '#6ee7b7',
+        'hunter-green-dark': '#10b981',
         // UI用
-        success: '#10B981',
-        warning: '#F59E0B',
+        success: '#34d399',
+        warning: '#fbbf24',
       },
       fontFamily: {
-        sans: ['Inter', 'San Francisco', 'Helvetica Neue', 'system-ui', 'sans-serif'],
-        mono: ['JetBrains Mono', 'Fira Code', 'Roboto Mono', 'Consolas', 'monospace'],
-        game: ['Inter', 'San Francisco', 'Helvetica Neue', 'system-ui', 'sans-serif'],
+        sans: ['M PLUS Rounded 1c', 'Nunito', 'Inter', 'system-ui', 'sans-serif'],
+        mono: ['M PLUS Rounded 1c', 'JetBrains Mono', 'Consolas', 'monospace'],
+        game: ['M PLUS Rounded 1c', 'Nunito', 'Inter', 'system-ui', 'sans-serif'],
       },
       animation: {
         'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
@@ -74,12 +81,14 @@ export default {
         },
       },
       boxShadow: {
-        'sm': '0 1px 2px 0 rgba(0, 0, 0, 0.3)',
-        'md': '0 4px 6px -1px rgba(0, 0, 0, 0.3)',
-        'lg': '0 10px 15px -3px rgba(0, 0, 0, 0.3)',
-        'hover': '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
-        'glow': '0 0 20px rgba(59, 130, 246, 0.4), 0 0 40px rgba(59, 130, 246, 0.2)',
-        'glow-strong': '0 0 30px rgba(59, 130, 246, 0.6), 0 0 60px rgba(59, 130, 246, 0.3)',
+        'sm': '0 2px 4px 0 rgba(236, 72, 153, 0.15)',
+        'md': '0 4px 12px -1px rgba(236, 72, 153, 0.2)',
+        'lg': '0 10px 25px -3px rgba(168, 85, 247, 0.25)',
+        'hover': '0 8px 20px -4px rgba(236, 72, 153, 0.3)',
+        'glow': '0 0 20px rgba(236, 72, 153, 0.4), 0 0 40px rgba(168, 85, 247, 0.2)',
+        'glow-strong': '0 0 30px rgba(236, 72, 153, 0.6), 0 0 60px rgba(168, 85, 247, 0.3)',
+        'card': '0 4px 20px rgba(168, 85, 247, 0.15)',
+        'button': '0 4px 14px rgba(236, 72, 153, 0.4)',
       },
       borderRadius: {
         'sm': '6px',

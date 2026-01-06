@@ -14,27 +14,27 @@ export const Loading: React.FC<LoadingProps> = ({
   progress,
 }) => {
   return (
-    <div className="screen-container bg-background">
+    <div className="screen-container">
       <div className="text-center">
         {/* ローディングアニメーション */}
-        <div className="relative w-16 h-16 mx-auto mb-6">
-          <div className="absolute inset-0 border-2 border-muted rounded-full" />
-          <div className="absolute inset-0 border-2 border-transparent border-t-accent rounded-full animate-spin" />
+        <div className="relative w-20 h-20 mx-auto mb-6">
+          <div className="absolute inset-0 border-4 border-pop-purple/20 rounded-full" />
+          <div className="absolute inset-0 border-4 border-transparent border-t-pop-pink border-r-pop-purple rounded-full animate-spin" />
         </div>
 
         {/* メッセージ */}
-        <p className="text-secondary text-sm mb-4">{message}</p>
+        <p className="text-pop-purple font-bold text-lg mb-4">{message} ✨</p>
 
         {/* プログレスバー（任意） */}
         {progress !== undefined && (
           <div className="w-64 mx-auto">
-            <div className="h-1 bg-surface rounded-full overflow-hidden">
+            <div className="h-3 bg-muted rounded-full overflow-hidden">
               <div
-                className="h-full bg-accent transition-all duration-300 ease-out"
+                className="h-full bg-gradient-to-r from-pop-pink to-pop-purple transition-all duration-300 ease-out rounded-full"
                 style={{ width: `${progress}%` }}
               />
             </div>
-            <p className="text-muted text-xs mt-2">{progress}%</p>
+            <p className="text-pop-purple font-bold text-sm mt-2">{progress}%</p>
           </div>
         )}
       </div>

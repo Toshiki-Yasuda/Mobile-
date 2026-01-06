@@ -5,7 +5,7 @@
 /* ===== Base Styles ===== */
 @layer base {
   html {
-    font-family: 'Inter', 'San Francisco', 'Helvetica Neue', system-ui, sans-serif;
+    font-family: 'M PLUS Rounded 1c', 'Nunito', 'Inter', system-ui, sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
@@ -13,6 +13,7 @@
   body {
     @apply bg-background text-primary;
     overflow-x: hidden;
+    background: linear-gradient(135deg, #fef7ff 0%, #fdf4ff 50%, #fae8ff 100%);
   }
 
   /* フォーカス時のアウトライン */
@@ -30,20 +31,18 @@
 @layer components {
   /* ボタン基本スタイル */
   .btn {
-    @apply px-6 py-3 rounded-md font-medium transition-all duration-300;
+    @apply px-6 py-3 rounded-xl font-bold transition-all duration-300;
     @apply focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2 focus:ring-offset-background;
     @apply disabled:opacity-50 disabled:cursor-not-allowed;
-    border-radius: 8px;
     position: relative;
     overflow: hidden;
   }
 
   .btn-primary {
-    @apply btn text-background;
-    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
-    box-shadow: 0 4px 14px 0 rgba(59, 130, 246, 0.4);
-    @apply hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0;
-    @apply hover:bg-gradient-to-r hover:from-blue-500 hover:to-blue-600;
+    @apply btn text-white;
+    background: linear-gradient(135deg, #ec4899 0%, #a855f7 100%);
+    box-shadow: 0 4px 14px 0 rgba(236, 72, 153, 0.4);
+    @apply hover:shadow-lg hover:-translate-y-1 active:translate-y-0;
   }
 
   .btn-primary::before {
@@ -53,7 +52,7 @@
     left: -100%;
     width: 100%;
     height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
     transition: left 0.5s;
   }
 
@@ -62,28 +61,27 @@
   }
 
   .btn-secondary {
-    @apply btn bg-accent text-primary;
-    box-shadow: 0 4px 14px 0 rgba(59, 130, 246, 0.3);
-    @apply hover:bg-blue-600 active:bg-blue-700;
-    @apply hover:shadow-lg hover:-translate-y-0.5;
+    @apply btn text-white;
+    background: linear-gradient(135deg, #34d399 0%, #38bdf8 100%);
+    box-shadow: 0 4px 14px 0 rgba(52, 211, 153, 0.3);
+    @apply hover:shadow-lg hover:-translate-y-1;
   }
 
   .btn-ghost {
-    @apply btn bg-surface/50 text-primary border border-muted backdrop-blur-sm;
-    @apply hover:bg-surface hover:border-accent/50 hover:shadow-md;
-    @apply hover:-translate-y-0.5 transition-all;
+    @apply btn bg-white/80 text-primary border-2 border-pop-purple/30 backdrop-blur-sm;
+    @apply hover:bg-white hover:border-accent hover:shadow-md;
+    @apply hover:-translate-y-1 transition-all;
   }
 
   /* カードスタイル */
   .card {
-    @apply bg-surface rounded-lg p-6;
-    @apply border border-muted;
+    @apply bg-white rounded-2xl p-6;
+    @apply border-2 border-pop-purple/20;
     @apply transition-all duration-300;
     gap: 16px;
     position: relative;
     overflow: hidden;
-    background: linear-gradient(135deg, rgba(39, 39, 42, 0.8) 0%, rgba(24, 24, 27, 0.9) 100%);
-    backdrop-filter: blur(10px);
+    box-shadow: 0 4px 20px rgba(168, 85, 247, 0.1);
   }
 
   .card::before {
@@ -92,8 +90,8 @@
     top: 0;
     left: 0;
     right: 0;
-    height: 1px;
-    background: linear-gradient(90deg, transparent, rgba(59, 130, 246, 0.3), transparent);
+    height: 4px;
+    background: linear-gradient(90deg, #ec4899, #a855f7, #38bdf8, #34d399);
     opacity: 0;
     transition: opacity 0.3s;
   }
@@ -103,30 +101,28 @@
   }
 
   .card:hover {
-    @apply border-accent/30 shadow-lg;
-    transform: translateY(-2px);
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(59, 130, 246, 0.1);
+    @apply border-accent/50;
+    transform: translateY(-4px);
+    box-shadow: 0 12px 30px rgba(168, 85, 247, 0.2);
   }
 
   /* タイピング表示エリア */
   .typing-area {
-    @apply bg-background rounded-lg p-8;
-    @apply border border-muted;
+    @apply bg-white rounded-2xl p-8;
+    @apply border-2 border-pop-purple/20;
     position: relative;
-    background: linear-gradient(135deg, rgba(24, 24, 27, 0.95) 0%, rgba(39, 39, 42, 0.9) 100%);
+    box-shadow: 0 4px 20px rgba(168, 85, 247, 0.1);
   }
 
-  .typing-area::after {
+  .typing-area::before {
     content: '';
     position: absolute;
-    inset: 0;
-    border-radius: 8px;
-    padding: 1px;
-    background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(59, 130, 246, 0.05));
-    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-    -webkit-mask-composite: xor;
-    mask-composite: exclude;
-    pointer-events: none;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #ec4899, #a855f7, #38bdf8, #34d399);
+    border-radius: 16px 16px 0 0;
   }
 
   /* 文字表示 */
@@ -135,12 +131,12 @@
   }
 
   .char-current {
-    @apply text-primary font-medium;
+    @apply text-accent font-bold;
     transition: all 0.1s ease;
   }
 
   .char-correct {
-    @apply text-primary;
+    @apply text-pop-mint;
   }
 
   .char-incorrect {
@@ -149,26 +145,25 @@
 
   /* キーボードキー */
   .keyboard-key {
-    @apply w-11 h-11 rounded-md;
-    @apply bg-surface border border-muted;
+    @apply w-11 h-11 rounded-lg;
+    @apply bg-white border-2 border-pop-purple/30;
     @apply flex items-center justify-center;
-    @apply text-sm font-mono text-secondary font-medium;
+    @apply text-sm font-bold text-primary;
     @apply transition-all duration-200;
-    background: linear-gradient(135deg, rgba(39, 39, 42, 0.8) 0%, rgba(24, 24, 27, 0.9) 100%);
+    box-shadow: 0 2px 8px rgba(168, 85, 247, 0.1);
   }
 
   .keyboard-key-active {
     @apply keyboard-key;
-    @apply bg-accent text-primary;
+    @apply bg-accent text-white border-accent;
     @apply scale-95;
-    box-shadow: 0 0 10px rgba(59, 130, 246, 0.5);
+    box-shadow: 0 0 15px rgba(236, 72, 153, 0.5);
   }
 
   .keyboard-key-highlight {
     @apply keyboard-key;
-    @apply border-accent bg-accent/30;
-    background: linear-gradient(135deg, rgba(59, 130, 246, 0.3) 0%, rgba(59, 130, 246, 0.2) 100%);
-    box-shadow: 0 0 15px rgba(59, 130, 246, 0.4);
+    @apply border-accent bg-accent/20;
+    box-shadow: 0 0 15px rgba(236, 72, 153, 0.3);
   }
 }
 
@@ -177,7 +172,7 @@
   /* テキストグラデーション */
   .text-gradient {
     @apply bg-clip-text text-transparent;
-    background: linear-gradient(135deg, #fafafa 0%, #3b82f6 50%, #a1a1aa 100%);
+    background: linear-gradient(135deg, #ec4899 0%, #a855f7 50%, #38bdf8 100%);
     background-size: 200% auto;
     animation: gradient-shift 3s ease infinite;
   }
@@ -189,11 +184,11 @@
 
   /* グロー効果 */
   .glow-text {
-    text-shadow: 0 0 20px rgba(59, 130, 246, 0.5), 0 0 40px rgba(59, 130, 246, 0.3);
+    text-shadow: 0 0 20px rgba(236, 72, 153, 0.5), 0 0 40px rgba(168, 85, 247, 0.3);
   }
 
   .glow-accent {
-    box-shadow: 0 0 20px rgba(59, 130, 246, 0.4), 0 0 40px rgba(59, 130, 246, 0.2);
+    box-shadow: 0 0 20px rgba(236, 72, 153, 0.4), 0 0 40px rgba(168, 85, 247, 0.2);
   }
 
   /* スクロールバー非表示 */
@@ -210,6 +205,14 @@
     @apply min-h-screen w-full;
     @apply flex flex-col items-center justify-center;
     @apply p-6 md:p-8;
+    background: linear-gradient(135deg, #fef7ff 0%, #fdf4ff 50%, #fae8ff 100%);
+  }
+
+  /* 背景デコレーション */
+  .bg-decoration {
+    position: fixed;
+    pointer-events: none;
+    z-index: 0;
   }
 }
 
@@ -243,4 +246,36 @@
   0%, 100% { transform: translateX(0); }
   20%, 60% { transform: translateX(-5px); }
   40%, 80% { transform: translateX(5px); }
+}
+
+/* フローティングアニメーション */
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+.animate-float {
+  animation: float 3s ease-in-out infinite;
+}
+
+/* スパークルアニメーション */
+@keyframes sparkle {
+  0%, 100% { opacity: 0.5; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.2); }
+}
+
+.animate-sparkle {
+  animation: sparkle 1.5s ease-in-out infinite;
+}
+
+/* レインボーボーダー */
+.rainbow-border {
+  background: linear-gradient(90deg, #ec4899, #a855f7, #38bdf8, #34d399, #fbbf24, #ec4899);
+  background-size: 200% 100%;
+  animation: rainbow 3s linear infinite;
+}
+
+@keyframes rainbow {
+  0% { background-position: 0% 50%; }
+  100% { background-position: 200% 50%; }
 }

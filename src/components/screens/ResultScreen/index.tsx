@@ -104,22 +104,30 @@ export const ResultScreen: React.FC = () => {
   }
 
   return (
-    <div className="screen-container bg-background">
+    <div className="screen-container relative overflow-hidden">
+      {/* 背景デコレーション */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-10 left-10 w-40 h-40 bg-pop-pink/15 rounded-full blur-2xl animate-float" />
+        <div className="absolute bottom-20 right-10 w-36 h-36 bg-pop-purple/15 rounded-full blur-2xl animate-float" style={{ animationDelay: '1s' }} />
+        <div className="absolute top-1/3 right-1/4 text-4xl animate-sparkle">🎉</div>
+        <div className="absolute bottom-1/3 left-1/4 text-3xl animate-sparkle" style={{ animationDelay: '0.5s' }}>✨</div>
+      </div>
+
       {/* ランク表示 */}
       <motion.div
         initial={{ scale: 0, opacity: 0, rotate: -180 }}
         animate={{ scale: 1, opacity: 1, rotate: 0 }}
         transition={{ type: 'spring', stiffness: 200, damping: 15, duration: 0.8 }}
-        className="mb-12"
+        className="relative z-10 mb-8"
       >
         <motion.div
-          className={`w-28 h-28 rounded-full flex items-center justify-center text-6xl font-bold border-2 ${getRankStyle(
+          className={`w-32 h-32 rounded-full flex items-center justify-center text-6xl font-extrabold border-4 ${getRankStyle(
             result.rank
-          )} glow-accent`}
+          )}`}
           animate={{ 
             boxShadow: result.rank === 'S' 
-              ? '0 0 30px rgba(59, 130, 246, 0.6), 0 0 60px rgba(59, 130, 246, 0.3), inset 0 0 20px rgba(59, 130, 246, 0.2)'
-              : '0 0 20px rgba(59, 130, 246, 0.4), 0 0 40px rgba(59, 130, 246, 0.2)'
+              ? '0 0 30px rgba(236, 72, 153, 0.6), 0 0 60px rgba(168, 85, 247, 0.3)'
+              : '0 0 20px rgba(168, 85, 247, 0.4), 0 0 40px rgba(236, 72, 153, 0.2)'
           }}
           transition={{ duration: 2, repeat: Infinity, repeatType: 'reverse' }}
         >
@@ -138,7 +146,7 @@ export const ResultScreen: React.FC = () => {
             playAchievementSound(result.rank);
           }, 100);
         }}
-        className="text-2xl md:text-3xl font-semibold text-primary mb-12 glow-text"
+        className="relative z-10 text-2xl md:text-3xl font-extrabold text-gradient mb-8"
       >
         {getRankMessage(result.rank)}
       </motion.h1>
@@ -148,16 +156,16 @@ export const ResultScreen: React.FC = () => {
         initial={{ opacity: 0, y: 30, scale: 0.95 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}
         transition={{ delay: 0.4, duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] }}
-        className="card w-full max-w-md mb-12 glow-accent"
+        className="relative z-10 card w-full max-w-md mb-8"
       >
-        <div className="grid grid-cols-2 gap-8">
-          <ResultItem label="スコア" value={result.score.toLocaleString()} />
-          <ResultItem label="正確率" value={`${result.accuracy}%`} />
-          <ResultItem label="WPM" value={result.wpm.toString()} />
-          <ResultItem label="タイム" value={`${result.totalTime}秒`} />
-          <ResultItem label="最大コンボ" value={result.maxCombo.toString()} />
+        <div className="grid grid-cols-2 gap-6">
+          <ResultItem label="⭐ スコア" value={result.score.toLocaleString()} />
+          <ResultItem label="🎯 正確率" value={`${result.accuracy}%`} />
+          <ResultItem label="⚡ WPM" value={result.wpm.toString()} />
+          <ResultItem label="⏱️ タイム" value={`${result.totalTime}秒`} />
+          <ResultItem label="🔥 最大コンボ" value={result.maxCombo.toString()} />
           <ResultItem
-            label="正解/ミス"
+            label="✅ 正解/ミス"
             value={`${result.correctCount}/${result.missCount}`}
           />
         </div>
@@ -168,23 +176,23 @@ export const ResultScreen: React.FC = () => {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.6, duration: 0.4 }}
-        className="flex gap-4"
+        className="relative z-10 flex gap-4"
       >
         <motion.button 
           onClick={handleRetry} 
           className="btn-primary"
           whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.98 }}
+          whileTap={{ scale: 0.95 }}
         >
-          もう一度
+          🔄 もう一度！
         </motion.button>
         <motion.button 
           onClick={handleBackToSelect} 
           className="btn-ghost"
           whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.98 }}
+          whileTap={{ scale: 0.95 }}
         >
-          ステージ選択へ
+          📚 ステージ選択へ
         </motion.button>
       </motion.div>
     </div>
@@ -197,8 +205,8 @@ const ResultItem: React.FC<{ label: string; value: string }> = ({
   value,
 }) => (
   <div className="text-center">
-    <div className="text-muted text-xs uppercase tracking-wider mb-2">{label}</div>
-    <div className="text-primary text-xl font-medium">{value}</div>
+    <div className="text-pop-purple text-xs font-bold mb-2">{label}</div>
+    <div className="text-primary text-xl font-extrabold">{value}</div>
   </div>
 );
 
@@ -206,15 +214,15 @@ const ResultItem: React.FC<{ label: string; value: string }> = ({
 const getRankStyle = (rank: Rank): string => {
   switch (rank) {
     case 'S':
-      return 'border-accent text-accent';
+      return 'border-pop-yellow bg-gradient-to-br from-pop-yellow/20 to-pop-pink/20 text-pop-yellow';
     case 'A':
-      return 'border-accent/70 text-accent/70';
+      return 'border-pop-pink bg-gradient-to-br from-pop-pink/20 to-pop-purple/20 text-pop-pink';
     case 'B':
-      return 'border-secondary text-secondary';
+      return 'border-pop-purple bg-gradient-to-br from-pop-purple/20 to-pop-sky/20 text-pop-purple';
     case 'C':
-      return 'border-muted text-muted';
+      return 'border-pop-sky bg-gradient-to-br from-pop-sky/20 to-pop-mint/20 text-pop-sky';
     default:
-      return 'border-muted text-muted';
+      return 'border-pop-purple/50 text-pop-purple/50';
   }
 };
 
@@ -222,13 +230,13 @@ const getRankStyle = (rank: Rank): string => {
 const getRankMessage = (rank: Rank): string => {
   switch (rank) {
     case 'S':
-      return '🌟 素晴らしい！マスターレベルだ！';
+      return '🌟 すっごーい！天才だね！🌟';
     case 'A':
-      return '✨ 優秀な成績だ！';
+      return '✨ とってもよくできました！✨';
     case 'B':
-      return '👍 なかなかの腕前だ！';
+      return '👍 なかなかの腕前だね！';
     case 'C':
-      return '💪 修行を続けよう！';
+      return '💪 もっと練習しよう！';
     default:
       return 'お疲れ様でした！';
   }
