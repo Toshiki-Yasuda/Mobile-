@@ -90,11 +90,11 @@ export const LevelSelectScreen: React.FC = () => {
       <div className="relative z-10 w-full max-w-4xl mb-8">
         <button
           onClick={handleClick(() => navigateTo('title'))}
-          className="text-pop-purple hover:text-accent transition-colors text-sm mb-4 font-bold"
+          className="text-pop-purple hover:text-accent transition-colors text-base mb-4 font-bold"
         >
           ← タイトルに戻る
         </button>
-        <h1 className="text-2xl font-extrabold text-gradient">📚 修行の章を選択</h1>
+        <h1 className="text-3xl font-extrabold text-primary">📚 修行の章を選択</h1>
       </div>
 
       {/* チャプターリスト */}
@@ -121,38 +121,38 @@ export const LevelSelectScreen: React.FC = () => {
             >
               {/* チャプター番号 */}
               <div className="flex items-start justify-between mb-3">
-                <span className="text-pop-purple text-xs uppercase tracking-wider font-bold">
+                <span className="text-pop-purple text-sm uppercase tracking-wider font-bold">
                   第{chapter.id}章
                 </span>
                 {!unlocked && (
-                  <span className="text-xl">🔒</span>
+                  <span className="text-2xl">🔒</span>
                 )}
                 {unlocked && progress.cleared === progress.total && (
-                  <span className="text-xl">⭐</span>
+                  <span className="text-2xl">⭐</span>
                 )}
               </div>
 
               {/* タイトル */}
-              <h3 className="text-lg font-bold text-primary mb-1">
+              <h3 className="text-xl font-bold text-primary mb-1">
                 {chapter.name}
               </h3>
-              <p className="text-pop-purple text-sm mb-3 font-medium">
+              <p className="text-pop-purple text-base mb-3 font-medium">
                 {chapter.japaneseName}
               </p>
 
               {/* 説明 */}
-              <p className="text-primary/70 text-sm mb-4">{chapter.description}</p>
+              <p className="text-primary/70 text-base mb-4">{chapter.description}</p>
 
               {/* 進捗バー */}
               {unlocked && (
                 <div>
-                  <div className="flex justify-between text-xs text-pop-purple mb-2">
+                  <div className="flex justify-between text-sm text-pop-purple mb-2">
                     <span className="font-bold">進捗</span>
                     <span className="font-bold">
                       {progress.cleared}/{progress.total}
                     </span>
                   </div>
-                  <div className="h-2 bg-muted rounded-full overflow-hidden">
+                  <div className="h-3 bg-muted rounded-full overflow-hidden">
                     <div
                       className="h-full bg-gradient-to-r from-pop-pink to-pop-purple transition-all rounded-full"
                       style={{

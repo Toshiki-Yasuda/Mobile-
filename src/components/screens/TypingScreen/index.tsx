@@ -9,6 +9,7 @@ import { useSettingsStore } from '@/stores/settingsStore';
 import { useTyping } from '@/hooks/useTyping';
 import { useSound } from '@/hooks/useSound';
 import { useButtonClick } from '@/utils/soundUtils';
+import { bgmManager } from '@/utils/bgmManager';
 import { APP_CONFIG } from '@/constants/config';
 import { getWordsForStage } from '@/data/words';
 
@@ -61,6 +62,17 @@ export const TypingScreen: React.FC = () => {
     }
   }, []);
 
+  // タイピング画面ではBGM音量を下げる
+  useEffect(() => {
+    // BGM音量を30%に下げる
+    bgmManager.lowerVolume(0.30);
+    
+    // 画面を離れるときに音量を元に戻す
+    return () => {
+      bgmManager.restoreVolume();
+    };
+  }, []);
+
   // セッション開始
   useEffect(() => {
     if (!session) {
@@ -91,7 +103,7 @@ export const TypingScreen: React.FC = () => {
 
     return (
       <motion.div 
-        className="text-xl tracking-wider bg-white/80 backdrop-blur-sm border-2 border-pop-purple/20 rounded-xl px-6 py-3 inline-block shadow-card"
+        className="text-2xl tracking-wider bg-white/80 backdrop-blur-sm border-2 border-pop-purple/20 rounded-xl px-6 py-4 inline-block shadow-card"
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.2 }}
@@ -127,20 +139,20 @@ export const TypingScreen: React.FC = () => {
       <div className="relative z-10 w-full max-w-4xl flex justify-between items-center mb-8">
         <button
           onClick={handleClick(() => navigateTo('stageSelect'))}
-          className="text-pop-purple hover:text-accent transition-colors text-sm font-bold"
+          className="text-pop-purple hover:text-accent transition-colors text-base font-bold"
         >
           ✕ やめる
         </button>
 
         <div className="flex gap-4 text-center">
           <motion.div 
-            className="bg-white border-2 border-pop-purple/30 rounded-xl px-5 py-3 min-w-[100px] shadow-card"
+            className="bg-white border-2 border-pop-purple/30 rounded-xl px-5 py-3 min-w-[110px] shadow-card"
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 0.1 }}
             whileHover={{ scale: 1.05 }}
           >
-            <div className="text-pop-purple text-xs font-bold mb-1">⭐ スコア</div>
+            <div className="text-pop-purple text-sm font-bold mb-1">⭐ スコア</div>
             <div className="text-primary text-2xl font-extrabold">{score.toLocaleString()}</div>
           </motion.div>
           <motion.div 
@@ -155,19 +167,19 @@ export const TypingScreen: React.FC = () => {
             transition={{ delay: 0.2, repeat: combo >= 10 ? Infinity : 0, repeatDelay: 1 }}
             whileHover={{ scale: 1.05 }}
           >
-            <div className="text-pop-purple text-xs font-bold mb-1">🔥 コンボ</div>
+            <div className="text-pop-purple text-sm font-bold mb-1">🔥 コンボ</div>
             <div className={`text-2xl font-extrabold ${combo >= 10 ? 'text-pop-pink' : 'text-primary'}`}>
               {combo}
             </div>
           </motion.div>
           <motion.div 
-            className="bg-white border-2 border-pop-coral/30 rounded-xl px-5 py-3 min-w-[100px] shadow-card"
+            className="bg-white border-2 border-pop-coral/30 rounded-xl px-5 py-3 min-w-[110px] shadow-card"
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 0.3 }}
             whileHover={{ scale: 1.05 }}
           >
-            <div className="text-pop-coral text-xs font-bold mb-1">💔 ミス</div>
+            <div className="text-pop-coral text-sm font-bold mb-1">💔 ミス</div>
             <div className="text-error text-2xl font-extrabold">{missCount}</div>
           </motion.div>
         </div>
@@ -186,7 +198,7 @@ export const TypingScreen: React.FC = () => {
             }}
           />
         </div>
-        <div className="text-right text-pop-purple text-xs mt-2 font-bold">
+        <div className="text-right text-pop-purple text-sm mt-2 font-bold">
           {session.currentWordIndex + 1} / {session.words.length} 📝
         </div>
       </div>
@@ -205,7 +217,7 @@ export const TypingScreen: React.FC = () => {
               }}
               exit={{ opacity: 0, scale: 0.5 }}
               transition={{ type: 'spring', stiffness: 300, damping: 20 }}
-              className="text-pop-pink text-lg md:text-xl font-extrabold mb-6"
+              className="text-pop-pink text-xl md:text-2xl font-extrabold mb-6"
             >
               🔥 {combo} COMBO! 🔥
             </motion.div>
@@ -221,11 +233,11 @@ export const TypingScreen: React.FC = () => {
           className="mb-8"
         >
           <motion.div 
-            className="text-4xl md:text-5xl font-extrabold text-primary mb-4"
+            className="text-5xl md:text-6xl font-extrabold text-primary mb-4"
           >
             {currentWord.display}
           </motion.div>
-          <div className="text-xl text-pop-purple mb-6 font-bold tracking-wider">
+          <div className="text-2xl text-pop-purple mb-6 font-bold tracking-wider">
             {currentWord.hiragana}
           </div>
         </motion.div>
@@ -242,7 +254,7 @@ export const TypingScreen: React.FC = () => {
       )}
 
       {/* 操作説明 */}
-      <div className="relative z-10 text-pop-purple/60 text-xs mt-8 font-bold">
+      <div className="relative z-10 text-pop-purple/60 text-sm mt-8 font-bold">
         ESCキーで中断 🔙
       </div>
     </div>

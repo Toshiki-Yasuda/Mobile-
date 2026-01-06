@@ -2,17 +2,24 @@
  * 結果画面コンポーネント
  */
 
-import React, { useMemo } from 'react';
+import React, { useMemo, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { useGameStore } from '@/stores/gameStore';
 import { useProgressStore } from '@/stores/progressStore';
 import { useButtonClick } from '@/utils/soundUtils';
 import { useSound } from '@/hooks/useSound';
+import { chapter1Stages, chapter2Stages } from '@/data/words';
 import type { Rank } from '@/types/game';
+
+// チャプターごとのステージ数
+const CHAPTER_STAGE_COUNTS: Record<number, number> = {
+  1: Object.keys(chapter1Stages).length,
+  2: Object.keys(chapter2Stages).length,
+};
 
 export const ResultScreen: React.FC = () => {
   const { session, navigateTo, resetSession, selectedChapter, selectedStage } = useGameStore();
-  const { saveStageResult, updateStatistics, updateStreak } = useProgressStore();
+  const { saveStageResult, updateStatistics, updateStreak, clearedStages, unlockChapter } = useProgressStore();
   const { handleClick } = useButtonClick();
   const { playSuccessSound, playResultSound, playAchievementSound } = useSound();
 
@@ -82,8 +89,52 @@ export const ResultScreen: React.FC = () => {
         rank: result.rank,
         clearedAt: new Date().toISOString(),
       });
+
+      // チャプターの全ステージをクリアしたか確認して、次のチャプターを解放
+      const totalStagesInChapter = CHAPTER_STAGE_COUNTS[selectedChapter] || 0;
+      
+      // 現在のステージを含めてクリア済みステージをカウント
+      const clearedStagesInChapter = Object.keys(clearedStages).filter(
+        id => id.startsWith(`${selectedChapter}-`)
+      ).length;
+      
+      // 今回クリアしたステージがまだカウントされていない場合を考慮
+      const willBeCleared = clearedStagesInChapter + (clearedStages[stageId] ? 0 : 1);
+      
+      // 全ステージクリアしたら次のチャプターを解放
+      if (willBeCleared >= totalStagesInChapter) {
+        const nextChapter = selectedChapter + 1;
+        if (CHAPTER_STAGE_COUNTS[nextChapter]) {
+          unlockChapter(nextChapter);
+        }
+      }
     }
-  }, [result, updateStreak, updateStatistics, saveStageResult, selectedChapter, selectedStage, playSuccessSound, playResultSound, playAchievementSound]);
+  }, [result, updateStreak, updateStatistics, saveStageResult, selectedChapter, selectedStage, playSuccessSound, playResultSound, playAchievementSound, clearedStages, unlockChapter]);
+
+  // チャプター内のステージ数を取得
+  const getStageCount = useCallback((chapter: number): number => {
+    return CHAPTER_STAGE_COUNTS[chapter] || 0;
+  }, []);
+
+  // 次のステージがあるかどうか
+  const hasNextStage = useMemo(() => {
+    const stageCount = getStageCount(selectedChapter);
+    return selectedStage < stageCount;
+  }, [selectedChapter, selectedStage, getStageCount]);
+
+  // 次のステージへ進む
+  const handleNextStage = useCallback(() => {
+    resetSession();
+    if (hasNextStage) {
+      // 次のステージへ
+      const { selectStage, navigateTo: nav } = useGameStore.getState();
+      selectStage(selectedChapter, selectedStage + 1);
+      nav('typing');
+    } else {
+      // 最後のステージだったのでステージ選択へ
+      navigateTo('stageSelect');
+    }
+  }, [resetSession, hasNextStage, selectedChapter, selectedStage, navigateTo]);
 
   const handleRetry = handleClick(() => {
     resetSession();
@@ -94,6 +145,19 @@ export const ResultScreen: React.FC = () => {
     resetSession();
     navigateTo('stageSelect');
   });
+
+  // Enterキーで次のステージへ
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        handleNextStage();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [handleNextStage]);
 
   if (!result) {
     return (
@@ -109,8 +173,6 @@ export const ResultScreen: React.FC = () => {
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-10 left-10 w-40 h-40 bg-pop-pink/15 rounded-full blur-2xl animate-float" />
         <div className="absolute bottom-20 right-10 w-36 h-36 bg-pop-purple/15 rounded-full blur-2xl animate-float" style={{ animationDelay: '1s' }} />
-        <div className="absolute top-1/3 right-1/4 text-4xl animate-sparkle">🎉</div>
-        <div className="absolute bottom-1/3 left-1/4 text-3xl animate-sparkle" style={{ animationDelay: '0.5s' }}>✨</div>
       </div>
 
       {/* ランク表示 */}
@@ -146,7 +208,7 @@ export const ResultScreen: React.FC = () => {
             playAchievementSound(result.rank);
           }, 100);
         }}
-        className="relative z-10 text-2xl md:text-3xl font-extrabold text-gradient mb-8"
+        className="relative z-10 text-3xl md:text-4xl font-extrabold text-primary mb-8"
       >
         {getRankMessage(result.rank)}
       </motion.h1>
@@ -176,24 +238,40 @@ export const ResultScreen: React.FC = () => {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.6, duration: 0.4 }}
-        className="relative z-10 flex gap-4"
+        className="relative z-10 flex flex-col items-center gap-4"
       >
+        {/* メインボタン：次のステージへ */}
         <motion.button 
-          onClick={handleRetry} 
-          className="btn-primary"
+          onClick={handleNextStage} 
+          className="btn-primary text-xl px-10 py-4"
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
         >
-          🔄 もう一度！
+          {hasNextStage ? '➡️ 次のステージへ！' : '🏠 ステージ選択へ'}
+          <span className="ml-2 text-base opacity-75">(Enter)</span>
         </motion.button>
-        <motion.button 
-          onClick={handleBackToSelect} 
-          className="btn-ghost"
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-        >
-          📚 ステージ選択へ
-        </motion.button>
+
+        {/* サブボタン */}
+        <div className="flex gap-4">
+          <motion.button 
+            onClick={handleRetry} 
+            className="btn-ghost"
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+          >
+            🔄 もう一度
+          </motion.button>
+          {hasNextStage && (
+            <motion.button 
+              onClick={handleBackToSelect} 
+              className="btn-ghost"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              📚 ステージ選択
+            </motion.button>
+          )}
+        </div>
       </motion.div>
     </div>
   );
@@ -205,8 +283,8 @@ const ResultItem: React.FC<{ label: string; value: string }> = ({
   value,
 }) => (
   <div className="text-center">
-    <div className="text-pop-purple text-xs font-bold mb-2">{label}</div>
-    <div className="text-primary text-xl font-extrabold">{value}</div>
+    <div className="text-pop-purple text-sm font-bold mb-2">{label}</div>
+    <div className="text-primary text-2xl font-extrabold">{value}</div>
   </div>
 );
 

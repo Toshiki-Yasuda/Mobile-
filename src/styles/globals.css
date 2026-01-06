@@ -6,6 +6,7 @@
 @layer base {
   html {
     font-family: 'M PLUS Rounded 1c', 'Nunito', 'Inter', system-ui, sans-serif;
+    font-size: 18px; /* ベースフォントサイズを大きく */
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
@@ -14,6 +15,8 @@
     @apply bg-background text-primary;
     overflow-x: hidden;
     background: linear-gradient(135deg, #fef7ff 0%, #fdf4ff 50%, #fae8ff 100%);
+    font-size: 1.1rem; /* 本文も少し大きく */
+    line-height: 1.6;
   }
 
   /* フォーカス時のアウトライン */

@@ -146,14 +146,14 @@ export const StageSelectScreen: React.FC = () => {
       <div className="relative z-10 w-full max-w-4xl mb-8">
         <button
           onClick={handleClick(() => navigateTo('levelSelect'))}
-          className="text-pop-purple hover:text-accent transition-colors text-sm mb-4 font-bold"
+          className="text-pop-purple hover:text-accent transition-colors text-base mb-4 font-bold"
         >
           ← チャプター選択に戻る
         </button>
-        <h1 className="text-2xl font-extrabold text-gradient mb-2">
+        <h1 className="text-3xl font-extrabold text-primary mb-2">
           📖 第{chapter.id}章 {chapter.name}
         </h1>
-        <p className="text-pop-purple text-sm font-medium">{chapter.japaneseName}</p>
+        <p className="text-pop-purple text-base font-medium">{chapter.japaneseName}</p>
       </div>
 
       {/* ステージリスト */}
@@ -182,26 +182,26 @@ export const StageSelectScreen: React.FC = () => {
             >
               {/* ステージ番号 */}
               <div className="flex items-start justify-between mb-3">
-                <span className="text-pop-purple text-xs uppercase tracking-wider font-bold">
+                <span className="text-pop-purple text-sm uppercase tracking-wider font-bold">
                   ステージ {stage.number}
                 </span>
                 {!unlocked && (
-                  <span className="text-xl">🔒</span>
+                  <span className="text-2xl">🔒</span>
                 )}
                 {cleared && (
-                  <span className="text-xl">⭐</span>
+                  <span className="text-2xl">⭐</span>
                 )}
               </div>
 
               {/* タイトル */}
-              <h3 className="text-lg font-bold text-primary mb-1">
+              <h3 className="text-xl font-bold text-primary mb-1">
                 {stage.name}
               </h3>
-              <p className="text-primary/70 text-sm mb-4">{stage.description}</p>
+              <p className="text-primary/70 text-base mb-4">{stage.description}</p>
 
               {/* クリア情報 */}
               {cleared && result && (
-                <div className="text-xs text-pop-purple font-bold space-x-3">
+                <div className="text-sm text-pop-purple font-bold space-x-3">
                   <span>🏆 {result.score.toLocaleString()}</span>
                   <span>🎯 {result.accuracy.toFixed(1)}%</span>
                 </div>

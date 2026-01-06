@@ -2,11 +2,12 @@
  * タイトル画面コンポーネント
  */
 
-import React from 'react';
+import React, { useEffect, useRef, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { useGameStore } from '@/stores/gameStore';
 import { useSettingsStore } from '@/stores/settingsStore';
 import { useButtonClick } from '@/utils/soundUtils';
+import { bgmManager } from '@/utils/bgmManager';
 
 export const TitleScreen: React.FC = () => {
   const { navigateTo } = useGameStore();
@@ -14,46 +15,117 @@ export const TitleScreen: React.FC = () => {
     soundEnabled, 
     bgmEnabled, 
     soundVolume,
+    bgmVolume,
     setSoundEnabled, 
     setBgmEnabled,
     setSoundVolume 
   } = useSettingsStore();
   const { handleClick } = useButtonClick();
   const [showVolumeSlider, setShowVolumeSlider] = React.useState(false);
+  const [showStartOverlay, setShowStartOverlay] = React.useState(true);
+  const hasInteractedRef = useRef(false);
+
+  // BGMを再生（普段は80%の音量）
+  const playBgm = useCallback(() => {
+    const volume = (bgmVolume / 100) * 0.8;
+    bgmManager.setOriginalVolume(volume);
+    bgmManager.play(volume);
+  }, [bgmVolume]);
+
+  // BGMを停止
+  const pauseBgm = useCallback(() => {
+    bgmManager.pause();
+  }, []);
+
+  // BGM音量の更新（普段は80%の音量）
+  useEffect(() => {
+    const volume = (bgmVolume / 100) * 0.8;
+    bgmManager.setOriginalVolume(volume);
+    bgmManager.setVolume(volume);
+  }, [bgmVolume]);
+
+  // BGMの有効/無効に応じて再生/停止
+  useEffect(() => {
+    if (bgmEnabled && hasInteractedRef.current) {
+      playBgm();
+    } else {
+      pauseBgm();
+    }
+  }, [bgmEnabled, playBgm, pauseBgm]);
+
+  // タイトル画面に戻ってきたときにBGM音量を元に戻す
+  useEffect(() => {
+    bgmManager.restoreVolume();
+  }, []);
+
+  // スタートオーバーレイをクリックしたときの処理
+  const handleStart = useCallback(() => {
+    hasInteractedRef.current = true;
+    setShowStartOverlay(false);
+    if (bgmEnabled) {
+      playBgm();
+    }
+  }, [bgmEnabled, playBgm]);
 
   return (
     <div className="screen-container relative overflow-hidden">
+      {/* スタートオーバーレイ */}
+      {showStartOverlay && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="absolute inset-0 z-50 flex flex-col items-center justify-center bg-gradient-to-br from-purple-900/95 via-pink-900/95 to-indigo-900/95 cursor-pointer"
+          onClick={handleStart}
+        >
+          <motion.img 
+            src="/Mobile-/title-image.png" 
+            alt="HUNTER×HUNTER タイピングマスター"
+            className="w-full max-w-md mx-auto rounded-2xl shadow-2xl mb-8"
+            initial={{ scale: 0.9, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ duration: 0.5 }}
+          />
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3, duration: 0.5 }}
+            className="text-center"
+          >
+            <motion.p 
+              className="text-white text-2xl font-bold mb-2"
+              animate={{ scale: [1, 1.05, 1] }}
+              transition={{ duration: 1.5, repeat: Infinity }}
+            >
+              🎮 タップしてスタート！
+            </motion.p>
+            <p className="text-white/60 text-sm">Click to Start</p>
+          </motion.div>
+        </motion.div>
+      )}
+
       {/* 背景デコレーション */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-10 left-10 w-32 h-32 bg-pop-pink/20 rounded-full blur-2xl animate-float" />
         <div className="absolute top-1/4 right-20 w-40 h-40 bg-pop-purple/20 rounded-full blur-2xl animate-float" style={{ animationDelay: '0.5s' }} />
         <div className="absolute bottom-20 left-1/4 w-36 h-36 bg-pop-sky/20 rounded-full blur-2xl animate-float" style={{ animationDelay: '1s' }} />
         <div className="absolute bottom-1/4 right-1/4 w-28 h-28 bg-pop-mint/20 rounded-full blur-2xl animate-float" style={{ animationDelay: '1.5s' }} />
-        {/* キラキラ */}
-        <div className="absolute top-20 right-1/3 text-3xl animate-sparkle">✨</div>
-        <div className="absolute bottom-32 left-1/3 text-2xl animate-sparkle" style={{ animationDelay: '0.7s' }}>⭐</div>
-        <div className="absolute top-1/2 right-20 text-2xl animate-sparkle" style={{ animationDelay: '1.2s' }}>💫</div>
       </div>
 
       {/* コンテンツ */}
       <div className="relative z-10 text-center max-w-2xl">
-        {/* タイトル */}
+        {/* タイトル画像 */}
         <motion.div
           initial={{ opacity: 0, y: -30, scale: 0.9 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
           transition={{ duration: 0.6, ease: [0.25, 0.46, 0.45, 0.94] }}
+          className="mb-8"
         >
-          <h1 className="text-4xl md:text-5xl font-extrabold mb-4 text-primary drop-shadow-lg">
-            ✨ HUNTER×HUNTER ✨
-          </h1>
-          <motion.h2 
-            className="text-xl md:text-2xl font-bold mb-16 text-pop-purple"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.3, duration: 0.5 }}
-          >
-            タイピングマスター 🎮
-          </motion.h2>
+          <img 
+            src="/Mobile-/title-image.png" 
+            alt="HUNTER×HUNTER タイピングマスター"
+            className="w-full max-w-lg mx-auto rounded-2xl shadow-2xl"
+          />
         </motion.div>
 
         {/* メニュー */}
@@ -66,7 +138,7 @@ export const TitleScreen: React.FC = () => {
           {/* メインボタン */}
           <motion.button
             onClick={handleClick(() => navigateTo('levelSelect'))}
-            className="btn-primary w-72 text-lg font-bold"
+            className="btn-primary w-80 text-xl font-bold py-4"
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
           >
@@ -84,7 +156,7 @@ export const TitleScreen: React.FC = () => {
               <motion.button
                 key={item.label}
                 onClick={handleClick(item.action)}
-                className="btn-ghost w-60 text-sm font-bold"
+                className="btn-ghost w-72 text-base font-bold py-3"
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 0.5 + index * 0.1, duration: 0.4 }}
@@ -116,7 +188,16 @@ export const TitleScreen: React.FC = () => {
               {soundEnabled ? '🔊' : '🔇'}
             </button>
             <button
-              onClick={() => setBgmEnabled(!bgmEnabled)}
+              onClick={() => {
+                hasInteractedRef.current = true;
+                const newState = !bgmEnabled;
+                setBgmEnabled(newState);
+                if (newState) {
+                  playBgm();
+                } else {
+                  pauseBgm();
+                }
+              }}
               className={`text-2xl p-2 rounded-full transition-all ${bgmEnabled ? 'bg-pop-purple/20' : 'bg-gray-200'}`}
               aria-label={bgmEnabled ? 'BGMオン' : 'BGMオフ'}
             >
@@ -159,7 +240,7 @@ export const TitleScreen: React.FC = () => {
 
       {/* フッター */}
       <div className="absolute bottom-6 left-0 right-0 text-center text-pop-purple/60 text-sm font-medium">
-        💖 HUNTER×HUNTER Typing Master 💖
+        © HUNTER×HUNTER Typing Master
       </div>
     </div>
   );
