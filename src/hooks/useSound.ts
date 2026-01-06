@@ -77,34 +77,99 @@ export function useSound() {
   }, [getAudioContext, soundEnabled, soundVolume]);
 
   /**
-   * タイピング音 (通常)
+   * 重厚な音を生成（複数のオシレーターを重ねる）
+   */
+  const playRichSound = useCallback(async (
+    frequencies: number[],
+    type: OscillatorType = 'square',
+    duration: number = 0.1
+  ) => {
+    if (!soundEnabled) return;
+
+    try {
+      const ctx = await getAudioContext();
+      
+      if (ctx.state === 'suspended') {
+        await ctx.resume();
+      }
+
+      const gainNode = ctx.createGain();
+      const volume = soundVolume / 100;
+      const baseVolume = volume * 0.3;
+
+      // 各周波数でオシレーターを作成
+      frequencies.forEach((freq, index) => {
+        const oscillator = ctx.createOscillator();
+        oscillator.type = type;
+        oscillator.frequency.setValueAtTime(freq, ctx.currentTime);
+        
+        // 各音の音量を少しずつ変えて深みを出す
+        const individualGain = ctx.createGain();
+        const individualVolume = baseVolume * (1 - index * 0.2);
+        individualGain.gain.setValueAtTime(individualVolume, ctx.currentTime);
+        individualGain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + duration);
+        
+        oscillator.connect(individualGain);
+        individualGain.connect(gainNode);
+        
+        oscillator.start();
+        oscillator.stop(ctx.currentTime + duration);
+      });
+
+      // マスターゲイン
+      gainNode.gain.setValueAtTime(baseVolume, ctx.currentTime);
+      gainNode.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + duration);
+      gainNode.connect(ctx.destination);
+    } catch (error) {
+      console.warn('Rich sound playback failed:', error);
+    }
+  }, [getAudioContext, soundEnabled, soundVolume]);
+
+  /**
+   * タイピング音 (通常) - より重厚に
    */
   const playTypeSound = useCallback(() => {
-    playOscillator(440, 'sine', 0.05);
-  }, [playOscillator]);
+    // 低めの周波数でsquare波を使用して重厚感を出す
+    playRichSound([200, 300], 'square', 0.08);
+  }, [playRichSound]);
 
   /**
-   * タイピング音 (決定/Enter)
+   * タイピング音 (決定/Enter) - 重厚な和音
    */
   const playConfirmSound = useCallback(() => {
-    // 爽快な決定音: 2つの音を重ねて鳴らす
-    playOscillator(880, 'sine', 0.15);
-    setTimeout(() => {
-      playOscillator(1320, 'sine', 0.1);
-    }, 50);
-  }, [playOscillator]);
+    // 重厚な和音: 3つの音を重ねる
+    playRichSound([400, 600, 800], 'square', 0.2);
+  }, [playRichSound]);
 
   /**
-   * ミス音
+   * ミス音 - より重厚に
    */
   const playMissSound = useCallback(() => {
-    playOscillator(150, 'sawtooth', 0.1);
+    playRichSound([100, 150], 'sawtooth', 0.15);
+  }, [playRichSound]);
+
+  /**
+   * ゲーム開始音
+   */
+  const playStartSound = useCallback(() => {
+    // 上昇する音で開始感を出す
+    playRichSound([300, 450, 600], 'square', 0.3);
+  }, [playRichSound]);
+
+  /**
+   * ボタンクリック音
+   */
+  const playClickSound = useCallback(() => {
+    // 軽快なクリック音
+    playOscillator(800, 'square', 0.05);
   }, [playOscillator]);
 
   return {
     playTypeSound,
     playConfirmSound,
     playMissSound,
+    playStartSound,
+    playClickSound,
   };
 }
 

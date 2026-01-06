@@ -6,11 +6,13 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { useGameStore } from '@/stores/gameStore';
 import { useSettingsStore } from '@/stores/settingsStore';
+import { useButtonClick } from '@/utils/soundUtils';
 
 export const TitleScreen: React.FC = () => {
   const { navigateTo } = useGameStore();
   const { soundEnabled, bgmEnabled, setSoundEnabled, setBgmEnabled } =
     useSettingsStore();
+  const { handleClick } = useButtonClick();
 
   return (
     <div className="screen-container bg-hunter-dark">
@@ -55,7 +57,7 @@ export const TitleScreen: React.FC = () => {
         >
           {/* メインボタン */}
           <button
-            onClick={() => navigateTo('levelSelect')}
+            onClick={handleClick(() => navigateTo('levelSelect'))}
             className="btn-primary w-64 text-lg nen-glow"
           >
             ▶ 修行を始める
@@ -64,25 +66,25 @@ export const TitleScreen: React.FC = () => {
           {/* サブメニュー */}
           <div className="flex flex-col items-center space-y-2">
             <button
-              onClick={() => navigateTo('timeAttack')}
+              onClick={handleClick(() => navigateTo('timeAttack'))}
               className="btn-ghost w-48"
             >
               タイムアタック
             </button>
             <button
-              onClick={() => navigateTo('freePlay')}
+              onClick={handleClick(() => navigateTo('freePlay'))}
               className="btn-ghost w-48"
             >
               フリー練習
             </button>
             <button
-              onClick={() => navigateTo('statistics')}
+              onClick={handleClick(() => navigateTo('statistics'))}
               className="btn-ghost w-48"
             >
               成績を見る
             </button>
             <button
-              onClick={() => navigateTo('settings')}
+              onClick={handleClick(() => navigateTo('settings'))}
               className="btn-ghost w-48"
             >
               設定

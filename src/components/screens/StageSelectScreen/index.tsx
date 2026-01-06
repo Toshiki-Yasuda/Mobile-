@@ -6,6 +6,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { useGameStore } from '@/stores/gameStore';
 import { useProgressStore } from '@/stores/progressStore';
+import { useButtonClick } from '@/utils/soundUtils';
 import { getWordsForStage } from '@/data/words';
 
 // チャプター情報
@@ -93,6 +94,7 @@ const CHAPTERS = [
 export const StageSelectScreen: React.FC = () => {
   const { selectedChapter, selectStage, navigateTo, startSession } = useGameStore();
   const { isStageCleared, getStageResult } = useProgressStore();
+  const { handleClick } = useButtonClick();
 
   const chapter = CHAPTERS.find((c) => c.id === selectedChapter);
 
@@ -101,7 +103,7 @@ export const StageSelectScreen: React.FC = () => {
       <div className="screen-container bg-hunter-dark">
         <div className="text-error">チャプターが見つかりません</div>
         <button
-          onClick={() => navigateTo('levelSelect')}
+          onClick={handleClick(() => navigateTo('levelSelect'))}
           className="text-hunter-gold hover:text-hunter-gold-light transition mt-4"
         >
           ← チャプター選択に戻る
@@ -136,7 +138,7 @@ export const StageSelectScreen: React.FC = () => {
       {/* ヘッダー */}
       <div className="w-full max-w-4xl mb-8">
         <button
-          onClick={() => navigateTo('levelSelect')}
+          onClick={handleClick(() => navigateTo('levelSelect'))}
           className="text-hunter-gold hover:text-hunter-gold-light transition"
         >
           ← チャプター選択に戻る
@@ -161,7 +163,7 @@ export const StageSelectScreen: React.FC = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.1 }}
-              onClick={() => unlocked && handleStageSelect(stage.number)}
+              onClick={unlocked ? handleClick(() => handleStageSelect(stage.number)) : undefined}
               disabled={!unlocked}
               className={`card text-left transition-all ${
                 unlocked

@@ -6,11 +6,13 @@ import React, { useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { useGameStore } from '@/stores/gameStore';
 import { useProgressStore } from '@/stores/progressStore';
+import { useButtonClick } from '@/utils/soundUtils';
 import type { Rank } from '@/types/game';
 
 export const ResultScreen: React.FC = () => {
   const { session, navigateTo, resetSession, selectedChapter, selectedStage } = useGameStore();
   const { saveStageResult, updateStatistics, updateStreak } = useProgressStore();
+  const { handleClick } = useButtonClick();
 
   // 結果を計算
   const result = useMemo(() => {
@@ -72,15 +74,15 @@ export const ResultScreen: React.FC = () => {
     }
   }, [result, updateStreak, updateStatistics, saveStageResult, selectedChapter, selectedStage]);
 
-  const handleRetry = () => {
+  const handleRetry = handleClick(() => {
     resetSession();
     navigateTo('typing');
-  };
+  });
 
-  const handleBackToSelect = () => {
+  const handleBackToSelect = handleClick(() => {
     resetSession();
     navigateTo('stageSelect');
-  };
+  });
 
   if (!result) {
     return (

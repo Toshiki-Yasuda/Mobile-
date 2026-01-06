@@ -6,6 +6,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { useGameStore } from '@/stores/gameStore';
 import { useProgressStore } from '@/stores/progressStore';
+import { useButtonClick } from '@/utils/soundUtils';
 
 // チャプターデータ
 const CHAPTERS = [
@@ -56,6 +57,7 @@ const CHAPTERS = [
 export const LevelSelectScreen: React.FC = () => {
   const { navigateTo, selectChapter } = useGameStore();
   const { isChapterUnlocked, clearedStages } = useProgressStore();
+  const { handleClick } = useButtonClick();
 
   // チャプターの進捗を計算
   const getChapterProgress = (chapterId: number) => {
@@ -76,7 +78,7 @@ export const LevelSelectScreen: React.FC = () => {
       {/* ヘッダー */}
       <div className="w-full max-w-4xl mb-8">
         <button
-          onClick={() => navigateTo('title')}
+          onClick={handleClick(() => navigateTo('title'))}
           className="text-hunter-gold hover:text-hunter-gold-light transition"
         >
           ← タイトルに戻る
@@ -96,7 +98,7 @@ export const LevelSelectScreen: React.FC = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.1 }}
-              onClick={() => unlocked && handleChapterSelect(chapter.id)}
+              onClick={unlocked ? handleClick(() => handleChapterSelect(chapter.id)) : undefined}
               disabled={!unlocked}
               className={`card text-left transition-all ${
                 unlocked

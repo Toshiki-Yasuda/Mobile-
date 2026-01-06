@@ -7,12 +7,16 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useGameStore } from '@/stores/gameStore';
 import { useSettingsStore } from '@/stores/settingsStore';
 import { useTyping } from '@/hooks/useTyping';
+import { useSound } from '@/hooks/useSound';
+import { useButtonClick } from '@/utils/soundUtils';
 import { APP_CONFIG } from '@/constants/config';
 import { getWordsForStage } from '@/data/words';
 
 export const TypingScreen: React.FC = () => {
   const { session, startSession, navigateTo, selectedChapter, selectedStage } = useGameStore();
   const { keyboardVisible, romajiGuideLevel } = useSettingsStore();
+  const { playStartSound } = useSound();
+  const { handleClick } = useButtonClick();
   const containerRef = useRef<HTMLDivElement>(null);
   const {
     currentWord,
@@ -70,8 +74,12 @@ export const TypingScreen: React.FC = () => {
       }
 
       startSession(words);
+      // ゲーム開始音を再生
+      setTimeout(() => {
+        playStartSound();
+      }, 100);
     }
-  }, [session, startSession, selectedChapter, selectedStage, navigateTo]);
+  }, [session, startSession, selectedChapter, selectedStage, navigateTo, playStartSound]);
 
   // ローマ字の表示を生成
   const renderRomaji = () => {
@@ -103,7 +111,7 @@ export const TypingScreen: React.FC = () => {
       {/* ヘッダー */}
       <div className="w-full max-w-4xl flex justify-between items-center mb-8">
         <button
-          onClick={() => navigateTo('stageSelect')}
+          onClick={handleClick(() => navigateTo('stageSelect'))}
           className="text-hunter-gold/60 hover:text-hunter-gold transition"
         >
           ✕ やめる
