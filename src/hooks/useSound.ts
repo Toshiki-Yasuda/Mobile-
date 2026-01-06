@@ -27,12 +27,22 @@ export function useSound() {
       audioContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)();
     }
     
-    // AudioContextがsuspended状態の場合はresume
+    // AudioContextがsuspended状態の場合はresume（確実に有効化）
     if (audioContextRef.current.state === 'suspended') {
       try {
         await audioContextRef.current.resume();
+        // resume後もsuspendedの場合は再試行
+        if (audioContextRef.current.state === 'suspended') {
+          await audioContextRef.current.resume();
+        }
       } catch (error) {
         console.warn('AudioContext resume failed:', error);
+        // エラーが発生した場合は新しいコンテキストを作成
+        try {
+          audioContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)();
+        } catch (e) {
+          console.error('Failed to create AudioContext:', e);
+        }
       }
     }
     
@@ -61,7 +71,7 @@ export function useSound() {
 
       // 音量の設定 (0-100 を 0-1 に変換、より聞こえやすい音量に)
       const volume = soundVolume / 100;
-      const baseVolume = volume * 0.5; // 0.5に設定して音量を上げる
+      const baseVolume = volume * 0.6; // 0.6に設定して音量を上げる
       gainNode.gain.setValueAtTime(baseVolume, ctx.currentTime);
       gainNode.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + duration);
 
@@ -95,7 +105,7 @@ export function useSound() {
 
       const gainNode = ctx.createGain();
       const volume = soundVolume / 100;
-      const baseVolume = volume * 0.3;
+      const baseVolume = volume * 0.4; // 0.3から0.4に上げる
 
       // 各周波数でオシレーターを作成
       frequencies.forEach((freq, index) => {
@@ -142,26 +152,27 @@ export function useSound() {
   }, [playRichSound]);
 
   /**
-   * ミス音 - より重厚に
+   * ミス音 - 柔らかく控えめな音に変更
    */
   const playMissSound = useCallback(() => {
-    playRichSound([100, 150], 'sawtooth', 0.15);
-  }, [playRichSound]);
+    // 柔らかいtriangle波で、短く控えめな音
+    playOscillator(350, 'triangle', 0.08);
+  }, [playOscillator]);
 
   /**
    * ゲーム開始音
    */
   const playStartSound = useCallback(() => {
-    // 上昇する音で開始感を出す
-    playRichSound([300, 450, 600], 'square', 0.3);
+    // 上昇する音で開始感を出す（確実に鳴るように音量を上げる）
+    playRichSound([300, 450, 600], 'square', 0.25);
   }, [playRichSound]);
 
   /**
    * ボタンクリック音
    */
   const playClickSound = useCallback(() => {
-    // 軽快なクリック音
-    playOscillator(800, 'square', 0.05);
+    // 軽快なクリック音（確実に鳴るように音量を上げる）
+    playOscillator(600, 'square', 0.06);
   }, [playOscillator]);
 
   return {

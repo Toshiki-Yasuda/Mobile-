@@ -74,10 +74,10 @@ export const TypingScreen: React.FC = () => {
       }
 
       startSession(words);
-      // ゲーム開始音を再生
+      // ゲーム開始音を再生（AudioContextが確実に初期化されるように少し遅延）
       setTimeout(() => {
         playStartSound();
-      }, 100);
+      }, 200);
     }
   }, [session, startSession, selectedChapter, selectedStage, navigateTo, playStartSound]);
 

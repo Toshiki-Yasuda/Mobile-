@@ -13,8 +13,12 @@ export function useButtonClick() {
 
   const handleClick = (callback: () => void) => {
     return () => {
+      // 音を先に鳴らしてからコールバックを実行
       playClickSound();
-      callback();
+      // 少し遅延させてからコールバックを実行（音が確実に鳴るように）
+      setTimeout(() => {
+        callback();
+      }, 10);
     };
   };
 
