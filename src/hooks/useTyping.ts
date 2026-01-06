@@ -6,6 +6,7 @@ import { useCallback, useEffect, useRef } from 'react';
 import { useGameStore } from '@/stores/gameStore';
 import { useProgressStore } from '@/stores/progressStore';
 import { useSettingsStore } from '@/stores/settingsStore';
+import { useSound } from '@/hooks/useSound';
 import {
   createInitialState,
   processKeyInput,
@@ -28,7 +29,7 @@ export function useTyping() {
   } = useGameStore();
 
   const { updateKeyStats, updateStatistics } = useProgressStore();
-  const { soundEnabled } = useSettingsStore();
+  const { playTypeSound, playConfirmSound, playMissSound } = useSound();
 
   // キー入力のタイムスタンプ
   const lastKeyTimeRef = useRef<number>(0);
@@ -68,7 +69,7 @@ export function useTyping() {
       if (result.isMiss) {
         // ミス処理
         recordMiss();
-        // TODO: ミス音を再生
+        playMissSound();
         return;
       }
 
@@ -78,6 +79,7 @@ export function useTyping() {
 
         if (result.isWordComplete) {
           // 単語完了
+          playConfirmSound();
           const wordTime = now - wordStartTimeRef.current;
           const score = calculateScore(wordTime, session.combo);
           addScore(score);
@@ -95,6 +97,9 @@ export function useTyping() {
             const nextWordData = session.words[nextIndex];
             setTimeout(() => initializeWord(nextWordData), 300);
           }
+        } else {
+          // 通常の正解入力
+          playTypeSound();
         }
       }
     },
@@ -109,6 +114,9 @@ export function useTyping() {
       navigateTo,
       initializeWord,
       updateKeyStats,
+      playTypeSound,
+      playConfirmSound,
+      playMissSound,
     ]
   );
 
