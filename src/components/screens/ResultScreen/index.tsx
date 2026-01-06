@@ -15,6 +15,10 @@ import type { Rank } from '@/types/game';
 const CHAPTER_STAGE_COUNTS: Record<number, number> = {
   1: Object.keys(chapter1Stages).length,
   2: Object.keys(chapter2Stages).length,
+  3: 6, // 第3章: 絶（ゼツ）
+  4: 6, // 第4章: 練（レン）
+  5: 6, // 第5章: 発（ハツ）
+  6: 6, // 第6章: 極意
 };
 
 export const ResultScreen: React.FC = () => {

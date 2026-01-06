@@ -79,7 +79,7 @@ export const stage2_5: Word[] = [
 export const stage2_6: Word[] = [
   { id: '2-6-1', display: 'しねんのつかいて', hiragana: 'しねんのつかいて', category: 'term', difficulty: 4 },
   { id: '2-6-2', display: 'オーラのせいぎょ', hiragana: 'おーらのせいぎょ', category: 'term', difficulty: 4 },
-  { id: '2-6-3', display: 'せいしんとうにつ', hiragana: 'せいしんとうにつ', category: 'phrase', difficulty: 4 },
+  { id: '2-6-3', display: 'せいしんとういつ', hiragana: 'せいしんとういつ', category: 'phrase', difficulty: 4 },
   { id: '2-6-4', display: 'しょうけつてん', hiragana: 'しょうけつてん', category: 'term', difficulty: 3 },
   { id: '2-6-5', display: 'げんかいとっぱ', hiragana: 'げんかいとっぱ', category: 'phrase', difficulty: 3 },
   { id: '2-6-6', display: 'めいそう', hiragana: 'めいそう', category: 'term', difficulty: 2 },

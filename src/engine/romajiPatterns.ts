@@ -142,9 +142,9 @@ export const ROMAJI_PATTERNS: Record<string, string[]> = {
   'しょ': ['syo', 'sho', 'silyo', 'sixyo', 'shilyo', 'shixyo'],
 
   // ===== 拗音（じゃ行） =====
-  'じゃ': ['ja', 'zya', 'jya', 'zilya', 'zixya', 'jilya', 'jixya'],
-  'じゅ': ['ju', 'zyu', 'jyu', 'zilyu', 'zixyu', 'jilyu', 'jixyu'],
-  'じょ': ['jo', 'zyo', 'jyo', 'zilyo', 'zixyo', 'jilyo', 'jixyo'],
+  'じゃ': ['zya', 'ja', 'jya', 'zilya', 'zixya', 'jilya', 'jixya'],
+  'じゅ': ['zyu', 'ju', 'jyu', 'zilyu', 'zixyu', 'jilyu', 'jixyu'],
+  'じょ': ['zyo', 'jo', 'jyo', 'zilyo', 'zixyo', 'jilyo', 'jixyo'],
 
   // ===== 拗音（ちゃ行） =====
   'ちゃ': ['tya', 'cha', 'tilya', 'tixya', 'chilya', 'chixya', 'cya'],
