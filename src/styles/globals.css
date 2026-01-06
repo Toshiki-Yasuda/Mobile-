@@ -61,7 +61,7 @@
   .typing-area {
     @apply bg-hunter-dark rounded-xl p-8;
     @apply border-2 border-hunter-gold/30;
-    @apply shadow-nen;
+    box-shadow: 0 0 15px rgba(212, 175, 55, 0.5);
   }
 
   /* 文字表示 */
@@ -140,6 +140,7 @@
     @apply min-h-screen w-full;
     @apply flex flex-col items-center justify-center;
     @apply p-4;
+    @apply bg-hunter-dark;
   }
 }
 

@@ -48,6 +48,14 @@ export const APP_CONFIG = {
   MISS_SHAKE_DURATION: 300,
   /** 単語完了演出時間(ms) */
   WORD_COMPLETE_ANIMATION_DURATION: 500,
+
+  // ===== 念レベル閾値 =====
+  NEN_LEVEL_THRESHOLDS: {
+    TEN: 5,      // 纏（テン）
+    ZETSU: 10,   // 絶（ゼツ）
+    REN: 20,     // 練（レン）
+    HATSU: 30,   // 発（ハツ）
+  },
 } as const;
 
 // ===== 初期設定 =====
