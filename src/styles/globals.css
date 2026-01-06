@@ -1,0 +1,176 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ===== Base Styles ===== */
+@layer base {
+  html {
+    font-family: 'M PLUS Rounded 1c', sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    @apply bg-hunter-dark text-white;
+    overflow-x: hidden;
+  }
+
+  /* フォーカス時のアウトライン */
+  :focus-visible {
+    @apply outline-2 outline-offset-2 outline-hunter-gold;
+  }
+
+  /* 選択時のスタイル */
+  ::selection {
+    @apply bg-hunter-gold/30 text-white;
+  }
+}
+
+/* ===== Component Styles ===== */
+@layer components {
+  /* ボタン基本スタイル */
+  .btn {
+    @apply px-6 py-3 rounded-lg font-bold transition-all duration-200;
+    @apply focus:outline-none focus:ring-2 focus:ring-hunter-gold focus:ring-offset-2 focus:ring-offset-hunter-dark;
+    @apply disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  .btn-primary {
+    @apply btn bg-hunter-green text-white;
+    @apply hover:bg-hunter-green-light active:bg-hunter-green-dark;
+  }
+
+  .btn-secondary {
+    @apply btn bg-hunter-gold text-hunter-dark;
+    @apply hover:bg-hunter-gold-light active:bg-hunter-gold-dark;
+  }
+
+  .btn-ghost {
+    @apply btn bg-transparent text-hunter-gold border-2 border-hunter-gold;
+    @apply hover:bg-hunter-gold/10;
+  }
+
+  /* カードスタイル */
+  .card {
+    @apply bg-hunter-dark-light rounded-xl p-6;
+    @apply border border-hunter-gold/20;
+    @apply shadow-lg;
+  }
+
+  /* タイピング表示エリア */
+  .typing-area {
+    @apply bg-hunter-dark rounded-xl p-8;
+    @apply border-2 border-hunter-gold/30;
+    @apply shadow-nen;
+  }
+
+  /* 文字表示 */
+  .char-pending {
+    @apply text-white/60;
+  }
+
+  .char-current {
+    @apply text-hunter-gold font-bold;
+    @apply animate-pulse-slow;
+  }
+
+  .char-correct {
+    @apply text-success;
+  }
+
+  .char-incorrect {
+    @apply text-error;
+  }
+
+  /* キーボードキー */
+  .keyboard-key {
+    @apply w-10 h-10 rounded-md;
+    @apply bg-hunter-dark-light border border-hunter-gold/30;
+    @apply flex items-center justify-center;
+    @apply text-sm font-mono text-white/80;
+    @apply transition-all duration-100;
+  }
+
+  .keyboard-key-active {
+    @apply keyboard-key;
+    @apply bg-hunter-gold text-hunter-dark;
+    @apply scale-95;
+  }
+
+  .keyboard-key-highlight {
+    @apply keyboard-key;
+    @apply border-hunter-gold bg-hunter-gold/20;
+  }
+}
+
+/* ===== Utility Styles ===== */
+@layer utilities {
+  /* テキストグラデーション */
+  .text-gradient {
+    @apply bg-clip-text text-transparent;
+    @apply bg-gradient-to-r from-hunter-gold to-hunter-gold-light;
+  }
+
+  /* 念オーラエフェクト */
+  .nen-glow {
+    @apply shadow-nen;
+    animation: nen-pulse 2s ease-in-out infinite;
+  }
+
+  @keyframes nen-pulse {
+    0%, 100% {
+      box-shadow: 0 0 10px rgba(212, 175, 55, 0.3);
+    }
+    50% {
+      box-shadow: 0 0 25px rgba(212, 175, 55, 0.6);
+    }
+  }
+
+  /* スクロールバー非表示 */
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  /* フルスクリーンコンテナ */
+  .screen-container {
+    @apply min-h-screen w-full;
+    @apply flex flex-col items-center justify-center;
+    @apply p-4;
+  }
+}
+
+/* ===== Animation Utilities ===== */
+.animate-typing-cursor {
+  animation: blink 1s step-end infinite;
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+/* コンボエフェクト */
+.combo-fire {
+  animation: combo-scale 0.3s ease-out;
+}
+
+@keyframes combo-scale {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.2); }
+  100% { transform: scale(1); }
+}
+
+/* ミス時の画面シェイク */
+.screen-shake {
+  animation: shake 0.3s ease-in-out;
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  20%, 60% { transform: translateX(-5px); }
+  40%, 80% { transform: translateX(5px); }
+}

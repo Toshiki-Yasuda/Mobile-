@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="HUNTER×HUNTER タイピングマスター - 念能力を習得するようにタイピングを習得しよう！" />
+    <meta name="theme-color" content="#2D5A27" />
+    
+    <!-- PWA -->
+    <link rel="manifest" href="/Mobile-/manifest.webmanifest" />
+    <link rel="apple-touch-icon" href="/Mobile-/icons/icon-192x192.png" />
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;500;700;800&display=swap" rel="stylesheet" />
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="/Mobile-/favicon.ico" />
+    
+    <title>HUNTER×HUNTER タイピングマスター</title>
+    
+    <style>
+      /* 初期ローディング時のスタイル */
+      body {
+        margin: 0;
+        padding: 0;
+        background-color: #1A1A2E;
+        font-family: 'M PLUS Rounded 1c', sans-serif;
+      }
+      
+      #root {
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      
+      .initial-loader {
+        color: #D4AF37;
+        font-size: 1.5rem;
+        text-align: center;
+      }
+      
+      .initial-loader::after {
+        content: '';
+        animation: dots 1.5s steps(4, end) infinite;
+      }
+      
+      @keyframes dots {
+        0%, 20% { content: ''; }
+        40% { content: '.'; }
+        60% { content: '..'; }
+        80%, 100% { content: '...'; }
+      }
+    </style>
+  </head>
+  <body>
+    <div id="root">
+      <div class="initial-loader">読み込み中</div>
+    </div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
