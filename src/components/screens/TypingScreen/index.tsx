@@ -34,6 +34,7 @@ export const TypingScreen: React.FC = () => {
     isTypewriterMode,
     userInput,
     inputStatus,
+    explosionTrigger,
   } = useTyping();
 
   // AudioContextを初期化するためのクリックハンドラー
@@ -157,6 +158,7 @@ export const TypingScreen: React.FC = () => {
             isTypewriterMode={isTypewriterMode}
             userInput={userInput}
             inputStatus={inputStatus}
+            explosionTrigger={explosionTrigger}
           />
 
           {/* キーボードガイド */}

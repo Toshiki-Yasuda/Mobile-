@@ -42,6 +42,9 @@ export function useTyping() {
   // タイプライターモード用の入力テキスト
   const [userInput, setUserInput] = useState('');
   
+  // 爆発エフェクト用のトリガー（タイムスタンプ）
+  const [explosionTrigger, setExplosionTrigger] = useState(0);
+  
   // キー入力のタイムスタンプ
   const lastKeyTimeRef = useRef<number>(0);
   const wordStartTimeRef = useRef<number>(0);
@@ -216,8 +219,9 @@ export function useTyping() {
     const isCorrect = validateTypewriterInput(userInput, currentWord.hiragana);
 
     if (isCorrect) {
-      // 正解 - 爆発音を鳴らして次へ
+      // 正解 - 爆発音と演出を鳴らして次へ
       playEnterExplosion();
+      setExplosionTrigger(Date.now());
       handleWordComplete();
     } else {
       // 不正解 - ミスを記録して入力をクリア
@@ -327,5 +331,6 @@ export function useTyping() {
     isTypewriterMode,
     userInput,
     inputStatus: getInputStatus(),
+    explosionTrigger,
   };
 }

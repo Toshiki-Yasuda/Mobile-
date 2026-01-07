@@ -1,9 +1,10 @@
 /**
  * タイピングカードコンポーネント
  * インスタントモード＆タイプライターモード対応
+ * Enter正解時の爆発演出付き
  */
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { APP_CONFIG } from '@/constants/config';
 import type { Word } from '@/types/game';
@@ -27,6 +28,7 @@ interface TypingCardProps {
     chars: InputChar[];
     isPartiallyCorrect: boolean;
   };
+  explosionTrigger?: number;
 }
 
 export const TypingCard: React.FC<TypingCardProps> = ({
@@ -38,7 +40,20 @@ export const TypingCard: React.FC<TypingCardProps> = ({
   isTypewriterMode = false,
   userInput = '',
   inputStatus,
+  explosionTrigger = 0,
 }) => {
+  // 爆発エフェクト表示状態
+  const [showExplosion, setShowExplosion] = useState(false);
+
+  // explosionTriggerが変わったら爆発エフェクトを表示
+  useEffect(() => {
+    if (explosionTrigger > 0 && isTypewriterMode) {
+      setShowExplosion(true);
+      const timer = setTimeout(() => setShowExplosion(false), 800);
+      return () => clearTimeout(timer);
+    }
+  }, [explosionTrigger, isTypewriterMode]);
+
   // インスタントモード: ローマ字表示
   const renderInstantRomaji = () => {
     if (!typingState || romajiGuideLevel === 'none') return null;
@@ -110,14 +125,129 @@ export const TypingCard: React.FC<TypingCardProps> = ({
 
   return (
     <motion.div
-      className="w-full max-w-2xl lg:max-w-3xl"
+      className="w-full max-w-2xl lg:max-w-3xl relative"
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
     >
+      {/* 爆発エフェクト */}
+      <AnimatePresence>
+        {showExplosion && (
+          <>
+            {/* 中央からの光の爆発 */}
+            <motion.div
+              className="absolute inset-0 flex items-center justify-center pointer-events-none z-20"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: [0, 1, 0] }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.6, times: [0, 0.1, 1] }}
+            >
+              <motion.div
+                className="w-4 h-4 bg-hunter-gold rounded-full"
+                initial={{ scale: 0 }}
+                animate={{ scale: [0, 30, 40] }}
+                transition={{ duration: 0.6, ease: 'easeOut' }}
+                style={{ filter: 'blur(40px)' }}
+              />
+            </motion.div>
+
+            {/* 放射状の光線 */}
+            {[...Array(8)].map((_, i) => (
+              <motion.div
+                key={`ray-${i}`}
+                className="absolute top-1/2 left-1/2 w-full h-0.5 bg-gradient-to-r from-transparent via-hunter-gold to-transparent pointer-events-none z-20"
+                style={{ 
+                  transformOrigin: 'center center',
+                }}
+                initial={{ rotate: i * 45, opacity: 0, scaleX: 0 }}
+                animate={{ 
+                  rotate: i * 45,
+                  opacity: [0, 0.8, 0],
+                  scaleX: [0, 1.5, 2],
+                }}
+                exit={{ opacity: 0 }}
+                transition={{ 
+                  duration: 0.5, 
+                  ease: 'easeOut',
+                }}
+              />
+            ))}
+
+            {/* 爆発パーティクル */}
+            {[...Array(12)].map((_, i) => {
+              const angle = (i / 12) * Math.PI * 2;
+              const distance = 80 + Math.random() * 60;
+              return (
+                <motion.div
+                  key={`particle-${i}`}
+                  className="absolute top-1/2 left-1/2 w-2 h-2 bg-hunter-gold rounded-full pointer-events-none z-20"
+                  initial={{ x: 0, y: 0, opacity: 1, scale: 1 }}
+                  animate={{ 
+                    x: Math.cos(angle) * distance,
+                    y: Math.sin(angle) * distance,
+                    opacity: 0,
+                    scale: 0,
+                  }}
+                  exit={{ opacity: 0 }}
+                  transition={{ 
+                    duration: 0.5 + Math.random() * 0.3,
+                    ease: 'easeOut',
+                  }}
+                />
+              );
+            })}
+
+            {/* 衝撃波リング */}
+            <motion.div
+              className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 border-2 border-hunter-gold rounded-full pointer-events-none z-20"
+              initial={{ width: 0, height: 0, opacity: 1 }}
+              animate={{ 
+                width: [0, 300, 400],
+                height: [0, 300, 400],
+                opacity: [1, 0.5, 0],
+              }}
+              exit={{ opacity: 0 }}
+              transition={{ 
+                duration: 0.5,
+                ease: 'easeOut',
+              }}
+            />
+
+            {/* PERFECT テキスト */}
+            <motion.div
+              className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none z-30"
+              initial={{ scale: 0, opacity: 0 }}
+              animate={{ 
+                scale: [0, 1.2, 1],
+                opacity: [0, 1, 0],
+              }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.6, ease: 'easeOut' }}
+            >
+              <span className="font-title text-4xl font-bold text-hunter-gold drop-shadow-lg">
+                PERFECT!
+              </span>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+
       <div className="relative">
         {/* カード背景 */}
-        <div className="absolute inset-0 bg-gradient-to-br from-hunter-gold/5 to-transparent rounded-lg" />
-        <div className="absolute inset-0 border border-hunter-gold/20 rounded-lg" />
+        <motion.div 
+          className="absolute inset-0 bg-gradient-to-br from-hunter-gold/5 to-transparent rounded-lg"
+          animate={showExplosion ? {
+            backgroundColor: ['rgba(212,175,55,0.05)', 'rgba(212,175,55,0.2)', 'rgba(212,175,55,0.05)'],
+          } : {}}
+          transition={{ duration: 0.3 }}
+        />
+        <motion.div 
+          className="absolute inset-0 border border-hunter-gold/20 rounded-lg"
+          animate={showExplosion ? {
+            borderColor: ['rgba(212,175,55,0.2)', 'rgba(212,175,55,0.8)', 'rgba(212,175,55,0.2)'],
+            boxShadow: ['0 0 0 rgba(212,175,55,0)', '0 0 30px rgba(212,175,55,0.5)', '0 0 0 rgba(212,175,55,0)'],
+          } : {}}
+          transition={{ duration: 0.3 }}
+        />
 
         {/* コンテンツ */}
         <div className="relative p-8 lg:p-12 xl:p-16 text-center">
@@ -149,9 +279,16 @@ export const TypingCard: React.FC<TypingCardProps> = ({
             animate={{ opacity: 1, scale: 1 }}
             className="mb-8"
           >
-            <div className="text-5xl lg:text-6xl xl:text-7xl font-bold text-white mb-4 lg:mb-6">
+            <motion.div 
+              className="text-5xl lg:text-6xl xl:text-7xl font-bold text-white mb-4 lg:mb-6"
+              animate={showExplosion ? {
+                scale: [1, 1.1, 1],
+                textShadow: ['0 0 0 rgba(212,175,55,0)', '0 0 20px rgba(212,175,55,0.8)', '0 0 0 rgba(212,175,55,0)'],
+              } : {}}
+              transition={{ duration: 0.3 }}
+            >
               {currentWord.display}
-            </div>
+            </motion.div>
             <div className="text-2xl lg:text-3xl text-hunter-gold/70 mb-6 lg:mb-8">
               {currentWord.hiragana}
             </div>
