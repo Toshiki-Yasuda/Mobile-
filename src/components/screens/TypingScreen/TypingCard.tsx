@@ -29,6 +29,7 @@ interface TypingCardProps {
     isPartiallyCorrect: boolean;
   };
   explosionTrigger?: number;
+  isPerfect?: boolean;
 }
 
 export const TypingCard: React.FC<TypingCardProps> = ({
@@ -41,6 +42,7 @@ export const TypingCard: React.FC<TypingCardProps> = ({
   userInput = '',
   inputStatus,
   explosionTrigger = 0,
+  isPerfect = false,
 }) => {
   // 爆発エフェクト表示状態
   const [showExplosion, setShowExplosion] = useState(false);
@@ -212,21 +214,23 @@ export const TypingCard: React.FC<TypingCardProps> = ({
               }}
             />
 
-            {/* PERFECT テキスト */}
-            <motion.div
-              className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none z-30"
-              initial={{ scale: 0, opacity: 0 }}
-              animate={{ 
-                scale: [0, 1.2, 1],
-                opacity: [0, 1, 0],
-              }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.6, ease: 'easeOut' }}
-            >
-              <span className="font-title text-4xl font-bold text-hunter-gold drop-shadow-lg">
-                PERFECT!
-              </span>
-            </motion.div>
+            {/* PERFECT テキスト（ミスなしの場合のみ） */}
+            {isPerfect && (
+              <motion.div
+                className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none z-30"
+                initial={{ scale: 0, opacity: 0 }}
+                animate={{ 
+                  scale: [0, 1.2, 1],
+                  opacity: [0, 1, 0],
+                }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.6, ease: 'easeOut' }}
+              >
+                <span className="font-title text-4xl font-bold text-hunter-gold drop-shadow-lg">
+                  PERFECT!
+                </span>
+              </motion.div>
+            )}
           </>
         )}
       </AnimatePresence>

@@ -95,6 +95,42 @@
     font-family: 'Fira Code', monospace;
   }
 
+  /* ホームポジションキー */
+  .keyboard-key.home-position {
+    @apply border-hunter-gold/50;
+    box-shadow: 0 0 8px rgba(212, 175, 55, 0.2);
+  }
+
+  /* 指の色分け */
+  .keyboard-key.finger-pinky-left,
+  .keyboard-key.finger-pinky-right {
+    background: linear-gradient(135deg, rgba(236, 72, 153, 0.15) 0%, transparent 100%);
+  }
+  .keyboard-key.finger-ring-left,
+  .keyboard-key.finger-ring-right {
+    background: linear-gradient(135deg, rgba(251, 146, 60, 0.15) 0%, transparent 100%);
+  }
+  .keyboard-key.finger-middle-left,
+  .keyboard-key.finger-middle-right {
+    background: linear-gradient(135deg, rgba(74, 222, 128, 0.15) 0%, transparent 100%);
+  }
+  .keyboard-key.finger-index-left,
+  .keyboard-key.finger-index-right {
+    background: linear-gradient(135deg, rgba(96, 165, 250, 0.15) 0%, transparent 100%);
+  }
+
+  /* 凡例用の背景色 */
+  .bg-finger-pinky { background-color: rgb(236, 72, 153); }
+  .bg-finger-ring { background-color: rgb(251, 146, 60); }
+  .bg-finger-middle { background-color: rgb(74, 222, 128); }
+  .bg-finger-index { background-color: rgb(96, 165, 250); }
+
+  /* キー押下時のスタイル */
+  .keyboard-key.key-pressed {
+    @apply bg-hunter-gold/40 border-hunter-gold text-white;
+    box-shadow: 0 0 15px rgba(212, 175, 55, 0.6);
+  }
+
   .keyboard-key-active {
     @apply keyboard-key;
     @apply bg-hunter-gold text-hunter-dark;

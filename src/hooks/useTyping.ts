@@ -45,6 +45,16 @@ export function useTyping() {
   // 爆発エフェクト用のトリガー（タイムスタンプ）
   const [explosionTrigger, setExplosionTrigger] = useState(0);
   
+  // この単語でミスがあったかどうか
+  const [hadMissThisWord, setHadMissThisWord] = useState(false);
+  
+  // 直前の爆発がパーフェクトだったか
+  const [lastExplosionWasPerfect, setLastExplosionWasPerfect] = useState(false);
+  
+  // 現在押されているキー（光る演出用）
+  const [pressedKey, setPressedKey] = useState<string | null>(null);
+  const pressedKeyTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  
   // キー入力のタイムスタンプ
   const lastKeyTimeRef = useRef<number>(0);
   const wordStartTimeRef = useRef<number>(0);
@@ -221,15 +231,33 @@ export function useTyping() {
     if (isCorrect) {
       // 正解 - 爆発音と演出を鳴らして次へ
       playEnterExplosion();
+      setLastExplosionWasPerfect(!hadMissThisWord);
       setExplosionTrigger(Date.now());
       handleWordComplete();
+      // 次の単語用にミスフラグをリセット
+      setHadMissThisWord(false);
     } else {
       // 不正解 - ミスを記録して入力をクリア
       recordMiss();
       playMissSound();
       setUserInput('');
+      setHadMissThisWord(true);
     }
   }, [currentWord, userInput, validateTypewriterInput, handleWordComplete, recordMiss, playMissSound, playEnterExplosion]);
+
+  // 押されたキーを光らせる（150ms後にクリア）
+  const flashKey = useCallback((key: string) => {
+    // 前のタイマーをクリア
+    if (pressedKeyTimeoutRef.current) {
+      clearTimeout(pressedKeyTimeoutRef.current);
+    }
+    // キーを設定
+    setPressedKey(key.toLowerCase());
+    // 150ms後にクリア
+    pressedKeyTimeoutRef.current = setTimeout(() => {
+      setPressedKey(null);
+    }, 150);
+  }, []);
 
   // キーボードイベントリスナー
   useEffect(() => {
@@ -257,19 +285,27 @@ export function useTyping() {
 
         if (e.key.length === 1) {
           e.preventDefault();
+          flashKey(e.key); // キーを光らせる
           handleTypewriterKeyInput(e.key);
         }
       } else {
         // インスタントモード
         if (e.key.length === 1) {
           e.preventDefault();
+          flashKey(e.key); // キーを光らせる
           handleInstantKeyInput(e.key);
         }
       }
     };
 
     window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      // クリーンアップ時にタイマーもクリア
+      if (pressedKeyTimeoutRef.current) {
+        clearTimeout(pressedKeyTimeoutRef.current);
+      }
+    };
   }, [
     isTypewriterMode,
     handleInstantKeyInput,
@@ -277,6 +313,7 @@ export function useTyping() {
     handleBackspace,
     handleEnterConfirm,
     navigateTo,
+    flashKey,
   ]);
 
   // 最初の単語を初期化
@@ -332,5 +369,8 @@ export function useTyping() {
     userInput,
     inputStatus: getInputStatus(),
     explosionTrigger,
+    isPerfect: lastExplosionWasPerfect,
+    // キーボード演出用
+    pressedKey,
   };
 }
