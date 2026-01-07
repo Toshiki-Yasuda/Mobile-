@@ -9,6 +9,7 @@ export interface StageResult {
   score: number;
   accuracy: number; // 0-100
   time: number; // ms
+  wpm: number; // Words Per Minute
   maxCombo: number;
   rank: Rank;
   clearedAt: string; // ISO 8601

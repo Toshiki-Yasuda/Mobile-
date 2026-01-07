@@ -1,10 +1,10 @@
 /**
  * 結果画面コンポーネント
- * クールデザイン
+ * クールデザイン + ハイスコア演出
  */
 
-import React, { useMemo, useEffect, useCallback } from 'react';
-import { motion } from 'framer-motion';
+import React, { useMemo, useEffect, useCallback, useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useGameStore } from '@/stores/gameStore';
 import { useProgressStore } from '@/stores/progressStore';
 import { useButtonClick } from '@/utils/soundUtils';
@@ -12,6 +12,7 @@ import { useSound } from '@/hooks/useSound';
 import { BackgroundEffect } from '@/components/common/BackgroundEffect';
 import { chapter1Stages, chapter2Stages } from '@/data/words';
 import type { Rank } from '@/types/game';
+import type { StageResult } from '@/types/progress';
 
 const CHAPTER_STAGE_COUNTS: Record<number, number> = {
   1: Object.keys(chapter1Stages).length,
@@ -24,6 +25,11 @@ export const ResultScreen: React.FC = () => {
   const { saveStageResult, updateStatistics, updateStreak, clearedStages, unlockChapter } = useProgressStore();
   const { handleClick } = useButtonClick();
   const { playSuccessSound, playResultSound, playAchievementSound } = useSound();
+
+  // 保存前の以前の記録を保持
+  const [previousResult, setPreviousResult] = useState<StageResult | null>(null);
+  const [showNewRecord, setShowNewRecord] = useState(false);
+  const [hasInitialized, setHasInitialized] = useState(false);
 
   const result = useMemo(() => {
     if (!session) return null;
@@ -49,15 +55,51 @@ export const ResultScreen: React.FC = () => {
     };
   }, [session]);
 
+  // ハイスコア更新を検知
+  const isNewRecord = useMemo(() => {
+    if (!result) return false;
+    if (!previousResult) return true;
+    return result.score > previousResult.score;
+  }, [result, previousResult]);
+
+  // スコア差分を計算
+  const scoreDiff = useMemo(() => {
+    if (!result || !previousResult) return null;
+    return {
+      score: result.score - previousResult.score,
+      wpm: result.wpm - previousResult.wpm,
+      accuracy: Math.round((result.accuracy - previousResult.accuracy) * 10) / 10,
+    };
+  }, [result, previousResult]);
+
+  // 初回レンダリング時に以前の記録を保存
   useEffect(() => {
-    if (result && selectedChapter && selectedStage) {
+    if (!hasInitialized && selectedChapter && selectedStage) {
       const stageId = `${selectedChapter}-${selectedStage}`;
-      
+      const existing = clearedStages[stageId];
+      if (existing) {
+        setPreviousResult(existing);
+      }
+      setHasInitialized(true);
+    }
+  }, [hasInitialized, selectedChapter, selectedStage, clearedStages]);
+
+  useEffect(() => {
+    if (result && selectedChapter && selectedStage && hasInitialized) {
+      const stageId = `${selectedChapter}-${selectedStage}`;
+
       setTimeout(() => {
         playSuccessSound();
         setTimeout(() => playResultSound(result.rank), 400);
       }, 300);
-      
+
+      if (isNewRecord) {
+        setTimeout(() => {
+          setShowNewRecord(true);
+          playAchievementSound(result.rank);
+        }, 800);
+      }
+
       updateStreak();
       updateStatistics({
         totalPlays: 1,
@@ -69,8 +111,8 @@ export const ResultScreen: React.FC = () => {
       });
 
       saveStageResult(stageId, {
-        stageId, score: result.score, accuracy: result.accuracy,
-        wpm: result.wpm, totalTime: result.totalTime * 1000,
+        score: result.score, accuracy: result.accuracy,
+        wpm: result.wpm, time: result.totalTime * 1000,
         maxCombo: result.maxCombo, rank: result.rank,
         clearedAt: new Date().toISOString(),
       });
@@ -80,13 +122,13 @@ export const ResultScreen: React.FC = () => {
         id => id.startsWith(`${selectedChapter}-`)
       ).length;
       const willBeCleared = clearedStagesInChapter + (clearedStages[stageId] ? 0 : 1);
-      
+
       if (willBeCleared >= totalStagesInChapter) {
         const nextChapter = selectedChapter + 1;
         if (CHAPTER_STAGE_COUNTS[nextChapter]) unlockChapter(nextChapter);
       }
     }
-  }, [result, updateStreak, updateStatistics, saveStageResult, selectedChapter, selectedStage, playSuccessSound, playResultSound, playAchievementSound, clearedStages, unlockChapter]);
+  }, [result, hasInitialized, updateStreak, updateStatistics, saveStageResult, selectedChapter, selectedStage, playSuccessSound, playResultSound, playAchievementSound, clearedStages, unlockChapter, isNewRecord]);
 
   const getStageCount = useCallback((chapter: number): number => CHAPTER_STAGE_COUNTS[chapter] || 0, []);
 
@@ -131,9 +173,38 @@ export const ResultScreen: React.FC = () => {
       <BackgroundEffect variant="result" />
 
       {result.rank === 'S' && <GoldParticles />}
+      {showNewRecord && <NewRecordParticles />}
+
+      <AnimatePresence>
+        {showNewRecord && (
+          <motion.div
+            initial={{ y: -100, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: -100, opacity: 0 }}
+            transition={{ type: 'spring', bounce: 0.5 }}
+            className="absolute top-4 left-0 right-0 z-50 flex justify-center"
+          >
+            <motion.div
+              animate={{
+                scale: [1, 1.05, 1],
+                boxShadow: [
+                  '0 0 20px rgba(212, 175, 55, 0.5)',
+                  '0 0 40px rgba(212, 175, 55, 0.8)',
+                  '0 0 20px rgba(212, 175, 55, 0.5)'
+                ]
+              }}
+              transition={{ duration: 1.5, repeat: Infinity }}
+              className="bg-gradient-to-r from-hunter-gold via-yellow-400 to-hunter-gold px-8 py-3 rounded-lg"
+            >
+              <span className="font-title text-2xl md:text-3xl font-bold text-hunter-dark tracking-wider">
+                NEW RECORD!
+              </span>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <div className="relative z-10 min-h-screen flex flex-col lg:flex-row items-center justify-center p-4 lg:p-8">
-        {/* 左側 - ランク表示 */}
         <div className="flex-1 flex flex-col items-center justify-center lg:pr-8 xl:pr-16 mb-8 lg:mb-0">
           <motion.div
             initial={{ scale: 0, rotate: -180 }}
@@ -177,10 +248,19 @@ export const ResultScreen: React.FC = () => {
             <div className="font-title text-5xl xl:text-6xl font-bold text-white tracking-tight">
               {result.score.toLocaleString()}
             </div>
+            {scoreDiff && scoreDiff.score !== 0 && (
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 1 }}
+                className={`font-title text-lg mt-2 ${scoreDiff.score > 0 ? 'text-success' : 'text-error'}`}
+              >
+                {scoreDiff.score > 0 ? '+' : ''}{scoreDiff.score.toLocaleString()}
+              </motion.div>
+            )}
           </motion.div>
         </div>
 
-        {/* 右側 - 詳細結果 */}
         <motion.div
           initial={{ opacity: 0, x: 30 }}
           animate={{ opacity: 1, x: 0 }}
@@ -188,21 +268,34 @@ export const ResultScreen: React.FC = () => {
           className="w-full max-w-md lg:max-w-lg"
         >
           <div className="relative p-6 lg:p-8 bg-hunter-dark-light/30 rounded-lg border border-hunter-gold/20">
-            {/* モバイル用スコア */}
             <div className="lg:hidden text-center mb-6 pb-6 border-b border-hunter-gold/10">
               <div className="font-title text-hunter-gold/50 text-xs tracking-[0.3em] mb-1">TOTAL SCORE</div>
               <div className="font-title text-4xl font-bold text-white">{result.score.toLocaleString()}</div>
+              {scoreDiff && scoreDiff.score !== 0 && (
+                <div className={`font-title text-sm mt-1 ${scoreDiff.score > 0 ? 'text-success' : 'text-error'}`}>
+                  {scoreDiff.score > 0 ? '+' : ''}{scoreDiff.score.toLocaleString()}
+                </div>
+              )}
             </div>
 
-            {/* 統計グリッド */}
             <div className="grid grid-cols-2 gap-4 mb-6">
-              <StatCard label="ACCURACY" value={`${result.accuracy}%`} highlight={result.accuracy >= 95} />
-              <StatCard label="WPM" value={result.wpm.toString()} highlight={result.wpm >= 80} />
+              <StatCard
+                label="ACCURACY"
+                value={`${result.accuracy}%`}
+                highlight={result.accuracy >= 95}
+                diff={scoreDiff ? scoreDiff.accuracy : null}
+                diffSuffix="%"
+              />
+              <StatCard
+                label="WPM"
+                value={result.wpm.toString()}
+                highlight={result.wpm >= 80}
+                diff={scoreDiff ? scoreDiff.wpm : null}
+              />
               <StatCard label="MAX COMBO" value={result.maxCombo.toString()} highlight={result.maxCombo >= 20} />
               <StatCard label="TIME" value={`${result.totalTime}s`} />
             </div>
 
-            {/* 詳細統計 */}
             <div className="space-y-2 mb-6 p-4 bg-hunter-dark/50 rounded-lg">
               <div className="flex justify-between items-center">
                 <span className="text-white/40 text-sm font-title tracking-wider">CORRECT</span>
@@ -218,7 +311,6 @@ export const ResultScreen: React.FC = () => {
               </div>
             </div>
 
-            {/* アクションボタン */}
             <div className="flex flex-col sm:flex-row gap-3">
               <motion.button
                 onClick={handleNextStage}
@@ -246,10 +338,28 @@ export const ResultScreen: React.FC = () => {
   );
 };
 
-const StatCard: React.FC<{ label: string; value: string; highlight?: boolean }> = ({ label, value, highlight }) => (
+interface StatCardProps {
+  label: string;
+  value: string;
+  highlight?: boolean;
+  diff?: number | null;
+  diffSuffix?: string;
+}
+
+const StatCard: React.FC<StatCardProps> = ({ label, value, highlight, diff, diffSuffix = '' }) => (
   <div className={`text-center p-3 rounded-lg ${highlight ? 'bg-hunter-gold/10 border border-hunter-gold/30' : 'bg-hunter-dark/30'}`}>
     <div className="font-title text-white/40 text-[10px] tracking-[0.2em] mb-1">{label}</div>
     <div className={`font-title text-xl font-bold ${highlight ? 'text-hunter-gold' : 'text-white'}`}>{value}</div>
+    {diff !== null && diff !== undefined && diff !== 0 && (
+      <motion.div
+        initial={{ opacity: 0, scale: 0.8 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ delay: 1.2 }}
+        className={`font-title text-xs mt-1 ${diff > 0 ? 'text-success' : 'text-error'}`}
+      >
+        {diff > 0 ? '+' : ''}{diff}{diffSuffix}
+      </motion.div>
+    )}
   </div>
 );
 
@@ -263,6 +373,46 @@ const GoldParticles: React.FC = () => (
         animate={{ y: [0, -80], opacity: [0, 1, 0], scale: [0, 1, 0] }}
         transition={{ duration: 2 + Math.random() * 2, repeat: Infinity, delay: Math.random() * 2 }}
       />
+    ))}
+  </div>
+);
+
+const NewRecordParticles: React.FC = () => (
+  <div className="absolute inset-0 pointer-events-none overflow-hidden">
+    {[...Array(30)].map((_, i) => (
+      <motion.div
+        key={i}
+        className="absolute"
+        style={{
+          left: `${Math.random() * 100}%`,
+          top: '50%',
+        }}
+        initial={{ y: 0, opacity: 1, scale: 1 }}
+        animate={{
+          y: [0, -200 - Math.random() * 300],
+          x: [(Math.random() - 0.5) * 200],
+          opacity: [1, 1, 0],
+          scale: [1, 0.5],
+          rotate: [0, 360 * (Math.random() > 0.5 ? 1 : -1)]
+        }}
+        transition={{
+          duration: 2 + Math.random() * 1,
+          repeat: Infinity,
+          delay: Math.random() * 0.5
+        }}
+      >
+        <div
+          className="w-3 h-3"
+          style={{
+            background: ['#D4AF37', '#FFD700', '#FFA500', '#FF6B6B', '#4ECDC4'][Math.floor(Math.random() * 5)],
+            clipPath: i % 3 === 0
+              ? 'polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%)'
+              : i % 3 === 1
+              ? 'polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%)'
+              : 'circle(50%)',
+          }}
+        />
+      </motion.div>
     ))}
   </div>
 );
