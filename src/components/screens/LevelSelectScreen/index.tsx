@@ -11,12 +11,12 @@ import { useButtonClick, useMenuSelect } from '@/utils/soundUtils';
 import { BackgroundEffect } from '@/components/common/BackgroundEffect';
 
 const CHAPTERS = [
-  { id: 1, name: 'BASICS', subtitle: 'Home Position', description: 'Hunter Exam - Phase 1', stages: 6 },
-  { id: 2, name: 'TEN', subtitle: '纏', description: 'Hunter Exam - Final', stages: 6 },
-  { id: 3, name: 'ZETSU', subtitle: '絶', description: 'Heavens Arena', stages: 6 },
-  { id: 4, name: 'REN', subtitle: '練', description: 'Yorknew City', stages: 6 },
-  { id: 5, name: 'HATSU', subtitle: '発', description: 'Greed Island', stages: 6 },
-  { id: 6, name: 'MASTER', subtitle: '極意', description: 'Chimera Ant', stages: 6 },
+  { id: 1, kanji: '基礎', romaji: 'BASICS', description: 'Hunter Exam - Phase 1', stages: 6 },
+  { id: 2, kanji: '纏', romaji: 'TEN', description: 'Hunter Exam - Final', stages: 6 },
+  { id: 3, kanji: '絶', romaji: 'ZETSU', description: 'Heavens Arena', stages: 6 },
+  { id: 4, kanji: '練', romaji: 'REN', description: 'Yorknew City', stages: 6 },
+  { id: 5, kanji: '発', romaji: 'HATSU', description: 'Greed Island', stages: 6 },
+  { id: 6, kanji: '極意', romaji: 'MASTER', description: 'Chimera Ant', stages: 6 },
 ];
 
 export const LevelSelectScreen: React.FC = () => {
@@ -101,12 +101,12 @@ export const LevelSelectScreen: React.FC = () => {
                   CHAPTER {String(chapter.id).padStart(2, '0')}
                 </div>
 
-                {/* タイトル */}
-                <h3 className="font-title text-2xl font-bold text-white mb-1 tracking-wider">
-                  {chapter.name}
+                {/* タイトル - 漢字を大きく */}
+                <h3 className="text-4xl font-bold text-white mb-1">
+                  {chapter.kanji}
                 </h3>
-                <p className="text-hunter-gold/60 text-sm mb-2 font-title">
-                  {chapter.subtitle}
+                <p className="text-hunter-gold/60 text-xs mb-2 font-title tracking-[0.2em]">
+                  {chapter.romaji}
                 </p>
 
                 {/* 説明 */}

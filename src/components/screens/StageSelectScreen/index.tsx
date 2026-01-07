@@ -13,7 +13,7 @@ import { getWordsForStage } from '@/data/words';
 
 const CHAPTERS = [
   {
-    id: 1, name: 'BASICS', subtitle: '念の基礎',
+    id: 1, kanji: '基礎', romaji: 'BASICS',
     stages: [
       { number: 1, name: 'VOWELS', description: 'Basic vowels - aiueo' },
       { number: 2, name: 'HOME POSITION', description: 'Finger placement basics' },
@@ -24,31 +24,31 @@ const CHAPTERS = [
     ],
   },
   {
-    id: 2, name: 'TEN', subtitle: '纏',
+    id: 2, kanji: '纏', romaji: 'TEN',
     stages: Array.from({ length: 6 }, (_, i) => ({
       number: i + 1, name: `STAGE ${i + 1}`, description: 'Basic input training'
     })),
   },
   {
-    id: 3, name: 'ZETSU', subtitle: '絶',
+    id: 3, kanji: '絶', romaji: 'ZETSU',
     stages: Array.from({ length: 6 }, (_, i) => ({
       number: i + 1, name: `STAGE ${i + 1}`, description: 'Heavens Arena training'
     })),
   },
   {
-    id: 4, name: 'REN', subtitle: '練',
+    id: 4, kanji: '練', romaji: 'REN',
     stages: Array.from({ length: 6 }, (_, i) => ({
       number: i + 1, name: `STAGE ${i + 1}`, description: 'Yorknew City training'
     })),
   },
   {
-    id: 5, name: 'HATSU', subtitle: '発',
+    id: 5, kanji: '発', romaji: 'HATSU',
     stages: Array.from({ length: 6 }, (_, i) => ({
       number: i + 1, name: `STAGE ${i + 1}`, description: 'Greed Island training'
     })),
   },
   {
-    id: 6, name: 'MASTER', subtitle: '極意',
+    id: 6, kanji: '極意', romaji: 'MASTER',
     stages: Array.from({ length: 6 }, (_, i) => ({
       number: i + 1, name: `STAGE ${i + 1}`, description: 'Chimera Ant training'
     })),
@@ -113,10 +113,10 @@ export const StageSelectScreen: React.FC = () => {
             ← BACK TO CHAPTERS
           </button>
           <div className="flex items-baseline gap-4">
-            <h1 className="font-title text-2xl lg:text-3xl font-bold text-white tracking-wider">
-              {chapter.name}
+            <h1 className="text-3xl lg:text-4xl font-bold text-white">
+              {chapter.kanji}
             </h1>
-            <span className="font-title text-hunter-gold/60 tracking-wider">{chapter.subtitle}</span>
+            <span className="font-title text-hunter-gold/60 text-sm tracking-[0.2em]">{chapter.romaji}</span>
           </div>
         </div>
       </header>
