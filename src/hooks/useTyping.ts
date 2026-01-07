@@ -51,9 +51,9 @@ export function useTyping() {
   // 直前の爆発がパーフェクトだったか
   const [lastExplosionWasPerfect, setLastExplosionWasPerfect] = useState(false);
   
-  // 現在押されているキー（光る演出用）
-  const [pressedKey, setPressedKey] = useState<string | null>(null);
-  const pressedKeyTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  // 最近押されたキーのリスト（光る演出用）
+  // { key: string, timestamp: number }[] の形式で、各キーがいつ押されたかを記録
+  const [recentPressedKeys, setRecentPressedKeys] = useState<{ key: string; timestamp: number }[]>([]);
   
   // キー入力のタイムスタンプ
   const lastKeyTimeRef = useRef<number>(0);
@@ -245,18 +245,21 @@ export function useTyping() {
     }
   }, [currentWord, userInput, validateTypewriterInput, handleWordComplete, recordMiss, playMissSound, playEnterExplosion]);
 
-  // 押されたキーを光らせる（150ms後にクリア）
+  // 押されたキーを光らせる（2秒かけてフェードアウト）
   const flashKey = useCallback((key: string) => {
-    // 前のタイマーをクリア
-    if (pressedKeyTimeoutRef.current) {
-      clearTimeout(pressedKeyTimeoutRef.current);
-    }
-    // キーを設定
-    setPressedKey(key.toLowerCase());
-    // 150ms後にクリア
-    pressedKeyTimeoutRef.current = setTimeout(() => {
-      setPressedKey(null);
-    }, 150);
+    const now = Date.now();
+    const keyLower = key.toLowerCase();
+    
+    // 同じキーが既にあれば削除してから追加（タイムスタンプを更新）
+    setRecentPressedKeys(prev => {
+      const filtered = prev.filter(k => k.key !== keyLower);
+      return [...filtered, { key: keyLower, timestamp: now }];
+    });
+    
+    // 2秒後にこのキーを削除
+    setTimeout(() => {
+      setRecentPressedKeys(prev => prev.filter(k => k.timestamp !== now || k.key !== keyLower));
+    }, 2000);
   }, []);
 
   // キーボードイベントリスナー
@@ -301,10 +304,6 @@ export function useTyping() {
     window.addEventListener('keydown', handleKeyDown);
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
-      // クリーンアップ時にタイマーもクリア
-      if (pressedKeyTimeoutRef.current) {
-        clearTimeout(pressedKeyTimeoutRef.current);
-      }
     };
   }, [
     isTypewriterMode,
@@ -371,6 +370,6 @@ export function useTyping() {
     explosionTrigger,
     isPerfect: lastExplosionWasPerfect,
     // キーボード演出用
-    pressedKey,
+    recentPressedKeys,
   };
 }

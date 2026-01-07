@@ -36,7 +36,7 @@ export const TypingScreen: React.FC = () => {
     inputStatus,
     explosionTrigger,
     isPerfect,
-    pressedKey,
+    recentPressedKeys,
   } = useTyping();
 
   // AudioContextを初期化するためのクリックハンドラー
@@ -170,7 +170,7 @@ export const TypingScreen: React.FC = () => {
               <VirtualKeyboard 
                 activeKeys={validKeys} 
                 chapter={selectedChapter || 1}
-                pressedKey={pressedKey}
+                recentPressedKeys={recentPressedKeys}
               />
             </div>
           )}
