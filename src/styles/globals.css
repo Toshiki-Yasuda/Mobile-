@@ -87,7 +87,7 @@
 
   /* キーボードキー */
   .keyboard-key {
-    @apply w-10 h-10 rounded;
+    @apply rounded;
     @apply bg-hunter-dark-light border border-hunter-gold/30;
     @apply flex items-center justify-center;
     @apply text-sm font-mono text-white/80;
