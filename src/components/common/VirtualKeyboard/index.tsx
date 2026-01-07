@@ -153,7 +153,7 @@ export const VirtualKeyboard: React.FC<VirtualKeyboardProps> = ({
   }, [chapter]);
 
   // 手の影を表示するかどうか
-  const showHandShadow = showHomePosition && handOpacity > 0;
+  const showHandShadow = false; // 一時的に無効化
 
   // 指の色分けは4章まで表示
   const showFingerColors = showHomePosition && chapter <= 4;
