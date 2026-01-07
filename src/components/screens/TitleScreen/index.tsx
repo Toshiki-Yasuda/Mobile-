@@ -25,6 +25,7 @@ export const TitleScreen: React.FC = () => {
   const { handleClick } = useButtonClick();
   const [showStartOverlay, setShowStartOverlay] = React.useState(true);
   const hasInteractedRef = useRef(false);
+  const openingAudioRef = useRef<HTMLAudioElement | null>(null);
 
   const playBgm = useCallback(() => {
     const volume = (bgmVolume / 100) * 0.8;
@@ -54,6 +55,35 @@ export const TitleScreen: React.FC = () => {
     bgmManager.restoreVolume();
   }, []);
 
+  // オープニング画面でopening.mp3を再生
+  useEffect(() => {
+    if (showStartOverlay) {
+      // メインBGMを停止
+      bgmManager.pause();
+      
+      // オープニング音声を再生
+      if (!openingAudioRef.current) {
+        openingAudioRef.current = new Audio('/Mobile-/opening.mp3');
+        openingAudioRef.current.loop = true;
+      }
+      const volume = (bgmVolume / 100) * 0.8;
+      openingAudioRef.current.volume = volume;
+      openingAudioRef.current.play().catch(() => {});
+    } else {
+      // オープニング音声を停止
+      if (openingAudioRef.current) {
+        openingAudioRef.current.pause();
+        openingAudioRef.current.currentTime = 0;
+      }
+    }
+
+    return () => {
+      if (openingAudioRef.current) {
+        openingAudioRef.current.pause();
+      }
+    };
+  }, [showStartOverlay, bgmVolume]);
+
   const handleStart = useCallback(() => {
     hasInteractedRef.current = true;
     setShowStartOverlay(false);
@@ -61,6 +91,12 @@ export const TitleScreen: React.FC = () => {
       playBgm();
     }
   }, [bgmEnabled, playBgm]);
+
+  const handleBackToOpening = useCallback(() => {
+    // メインBGMを停止してオープニングに戻る
+    bgmManager.pause();
+    setShowStartOverlay(true);
+  }, []);
 
   return (
     <div className="min-h-screen bg-hunter-dark relative overflow-hidden">
@@ -277,7 +313,6 @@ export const TitleScreen: React.FC = () => {
               {[
                 { label: 'TIME ATTACK', action: () => navigateTo('timeAttack') },
                 { label: 'FREE PRACTICE', action: () => navigateTo('freePlay') },
-                { label: 'STATISTICS', action: () => navigateTo('statistics') },
                 { label: 'ADMIN', action: () => navigateTo('admin') },
               ].map((item, index) => (
                 <motion.button
@@ -294,6 +329,19 @@ export const TitleScreen: React.FC = () => {
                 </motion.button>
               ))}
             </div>
+
+            {/* オープニングに戻るボタン */}
+            <motion.button
+              onClick={handleBackToOpening}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.5 }}
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              className="w-full mt-4 bg-transparent border border-hunter-gold/10 hover:border-hunter-gold/30 rounded-lg py-2 px-4 transition-all text-white/40 hover:text-white/60 font-title tracking-wider uppercase text-xs"
+            >
+              ← BACK TO OPENING
+            </motion.button>
           </motion.div>
 
           {/* 設定トグル */}
