@@ -1,6 +1,6 @@
 /**
  * タイピングカードコンポーネント
- * クールデザイン
+ * インスタントモード＆タイプライターモード対応
  */
 
 import React from 'react';
@@ -9,12 +9,24 @@ import { APP_CONFIG } from '@/constants/config';
 import type { Word } from '@/types/game';
 import type { TypingState } from '@/types/romaji';
 
+interface InputChar {
+  char: string;
+  isCorrect: boolean;
+}
+
 interface TypingCardProps {
   currentWord: Word;
   typingState: TypingState | null;
   displayRomaji: string;
   romajiGuideLevel: 'full' | 'partial' | 'none';
   combo: number;
+  // タイプライターモード用
+  isTypewriterMode?: boolean;
+  userInput?: string;
+  inputStatus?: {
+    chars: InputChar[];
+    isPartiallyCorrect: boolean;
+  };
 }
 
 export const TypingCard: React.FC<TypingCardProps> = ({
@@ -23,8 +35,12 @@ export const TypingCard: React.FC<TypingCardProps> = ({
   displayRomaji,
   romajiGuideLevel,
   combo,
+  isTypewriterMode = false,
+  userInput = '',
+  inputStatus,
 }) => {
-  const renderRomaji = () => {
+  // インスタントモード: ローマ字表示
+  const renderInstantRomaji = () => {
     if (!typingState || romajiGuideLevel === 'none') return null;
 
     const confirmed = typingState.confirmedRomaji;
@@ -36,6 +52,58 @@ export const TypingCard: React.FC<TypingCardProps> = ({
         <span className="text-success">{confirmed}</span>
         <span className="text-hunter-gold font-bold">{current}</span>
         <span className="text-white/30">{remaining}</span>
+      </div>
+    );
+  };
+
+  // タイプライターモード: 入力フィールド表示
+  const renderTypewriterInput = () => {
+    return (
+      <div className="space-y-4">
+        {/* 目標ローマ字（ガイド） */}
+        <div className="font-mono text-lg text-white/40 tracking-wider">
+          {displayRomaji}
+        </div>
+
+        {/* 入力フィールド */}
+        <div className="relative bg-hunter-dark-light/50 border-2 border-hunter-gold/30 rounded-lg px-6 py-4 min-h-[60px] flex items-center">
+          <div className="font-mono text-2xl lg:text-3xl tracking-wider flex items-center">
+            {/* 入力済み文字 */}
+            {inputStatus?.chars.map((c, i) => (
+              <span
+                key={i}
+                className={c.isCorrect ? 'text-success' : 'text-error'}
+              >
+                {c.char}
+              </span>
+            ))}
+            {/* カーソル */}
+            <motion.span
+              className="inline-block w-0.5 h-8 bg-hunter-gold ml-0.5"
+              animate={{ opacity: [1, 0, 1] }}
+              transition={{ duration: 1, repeat: Infinity }}
+            />
+          </div>
+
+          {/* プレースホルダー */}
+          {userInput.length === 0 && (
+            <span className="absolute left-6 text-white/20 font-mono text-2xl">
+              Type here...
+            </span>
+          )}
+        </div>
+
+        {/* 操作ガイド */}
+        <div className="flex justify-center gap-6 text-xs text-white/30 font-title tracking-wider">
+          <span>
+            <kbd className="px-2 py-1 bg-hunter-dark-light/50 rounded text-hunter-gold/60">ENTER</kbd>
+            {' '}確定
+          </span>
+          <span>
+            <kbd className="px-2 py-1 bg-hunter-dark-light/50 rounded text-hunter-gold/60">BS</kbd>
+            {' '}削除
+          </span>
+        </div>
       </div>
     );
   };
@@ -67,6 +135,13 @@ export const TypingCard: React.FC<TypingCardProps> = ({
             )}
           </AnimatePresence>
 
+          {/* モード表示 */}
+          {isTypewriterMode && (
+            <div className="absolute top-4 right-4 font-title text-xs text-hunter-gold/50 tracking-wider uppercase">
+              Typewriter Mode
+            </div>
+          )}
+
           {/* 表示テキスト */}
           <motion.div
             key={currentWord.id}
@@ -82,8 +157,10 @@ export const TypingCard: React.FC<TypingCardProps> = ({
             </div>
           </motion.div>
 
-          {/* ローマ字ガイド */}
-          <div className="min-h-[40px]">{renderRomaji()}</div>
+          {/* ローマ字ガイド / 入力フィールド */}
+          <div className="min-h-[100px]">
+            {isTypewriterMode ? renderTypewriterInput() : renderInstantRomaji()}
+          </div>
         </div>
       </div>
     </motion.div>

@@ -31,6 +31,9 @@ export const TypingScreen: React.FC = () => {
     progress,
     validKeys,
     displayRomaji,
+    isTypewriterMode,
+    userInput,
+    inputStatus,
   } = useTyping();
 
   // AudioContextを初期化するためのクリックハンドラー
@@ -151,6 +154,9 @@ export const TypingScreen: React.FC = () => {
             displayRomaji={displayRomaji}
             romajiGuideLevel={romajiGuideLevel}
             combo={combo}
+            isTypewriterMode={isTypewriterMode}
+            userInput={userInput}
+            inputStatus={inputStatus}
           />
 
           {/* キーボードガイド */}
