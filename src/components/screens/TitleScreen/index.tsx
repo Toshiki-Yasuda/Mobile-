@@ -19,7 +19,8 @@ export const TitleScreen: React.FC = () => {
     bgmVolume,
     setSoundEnabled, 
     setBgmEnabled,
-    setSoundVolume 
+    setSoundVolume,
+    setBgmVolume 
   } = useSettingsStore();
   const { handleClick } = useButtonClick();
   const [showStartOverlay, setShowStartOverlay] = React.useState(true);
@@ -277,7 +278,6 @@ export const TitleScreen: React.FC = () => {
                 { label: 'TIME ATTACK', action: () => navigateTo('timeAttack') },
                 { label: 'FREE PRACTICE', action: () => navigateTo('freePlay') },
                 { label: 'STATISTICS', action: () => navigateTo('statistics') },
-                { label: 'SETTINGS', action: () => navigateTo('settings') },
                 { label: 'ADMIN', action: () => navigateTo('admin') },
               ].map((item, index) => (
                 <motion.button
@@ -335,30 +335,59 @@ export const TitleScreen: React.FC = () => {
             </div>
 
             {/* 音量スライダー */}
-            {soundEnabled && (
-              <motion.div
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: 'auto' }}
-                className="flex items-center gap-3 bg-hunter-dark-light/30 rounded-lg px-4 py-2 border border-hunter-gold/20"
-              >
-                <span className="text-xs text-white/50">VOL</span>
-                <input
-                  type="range"
-                  min="0"
-                  max="100"
-                  value={soundVolume}
-                  onChange={(e) => setSoundVolume(Number(e.target.value))}
-                  className="w-24 h-1.5 bg-hunter-dark rounded-full appearance-none cursor-pointer
-                    [&::-webkit-slider-thumb]:appearance-none
-                    [&::-webkit-slider-thumb]:w-4
-                    [&::-webkit-slider-thumb]:h-4
-                    [&::-webkit-slider-thumb]:rounded-full
-                    [&::-webkit-slider-thumb]:bg-hunter-gold
-                    [&::-webkit-slider-thumb]:cursor-pointer"
-                />
-                <span className="font-title text-xs text-hunter-gold w-8">{soundVolume}%</span>
-              </motion.div>
-            )}
+            <div className="flex flex-col gap-2">
+              {/* SFX音量 */}
+              {soundEnabled && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  className="flex items-center gap-3 bg-hunter-dark-light/30 rounded-lg px-4 py-2 border border-hunter-gold/20"
+                >
+                  <span className="text-xs text-white/50 w-8">SFX</span>
+                  <input
+                    type="range"
+                    min="0"
+                    max="100"
+                    value={soundVolume}
+                    onChange={(e) => setSoundVolume(Number(e.target.value))}
+                    className="w-24 h-1.5 bg-hunter-dark rounded-full appearance-none cursor-pointer
+                      [&::-webkit-slider-thumb]:appearance-none
+                      [&::-webkit-slider-thumb]:w-4
+                      [&::-webkit-slider-thumb]:h-4
+                      [&::-webkit-slider-thumb]:rounded-full
+                      [&::-webkit-slider-thumb]:bg-hunter-gold
+                      [&::-webkit-slider-thumb]:cursor-pointer"
+                  />
+                  <span className="font-title text-xs text-hunter-gold w-8">{soundVolume}%</span>
+                </motion.div>
+              )}
+
+              {/* BGM音量 */}
+              {bgmEnabled && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  className="flex items-center gap-3 bg-hunter-dark-light/30 rounded-lg px-4 py-2 border border-hunter-gold/20"
+                >
+                  <span className="text-xs text-white/50 w-8">BGM</span>
+                  <input
+                    type="range"
+                    min="0"
+                    max="100"
+                    value={bgmVolume}
+                    onChange={(e) => setBgmVolume(Number(e.target.value))}
+                    className="w-24 h-1.5 bg-hunter-dark rounded-full appearance-none cursor-pointer
+                      [&::-webkit-slider-thumb]:appearance-none
+                      [&::-webkit-slider-thumb]:w-4
+                      [&::-webkit-slider-thumb]:h-4
+                      [&::-webkit-slider-thumb]:rounded-full
+                      [&::-webkit-slider-thumb]:bg-hunter-gold
+                      [&::-webkit-slider-thumb]:cursor-pointer"
+                  />
+                  <span className="font-title text-xs text-hunter-gold w-8">{bgmVolume}%</span>
+                </motion.div>
+              )}
+            </div>
           </motion.div>
 
           {/* バージョン */}
