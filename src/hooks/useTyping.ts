@@ -15,6 +15,7 @@ import {
   getCurrentValidKeys,
   getDisplayRomaji,
 } from '@/engine/romajiEngine';
+import type { TypingState } from '@/types/romaji';
 import { APP_CONFIG } from '@/constants/config';
 import type { Word } from '@/types/game';
 
@@ -51,8 +52,29 @@ export function useTyping() {
   // タイピングモードを判定
   const isTypewriterMode = selectedChapter >= TYPEWRITER_MODE_THRESHOLD;
 
-  // 正しいローマ字を取得
+  // 正しいローマ字を取得（表示用）
   const correctRomaji = currentWord ? getDisplayRomaji(currentWord.hiragana) : '';
+
+  // タイプライターモード: 入力がひらがなと一致するか検証
+  // romajiEngineを使って1文字ずつ処理し、最後まで正しく処理できれば正解
+  const validateTypewriterInput = useCallback((input: string, hiragana: string): boolean => {
+    if (!input || !hiragana) return false;
+    
+    let state: TypingState = createInitialState(hiragana);
+    
+    for (const char of input.toLowerCase()) {
+      const result = processKeyInput(state, char);
+      
+      if (result.isMiss || !result.isValid) {
+        return false;
+      }
+      
+      state = result.newState;
+    }
+    
+    // 全ての文字が正しく入力され、単語が完了しているか
+    return state.isComplete;
+  }, []);
 
   // タイピング状態を初期化
   const initializeWord = useCallback(
@@ -179,14 +201,23 @@ export function useTyping() {
     }
   }, [userInput]);
 
+  // タイプライターモード: Enter確定時の爆発音
+  const playEnterExplosion = useCallback(() => {
+    const audio = new Audio('/Mobile-/opening.mp3');
+    audio.volume = 0.3; // 30%の音量
+    audio.play().catch(() => {});
+  }, []);
+
   // タイプライターモード: Enter確定処理
   const handleEnterConfirm = useCallback(() => {
     if (!currentWord || userInput.length === 0) return;
 
-    const isCorrect = userInput.toLowerCase() === correctRomaji.toLowerCase();
+    // romajiEngineを使って複数パターンに対応した検証
+    const isCorrect = validateTypewriterInput(userInput, currentWord.hiragana);
 
     if (isCorrect) {
-      // 正解
+      // 正解 - 爆発音を鳴らして次へ
+      playEnterExplosion();
       handleWordComplete();
     } else {
       // 不正解 - ミスを記録して入力をクリア
@@ -194,7 +225,7 @@ export function useTyping() {
       playMissSound();
       setUserInput('');
     }
-  }, [currentWord, userInput, correctRomaji, handleWordComplete, recordMiss, playMissSound]);
+  }, [currentWord, userInput, validateTypewriterInput, handleWordComplete, recordMiss, playMissSound, playEnterExplosion]);
 
   // キーボードイベントリスナー
   useEffect(() => {
@@ -252,21 +283,30 @@ export function useTyping() {
   }, [currentWord, session?.typingState, initializeWord]);
 
   // 入力の正誤状態を計算（タイプライターモード用）
+  // romajiEngineを使って1文字ずつ検証
   const getInputStatus = useCallback(() => {
-    if (!isTypewriterMode || !correctRomaji) {
+    if (!isTypewriterMode || !currentWord) {
       return { chars: [], isPartiallyCorrect: true };
     }
 
-    const chars = userInput.split('').map((char, index) => {
-      const expectedChar = correctRomaji[index]?.toLowerCase();
-      const isCorrect = char.toLowerCase() === expectedChar;
-      return { char, isCorrect };
-    });
+    const chars: { char: string; isCorrect: boolean }[] = [];
+    let state: TypingState = createInitialState(currentWord.hiragana);
+    let isPartiallyCorrect = true;
 
-    const isPartiallyCorrect = chars.every(c => c.isCorrect);
+    for (const char of userInput) {
+      const result = processKeyInput(state, char.toLowerCase());
+      
+      if (result.isMiss || !result.isValid) {
+        chars.push({ char, isCorrect: false });
+        isPartiallyCorrect = false;
+      } else {
+        chars.push({ char, isCorrect: true });
+        state = result.newState;
+      }
+    }
 
     return { chars, isPartiallyCorrect };
-  }, [isTypewriterMode, userInput, correctRomaji]);
+  }, [isTypewriterMode, currentWord, userInput]);
 
   return {
     currentWord,

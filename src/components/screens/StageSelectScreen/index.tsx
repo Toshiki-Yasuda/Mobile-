@@ -13,45 +13,70 @@ import { getWordsForStage } from '@/data/words';
 
 const CHAPTERS = [
   {
-    id: 1, kanji: '基礎', romaji: 'BASICS',
+    id: 1, kanji: 'ハンター試験編', romaji: 'HUNTER EXAM',
     stages: [
-      { number: 1, name: 'VOWELS', description: 'Basic vowels - aiueo' },
-      { number: 2, name: 'HOME POSITION', description: 'Finger placement basics' },
-      { number: 3, name: 'SHORT NAMES', description: 'Gon, Jin, etc.' },
-      { number: 4, name: 'MAIN CHARS', description: 'Killua, Kurapika, etc.' },
-      { number: 5, name: 'EXAM TERMS', description: 'Hunter exam vocabulary' },
-      { number: 6, name: 'BOSS STAGE', description: 'Combined challenge' },
+      { number: 1, name: '母音の基礎', description: 'あいうえお' },
+      { number: 2, name: 'ホームポジション', description: '基本の指配置' },
+      { number: 3, name: '短い名前', description: 'ゴン、ジン など' },
+      { number: 4, name: '主要キャラ', description: 'キルア、クラピカ など' },
+      { number: 5, name: '試験用語', description: 'ハンター試験の言葉' },
+      { number: 6, name: 'ボスステージ', description: '総合チャレンジ' },
     ],
   },
   {
-    id: 2, kanji: '纏', romaji: 'TEN',
-    stages: Array.from({ length: 6 }, (_, i) => ({
-      number: i + 1, name: `STAGE ${i + 1}`, description: 'Basic input training'
-    })),
+    id: 2, kanji: '天空闘技場編', romaji: 'HEAVENS ARENA',
+    stages: [
+      { number: 1, name: '念の基礎', description: '念能力の用語' },
+      { number: 2, name: '四大行', description: '纏・絶・練・発' },
+      { number: 3, name: '系統', description: '六つの系統' },
+      { number: 4, name: '闘技場用語', description: 'フロアマスターなど' },
+      { number: 5, name: '応用技', description: '堅・凝・周・流など' },
+      { number: 6, name: 'ボスステージ', description: '総合チャレンジ' },
+    ],
   },
   {
-    id: 3, kanji: '絶', romaji: 'ZETSU',
-    stages: Array.from({ length: 6 }, (_, i) => ({
-      number: i + 1, name: `STAGE ${i + 1}`, description: 'Heavens Arena training'
-    })),
+    id: 3, kanji: '幻影旅団編', romaji: 'PHANTOM TROUPE',
+    stages: [
+      { number: 1, name: '旅団メンバー', description: 'クロロ、ノブナガなど' },
+      { number: 2, name: '旅団用語', description: '蜘蛛の言葉' },
+      { number: 3, name: '念能力①', description: '旅団の能力' },
+      { number: 4, name: '念能力②', description: '旅団の能力（続）' },
+      { number: 5, name: '名セリフ', description: '印象的なセリフ' },
+      { number: 6, name: 'ボスステージ', description: '総合チャレンジ' },
+    ],
   },
   {
-    id: 4, kanji: '練', romaji: 'REN',
-    stages: Array.from({ length: 6 }, (_, i) => ({
-      number: i + 1, name: `STAGE ${i + 1}`, description: 'Yorknew City training'
-    })),
+    id: 4, kanji: 'ヨークシン編', romaji: 'YORKNEW CITY',
+    stages: [
+      { number: 1, name: '登場人物', description: 'ヨークシンのキャラ' },
+      { number: 2, name: 'オークション', description: '地下競売の用語' },
+      { number: 3, name: 'マフィア', description: '十老頭など' },
+      { number: 4, name: '念能力', description: 'クラピカの能力など' },
+      { number: 5, name: '名場面', description: '印象的な場面' },
+      { number: 6, name: 'ボスステージ', description: '総合チャレンジ' },
+    ],
   },
   {
-    id: 5, kanji: '発', romaji: 'HATSU',
-    stages: Array.from({ length: 6 }, (_, i) => ({
-      number: i + 1, name: `STAGE ${i + 1}`, description: 'Greed Island training'
-    })),
+    id: 5, kanji: 'G・I編', romaji: 'GREED ISLAND',
+    stages: [
+      { number: 1, name: 'GIキャラ', description: 'ビスケ、レイザーなど' },
+      { number: 2, name: 'カード', description: 'スペルカード' },
+      { number: 3, name: 'ゲーム用語', description: 'GIの用語' },
+      { number: 4, name: '念能力', description: 'GIの能力' },
+      { number: 5, name: '修行', description: 'ゴンの成長' },
+      { number: 6, name: 'ボスステージ', description: '総合チャレンジ' },
+    ],
   },
   {
-    id: 6, kanji: '極意', romaji: 'MASTER',
-    stages: Array.from({ length: 6 }, (_, i) => ({
-      number: i + 1, name: `STAGE ${i + 1}`, description: 'Chimera Ant training'
-    })),
+    id: 6, kanji: 'キメラアント編', romaji: 'CHIMERA ANT',
+    stages: [
+      { number: 1, name: 'キメラアント', description: 'メルエム、護衛軍など' },
+      { number: 2, name: 'キメラアント用語', description: '女王、王など' },
+      { number: 3, name: '討伐隊の能力', description: '百式観音など' },
+      { number: 4, name: '宮殿攻略', description: '作戦の用語' },
+      { number: 5, name: 'ゴンの成長', description: '約束と怒り' },
+      { number: 6, name: '最終決戦', description: '総合チャレンジ' },
+    ],
   },
 ];
 

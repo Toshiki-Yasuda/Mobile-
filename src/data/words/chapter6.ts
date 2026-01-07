@@ -13,7 +13,7 @@ export const stage6_1: Word[] = [
   { id: '6-1-4', display: 'モントゥトゥユピー', hiragana: 'もんとぅとぅゆぴー', category: 'character', difficulty: 5 },
   { id: '6-1-5', display: 'コムギ', hiragana: 'こむぎ', category: 'character', difficulty: 2 },
   { id: '6-1-6', display: 'ネテロ', hiragana: 'ねてろ', category: 'character', difficulty: 3 },
-  { id: '6-1-7', display: 'ノヴ', hiragana: 'のう゛', category: 'character', difficulty: 2 },
+  { id: '6-1-7', display: 'ノヴ', hiragana: 'のぶ', category: 'character', difficulty: 2 },
   { id: '6-1-8', display: 'モラウ', hiragana: 'もらう', category: 'character', difficulty: 2 },
   { id: '6-1-9', display: 'ナックル', hiragana: 'なっくる', category: 'character', difficulty: 3 },
   { id: '6-1-10', display: 'シュート', hiragana: 'しゅーと', category: 'character', difficulty: 2 },

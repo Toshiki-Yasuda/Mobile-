@@ -11,12 +11,12 @@ import { useButtonClick, useMenuSelect } from '@/utils/soundUtils';
 import { BackgroundEffect } from '@/components/common/BackgroundEffect';
 
 const CHAPTERS = [
-  { id: 1, kanji: '基礎', romaji: 'BASICS', description: 'Hunter Exam - Phase 1', stages: 6 },
-  { id: 2, kanji: '纏', romaji: 'TEN', description: 'Hunter Exam - Final', stages: 6 },
-  { id: 3, kanji: '絶', romaji: 'ZETSU', description: 'Heavens Arena', stages: 6 },
-  { id: 4, kanji: '練', romaji: 'REN', description: 'Yorknew City', stages: 6 },
-  { id: 5, kanji: '発', romaji: 'HATSU', description: 'Greed Island', stages: 6 },
-  { id: 6, kanji: '極意', romaji: 'MASTER', description: 'Chimera Ant', stages: 6 },
+  { id: 1, kanji: 'ハンター試験編', romaji: 'HUNTER EXAM', description: '念の基礎・ホームポジション', stages: 6 },
+  { id: 2, kanji: '天空闘技場編', romaji: 'HEAVENS ARENA', description: '念の基礎用語を習得', stages: 6 },
+  { id: 3, kanji: '幻影旅団編', romaji: 'PHANTOM TROUPE', description: '旅団メンバーと能力', stages: 6 },
+  { id: 4, kanji: 'ヨークシン編', romaji: 'YORKNEW CITY', description: 'オークションと対決', stages: 6 },
+  { id: 5, kanji: 'G・I編', romaji: 'GREED ISLAND', description: 'ゲームの冒険', stages: 6 },
+  { id: 6, kanji: 'キメラアント編', romaji: 'CHIMERA ANT', description: '最終決戦', stages: 6 },
 ];
 
 export const LevelSelectScreen: React.FC = () => {
