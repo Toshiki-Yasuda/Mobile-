@@ -555,4 +555,48 @@ describe('エッジケース', () => {
     result = processKeyInput(result.newState, 'n');
     expect(result.isWordComplete).toBe(true);
   });
+
+  it('「を」を o でも wo でも入力できる', () => {
+    let state = createInitialState('を');
+
+    // o で入力
+    let result = processKeyInput(state, 'o');
+    expect(result.isWordComplete).toBe(true);
+
+    // wo で入力
+    state = createInitialState('を');
+    result = processKeyInput(state, 'w');
+    result = processKeyInput(result.newState, 'o');
+    expect(result.isWordComplete).toBe(true);
+  });
+
+  it('「づ」を zu でも du でも入力できる', () => {
+    let state = createInitialState('づ');
+
+    // zu で入力
+    let result = processKeyInput(state, 'z');
+    result = processKeyInput(result.newState, 'u');
+    expect(result.isWordComplete).toBe(true);
+
+    // du で入力
+    state = createInitialState('づ');
+    result = processKeyInput(state, 'd');
+    result = processKeyInput(result.newState, 'u');
+    expect(result.isWordComplete).toBe(true);
+  });
+
+  it('「ぢ」を zi でも di でも入力できる', () => {
+    let state = createInitialState('ぢ');
+
+    // zi で入力
+    let result = processKeyInput(state, 'z');
+    result = processKeyInput(result.newState, 'i');
+    expect(result.isWordComplete).toBe(true);
+
+    // di で入力
+    state = createInitialState('ぢ');
+    result = processKeyInput(state, 'd');
+    result = processKeyInput(result.newState, 'i');
+    expect(result.isWordComplete).toBe(true);
+  });
 });

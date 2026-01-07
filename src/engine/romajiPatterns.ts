@@ -61,8 +61,8 @@ export const ROMAJI_PATTERNS: Record<string, string[]> = {
 
   // ===== だ行 =====
   'だ': ['da'],
-  'ぢ': ['di'],
-  'づ': ['du', 'dzu'],
+  'ぢ': ['di', 'zi'],
+  'づ': ['du', 'dzu', 'zu'],
   'で': ['de'],
   'ど': ['do'],
 
@@ -120,11 +120,11 @@ export const ROMAJI_PATTERNS: Record<string, string[]> = {
 
   // ===== わ行 =====
   'わ': ['wa'],
-  'を': ['wo'],
+  'を': ['wo', 'o'],
 
   // ===== ん（特殊処理が必要） =====
   // 基本パターン。実際の判定では後続文字を見て判断
-  'ん': ['nn', "n'", 'xn'],
+  'ん': ['nn', "n'", 'xn', 'ln'],
 
   // ===== 拗音（きゃ行） =====
   'きゃ': ['kya', 'kilya', 'kixya'],
@@ -190,26 +190,40 @@ export const ROMAJI_PATTERNS: Record<string, string[]> = {
   // 単体の場合。子音重ねは動的に処理
   'っ': ['xtu', 'xtsu', 'ltu', 'ltsu'],
 
+  // ===== 小さいわ =====
+  'ゎ': ['xwa', 'lwa'],
+
   // ===== 長音 =====
   'ー': ['-'],
 
   // ===== 特殊（外来語） =====
   'ゔ': ['vu'],
-  'ゔぁ': ['va'],
-  'ゔぃ': ['vi', 'vyi'],
-  'ゔぇ': ['ve', 'vye'],
-  'ゔぉ': ['vo'],
+  'ゔぁ': ['va', 'vuxa', 'vula'],
+  'ゔぃ': ['vi', 'vyi', 'vuxi', 'vuli'],
+  'ゔぇ': ['ve', 'vye', 'vuxe', 'vule'],
+  'ゔぉ': ['vo', 'vuxo', 'vulo'],
+  'ゔゅ': ['vyu', 'vuxyu', 'vulyu'],
 
-  // ===== シェ・チェ・ジェ =====
+  // ===== シェ・チェ・ジェ等 =====
   'しぇ': ['she', 'sye', 'sixe', 'sile', 'shixe', 'shile'],
   'ちぇ': ['che', 'tye', 'cye', 'tixe', 'tile', 'chixe', 'chile', 'cixe', 'cile'],
   'じぇ': ['je', 'zye', 'jye', 'zixe', 'zile', 'jixe', 'jile'],
+  'きぇ': ['kye', 'kixe', 'kile'],
+  'ぎぇ': ['gye', 'gixe', 'gile'],
+  'にぇ': ['nye', 'nixe', 'nile'],
+  'ひぇ': ['hye', 'hixe', 'hile'],
+  'びぇ': ['bye', 'bixe', 'bile'],
+  'ぴぇ': ['pye', 'pixe', 'pile'],
+  'みぇ': ['mye', 'mixe', 'mile'],
+  'りぇ': ['rye', 'rixe', 'rile'],
 
-  // ===== ティ・ディ =====
+  // ===== ティ・ディ・トゥ・ドゥ =====
   'てぃ': ['thi', 'texi', 'teli'],
   'でぃ': ['dhi', 'dexi', 'deli'],
   'てゅ': ['thu', 'texyu', 'telyu'],
   'でゅ': ['dhu', 'dexyu', 'delyu'],
+  'とぅ': ['twu', 'toxu', 'tolu'],
+  'どぅ': ['dwu', 'doxu', 'dolu'],
 
   // ===== ファ行 =====
   'ふぁ': ['fa', 'huxa', 'hula', 'fuxa', 'fula'],
@@ -218,10 +232,13 @@ export const ROMAJI_PATTERNS: Record<string, string[]> = {
   'ふぉ': ['fo', 'huxo', 'hulo', 'fuxo', 'fulo'],
   'ふゅ': ['fyu', 'huxyu', 'hulyu', 'fuxyu', 'fulyu'],
 
+  // ===== イェ =====
+  'いぇ': ['ye', 'ixe', 'ile'],
+
   // ===== ウィ・ウェ・ウォ =====
   'うぃ': ['wi', 'uxi', 'uli', 'whi'],
   'うぇ': ['we', 'uxe', 'ule', 'whe'],
-  'うぉ': ['who', 'uxo', 'ulo'],
+  'うぉ': ['who', 'uxo', 'ulo', 'wo'],
 
   // ===== クァ行 =====
   'くぁ': ['qa', 'kuxa', 'kula', 'qwa'],
