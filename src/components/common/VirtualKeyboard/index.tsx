@@ -123,7 +123,7 @@ const HAND_OPACITY_BY_CHAPTER: Record<number, number> = {
 };
 
 // キー押下エフェクトの継続時間（ms）
-const KEY_PRESS_DURATION = 2000;
+const KEY_PRESS_DURATION = 700;
 
 export const VirtualKeyboard: React.FC<VirtualKeyboardProps> = ({ 
   activeKeys,
