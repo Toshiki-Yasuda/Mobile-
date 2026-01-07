@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { useGameStore } from './stores/gameStore';
+import { PasswordScreen } from './components/screens/PasswordScreen';
 import { TitleScreen } from './components/screens/TitleScreen';
 import { LevelSelectScreen } from './components/screens/LevelSelectScreen';
 import { StageSelectScreen } from './components/screens/StageSelectScreen';
@@ -87,6 +88,8 @@ function App() {
   // 画面遷移
   const renderScreen = () => {
     switch (currentScreen) {
+      case 'password':
+        return <PasswordScreen />;
       case 'title':
         return <TitleScreen />;
       case 'levelSelect':

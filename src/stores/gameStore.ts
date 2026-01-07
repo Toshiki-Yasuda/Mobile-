@@ -77,7 +77,7 @@ export const useGameStore = create<GameStore>()(
   devtools(
     subscribeWithSelector((set, get) => ({
       // === 初期状態 ===
-      currentScreen: 'title',
+      currentScreen: 'password',
       previousScreen: null,
       selectedChapter: 1,
       selectedStage: 1,

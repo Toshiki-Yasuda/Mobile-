@@ -4,6 +4,7 @@
 
 // ===== 画面状態 =====
 export type Screen =
+  | 'password'
   | 'title'
   | 'levelSelect'
   | 'stageSelect'
