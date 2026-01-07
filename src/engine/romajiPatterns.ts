@@ -200,6 +200,11 @@ export const ROMAJI_PATTERNS: Record<string, string[]> = {
   'ゔぇ': ['ve', 'vye'],
   'ゔぉ': ['vo'],
 
+  // ===== シェ・チェ・ジェ =====
+  'しぇ': ['she', 'sye', 'sixe', 'sile', 'shixe', 'shile'],
+  'ちぇ': ['che', 'tye', 'cye', 'tixe', 'tile', 'chixe', 'chile', 'cixe', 'cile'],
+  'じぇ': ['je', 'zye', 'jye', 'zixe', 'zile', 'jixe', 'jile'],
+
   // ===== ティ・ディ =====
   'てぃ': ['thi', 'texi', 'teli'],
   'でぃ': ['dhi', 'dexi', 'deli'],

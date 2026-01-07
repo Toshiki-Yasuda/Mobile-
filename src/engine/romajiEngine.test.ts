@@ -519,4 +519,40 @@ describe('エッジケース', () => {
     let result = processKeyInput(state, 'A');
     expect(result.isWordComplete).toBe(true);
   });
+
+  it('「ほーりーちぇーん」を複数パターンで入力できる', () => {
+    // ho-ri-che-n パターン（長音を母音代替、cheで入力）
+    let state = createInitialState('ほーりーちぇーん');
+
+    // ほ
+    let result = processKeyInput(state, 'h');
+    result = processKeyInput(result.newState, 'o');
+
+    // ー を o で代替
+    result = processKeyInput(result.newState, 'o');
+    expect(result.isTokenComplete).toBe(true);
+
+    // り
+    result = processKeyInput(result.newState, 'r');
+    result = processKeyInput(result.newState, 'i');
+
+    // ー を i で代替
+    result = processKeyInput(result.newState, 'i');
+    expect(result.isTokenComplete).toBe(true);
+
+    // ちぇ を che で入力
+    result = processKeyInput(result.newState, 'c');
+    result = processKeyInput(result.newState, 'h');
+    result = processKeyInput(result.newState, 'e');
+    expect(result.isTokenComplete).toBe(true);
+
+    // ー を e で代替
+    result = processKeyInput(result.newState, 'e');
+    expect(result.isTokenComplete).toBe(true);
+
+    // ん を n 単体で（単語末）
+    result = processKeyInput(result.newState, 'n');
+    result = processKeyInput(result.newState, 'n');
+    expect(result.isWordComplete).toBe(true);
+  });
 });
