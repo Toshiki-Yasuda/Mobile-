@@ -178,7 +178,7 @@ export const VirtualKeyboard: React.FC<VirtualKeyboardProps> = ({
   };
 
   return (
-    <div className="flex flex-col items-center gap-1.5 p-4 bg-hunter-dark-light/50 backdrop-blur-sm border border-hunter-gold/20 rounded-xl relative">
+    <div className="flex flex-col items-center gap-1 lg:gap-1.5 xl:gap-2 p-3 lg:p-4 xl:p-6 bg-hunter-dark-light/50 backdrop-blur-sm border border-hunter-gold/20 rounded-xl relative">
       {/* 凡例（1-3章のみ） */}
       {showLegend && (
         <div className="absolute -top-10 left-0 right-0 flex justify-center gap-3 text-[10px] font-title tracking-wider">
@@ -232,8 +232,8 @@ export const VirtualKeyboard: React.FC<VirtualKeyboardProps> = ({
       {rows.map((row, rowIndex) => (
         <div
           key={rowIndex}
-          className="flex gap-1 relative z-10"
-          style={{ marginLeft: rowIndents[rowIndex] }}
+          className="flex gap-0.5 lg:gap-1 xl:gap-1.5 relative z-10"
+          style={{ marginLeft: `${rowIndents[rowIndex] * 1.5}px` }}
         >
           {row.map((key) => {
             const keyLower = key.toLowerCase();
@@ -257,21 +257,20 @@ export const VirtualKeyboard: React.FC<VirtualKeyboardProps> = ({
             };
             const displayKey = getDisplayKey();
             
-            // キーのサイズを計算
-            const getKeySize = () => {
-              if (isWideKey) return { width: '56px', height: '40px' }; // Enterは幅広
-              if (rowIndex === 0) return { width: '32px', height: '32px' }; // 数字行は小さく
-              return { width: '36px', height: '36px' }; // 通常キー
+            // キーのサイズはCSSで制御（レスポンシブ対応）
+            const getKeySizeClass = () => {
+              if (isWideKey) return 'key-wide'; // Enterは幅広
+              if (rowIndex === 0) return 'key-number'; // 数字行
+              return 'key-normal'; // 通常キー
             };
-            const keySize = getKeySize();
+            const keySizeClass = getKeySizeClass();
             
             return (
               <motion.div
                 key={key}
-                className={`${getKeyClass(key, isActive)} relative overflow-hidden`}
+                className={`${getKeyClass(key, isActive)} ${keySizeClass} relative overflow-hidden`}
                 animate={isActive ? { scale: 1.05 } : { scale: 1 }}
                 transition={{ duration: 0.1 }}
-                style={keySize}
               >
                 {/* 押したときの光るエフェクト（2秒かけてフェードアウト） */}
                 <AnimatePresence>
@@ -306,19 +305,19 @@ export const VirtualKeyboard: React.FC<VirtualKeyboardProps> = ({
                 
                 <span className="relative z-10 flex flex-col items-center justify-center">
                   <span className={`
-                    ${rowIndex === 0 ? 'text-[10px]' : 'text-xs'}
-                    ${isEnter ? 'text-base' : ''}
-                    ${key === 'ー' ? 'text-sm' : ''}
+                    ${rowIndex === 0 ? 'text-[10px] lg:text-xs xl:text-sm' : 'text-xs lg:text-sm xl:text-base 2xl:text-lg'}
+                    ${isEnter ? 'text-base lg:text-lg xl:text-xl' : ''}
+                    ${key === 'ー' ? 'text-sm lg:text-base xl:text-lg' : ''}
                   `}>
                     {displayKey}
                   </span>
                   {/* F, J の突起マーク（Tactile bump） */}
                   {hasBump && showHomePosition && (
-                    <span className="absolute -bottom-0.5 left-1/2 -translate-x-1/2 w-3 h-1 bg-hunter-gold/70 rounded-full" />
+                    <span className="absolute -bottom-0.5 lg:-bottom-1 left-1/2 -translate-x-1/2 w-3 lg:w-4 xl:w-5 h-1 lg:h-1.5 bg-hunter-gold/70 rounded-full" />
                   )}
                   {/* ホームポジションキーの下線（F, J以外） */}
                   {isHomeKey && !hasBump && showHomePosition && (
-                    <span className="absolute -bottom-0.5 left-1/2 -translate-x-1/2 w-2 h-0.5 bg-hunter-gold/40 rounded-full" />
+                    <span className="absolute -bottom-0.5 lg:-bottom-1 left-1/2 -translate-x-1/2 w-2 lg:w-3 xl:w-4 h-0.5 lg:h-1 bg-hunter-gold/40 rounded-full" />
                   )}
                 </span>
               </motion.div>

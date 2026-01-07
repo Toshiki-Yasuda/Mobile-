@@ -22,7 +22,7 @@ export const SidePanel: React.FC<SidePanelProps> = ({
 
   return (
     <aside
-      className={`hidden lg:flex lg:w-56 xl:w-64 flex-col ${borderClass} bg-hunter-dark/50 backdrop-blur-sm ${className}`}
+      className={`hidden lg:flex lg:w-44 xl:w-48 2xl:w-52 flex-col ${borderClass} bg-hunter-dark/50 backdrop-blur-sm ${className}`}
     >
       {children}
     </aside>

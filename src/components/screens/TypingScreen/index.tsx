@@ -166,7 +166,7 @@ export const TypingScreen: React.FC = () => {
 
           {/* キーボードガイド */}
           {keyboardVisible && (
-            <div className="w-full max-w-2xl lg:max-w-3xl mt-8 lg:mt-12">
+            <div className="w-full max-w-2xl lg:max-w-4xl xl:max-w-5xl 2xl:max-w-6xl mt-8 lg:mt-10">
               <VirtualKeyboard 
                 activeKeys={validKeys} 
                 chapter={selectedChapter || 1}
