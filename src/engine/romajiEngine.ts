@@ -118,21 +118,62 @@ function getSokuonPatterns(nextToken: string | undefined): string[] {
 }
 
 /**
+ * トークンのローマ字パターンから末尾の母音を取得
+ */
+function getEndingVowel(token: string): string | null {
+  const patterns = ROMAJI_PATTERNS[token];
+  if (!patterns || patterns.length === 0) {
+    return null;
+  }
+  // 最初のパターンの末尾文字を取得
+  const firstPattern = patterns[0];
+  const lastChar = firstPattern[firstPattern.length - 1];
+  // 母音かどうか確認
+  if (['a', 'i', 'u', 'e', 'o'].includes(lastChar)) {
+    return lastChar;
+  }
+  return null;
+}
+
+/**
+ * 長音（ー）のパターンを前のトークンに基づいて取得
+ */
+function getChoonPatterns(prevToken: string | undefined): string[] {
+  const basePatterns = ROMAJI_PATTERNS['ー'] || ['-'];
+
+  if (!prevToken) {
+    return basePatterns;
+  }
+
+  const vowel = getEndingVowel(prevToken);
+  if (vowel) {
+    return [...basePatterns, vowel];
+  }
+
+  return basePatterns;
+}
+
+/**
  * トークンに対する有効なパターンを取得
  */
 function getTokenPatterns(
   token: string,
   nextToken: string | undefined,
-  isLastToken: boolean
+  isLastToken: boolean,
+  prevToken?: string
 ): string[] {
   if (token === 'ん') {
     return getNPatterns(nextToken, isLastToken);
   }
-  
+
   if (token === 'っ') {
     return getSokuonPatterns(nextToken);
   }
-  
+
+  if (token === 'ー') {
+    return getChoonPatterns(prevToken);
+  }
+
   return ROMAJI_PATTERNS[token] || [token];
 }
 
@@ -154,14 +195,15 @@ export function createInitialState(targetHiragana: string): TypingState {
       validPatterns: [],
       isComplete: true,
       sokuonMode: null,
+      pendingExactMatch: null,
     };
   }
   
   const firstToken = tokens[0];
   const nextToken = tokens[1];
   const isLastToken = tokens.length === 1;
-  
-  const validPatterns = getTokenPatterns(firstToken, nextToken, isLastToken);
+
+  const validPatterns = getTokenPatterns(firstToken, nextToken, isLastToken, undefined);
   
   return {
     targetHiragana,
@@ -172,6 +214,7 @@ export function createInitialState(targetHiragana: string): TypingState {
     validPatterns,
     isComplete: false,
     sokuonMode: null,
+    pendingExactMatch: null,
   };
 }
 
@@ -197,44 +240,76 @@ export function processKeyInput(state: TypingState, key: string): InputResult {
       acceptedRomaji: '',
     };
   }
-  
+
   const normalizedKey = key.toLowerCase();
   const newInput = state.currentInput + normalizedKey;
-  
+
   // 促音の子音重ねモード処理
   if (state.sokuonMode) {
     return processSokuonMode(state, normalizedKey);
   }
-  
-  // 現在のパターンで部分一致するものをフィルタ
-  const matchingPatterns = state.validPatterns.filter(p => p.startsWith(newInput));
-  
-  // 完全一致があるか
-  const exactMatch = matchingPatterns.find(p => p === newInput);
-  
-  // 部分一致のみ（入力継続中）
-  if (matchingPatterns.length > 0 && !exactMatch) {
-    return {
-      isValid: true,
-      isTokenComplete: false,
-      isWordComplete: false,
-      isMiss: false,
-      nextValidKeys: getNextValidKeys(matchingPatterns, newInput.length),
-      newState: {
-        ...state,
-        currentInput: newInput,
-        validPatterns: matchingPatterns,
-      },
-      acceptedRomaji: normalizedKey,
-    };
+
+  // 保留中の完全一致がある場合の処理
+  if (state.pendingExactMatch) {
+    // 新しい入力で継続できるパターンがあるか
+    const matchingPatterns = state.validPatterns.filter(p => p.startsWith(newInput));
+
+    if (matchingPatterns.length > 0) {
+      // 継続できる - 保留をクリアして処理続行
+      const exactMatch = matchingPatterns.find(p => p === newInput);
+      const longerPatternsExist = matchingPatterns.some(p => p.length > newInput.length);
+
+      if (exactMatch && !longerPatternsExist) {
+        // 完全一致で、より長いパターンがない → 確定
+        return completeToken({ ...state, pendingExactMatch: null }, exactMatch);
+      } else if (exactMatch && longerPatternsExist) {
+        // 完全一致だが、より長いパターンがある → 保留継続
+        return {
+          isValid: true,
+          isTokenComplete: false,
+          isWordComplete: false,
+          isMiss: false,
+          nextValidKeys: getNextValidKeys(matchingPatterns, newInput.length),
+          newState: {
+            ...state,
+            currentInput: newInput,
+            validPatterns: matchingPatterns,
+            pendingExactMatch: exactMatch,
+          },
+          acceptedRomaji: normalizedKey,
+        };
+      } else {
+        // 部分一致のみ → 入力継続、保留クリア
+        return {
+          isValid: true,
+          isTokenComplete: false,
+          isWordComplete: false,
+          isMiss: false,
+          nextValidKeys: getNextValidKeys(matchingPatterns, newInput.length),
+          newState: {
+            ...state,
+            currentInput: newInput,
+            validPatterns: matchingPatterns,
+            pendingExactMatch: null,
+          },
+          acceptedRomaji: normalizedKey,
+        };
+      }
+    } else {
+      // 継続できない - 保留中のパターンで確定し、新しいキーを次のトークンへ
+      const completionResult = completeToken({ ...state, pendingExactMatch: null }, state.pendingExactMatch);
+
+      if (completionResult.isWordComplete) {
+        // 単語完了なら、余分なキー入力はミスではなく単に無視
+        return completionResult;
+      }
+
+      // 次のトークンで新しいキーを処理
+      return processKeyInput(completionResult.newState, normalizedKey);
+    }
   }
-  
-  // 完全一致（トークン確定）
-  if (exactMatch) {
-    return completeToken(state, exactMatch);
-  }
-  
-  // 促音の子音重ね開始チェック
+
+  // 促音の子音重ね開始チェック（完全一致チェックより前に実行）
   const currentToken = state.tokens[state.currentTokenIndex];
   if (currentToken === 'っ' && state.currentInput === '') {
     const nextToken = state.tokens[state.currentTokenIndex + 1];
@@ -256,13 +331,63 @@ export function processKeyInput(state: TypingState, key: string): InputResult {
               consonant: normalizedKey,
               nextPatterns: matchingNextPatterns,
             },
+            pendingExactMatch: null,
           },
           acceptedRomaji: normalizedKey,
         };
       }
     }
   }
-  
+
+  // 現在のパターンで部分一致するものをフィルタ
+  const matchingPatterns = state.validPatterns.filter(p => p.startsWith(newInput));
+
+  // 完全一致があるか
+  const exactMatch = matchingPatterns.find(p => p === newInput);
+  // より長いパターンがあるか
+  const longerPatternsExist = matchingPatterns.some(p => p.length > newInput.length);
+
+  // 完全一致で、より長いパターンがある場合 → 保留
+  if (exactMatch && longerPatternsExist) {
+    return {
+      isValid: true,
+      isTokenComplete: false,
+      isWordComplete: false,
+      isMiss: false,
+      nextValidKeys: getNextValidKeys(matchingPatterns, newInput.length),
+      newState: {
+        ...state,
+        currentInput: newInput,
+        validPatterns: matchingPatterns,
+        pendingExactMatch: exactMatch,
+      },
+      acceptedRomaji: normalizedKey,
+    };
+  }
+
+  // 部分一致のみ（入力継続中）
+  if (matchingPatterns.length > 0 && !exactMatch) {
+    return {
+      isValid: true,
+      isTokenComplete: false,
+      isWordComplete: false,
+      isMiss: false,
+      nextValidKeys: getNextValidKeys(matchingPatterns, newInput.length),
+      newState: {
+        ...state,
+        currentInput: newInput,
+        validPatterns: matchingPatterns,
+        pendingExactMatch: null,
+      },
+      acceptedRomaji: normalizedKey,
+    };
+  }
+
+  // 完全一致で、より長いパターンがない → 確定
+  if (exactMatch) {
+    return completeToken(state, exactMatch);
+  }
+
   // ミス
   return {
     isValid: false,
@@ -280,18 +405,15 @@ export function processKeyInput(state: TypingState, key: string): InputResult {
  */
 function processSokuonMode(state: TypingState, key: string): InputResult {
   const sokuonMode = state.sokuonMode!;
-  
+
   // 同じ子音が入力されたか
   if (key === sokuonMode.consonant) {
     // 促音を確定し、次のトークンの処理を開始
     const newTokenIndex = state.currentTokenIndex + 1;
-    const nextToken = state.tokens[newTokenIndex];
-    const nextNextToken = state.tokens[newTokenIndex + 1];
-    const isLastToken = newTokenIndex === state.tokens.length - 1;
-    
+
     // 次のトークンのパターン（子音重ね後なので、consonantで始まるもの）
     const validPatterns = sokuonMode.nextPatterns;
-    
+
     return {
       isValid: true,
       isTokenComplete: true, // 促音が確定
@@ -305,15 +427,16 @@ function processSokuonMode(state: TypingState, key: string): InputResult {
         confirmedRomaji: state.confirmedRomaji + sokuonMode.consonant,
         validPatterns,
         sokuonMode: null,
+        pendingExactMatch: null,
       },
       acceptedRomaji: key,
     };
   }
-  
+
   // 子音重ねを中断し、通常の促音入力に戻る
   const basePatterns = ROMAJI_PATTERNS['っ'] || [];
   const matchingPatterns = basePatterns.filter(p => p.startsWith(key));
-  
+
   if (matchingPatterns.length > 0) {
     return {
       isValid: true,
@@ -326,11 +449,12 @@ function processSokuonMode(state: TypingState, key: string): InputResult {
         currentInput: key,
         validPatterns: matchingPatterns,
         sokuonMode: null,
+        pendingExactMatch: null,
       },
       acceptedRomaji: key,
     };
   }
-  
+
   // ミス
   return {
     isValid: false,
@@ -365,18 +489,20 @@ function completeToken(state: TypingState, acceptedPattern: string): InputResult
         validPatterns: [],
         isComplete: true,
         sokuonMode: null,
+        pendingExactMatch: null,
       },
       acceptedRomaji: acceptedPattern.slice(state.currentInput.length),
     };
   }
-  
+
   // 次のトークンへ
+  const prevToken = state.tokens[state.currentTokenIndex]; // 現在のトークンが次のトークンの前トークン
   const nextToken = state.tokens[newTokenIndex];
   const nextNextToken = state.tokens[newTokenIndex + 1];
   const isLastToken = newTokenIndex === state.tokens.length - 1;
-  
-  const nextValidPatterns = getTokenPatterns(nextToken, nextNextToken, isLastToken);
-  
+
+  const nextValidPatterns = getTokenPatterns(nextToken, nextNextToken, isLastToken, prevToken);
+
   return {
     isValid: true,
     isTokenComplete: true,
@@ -390,6 +516,7 @@ function completeToken(state: TypingState, acceptedPattern: string): InputResult
       confirmedRomaji: state.confirmedRomaji + acceptedPattern,
       validPatterns: nextValidPatterns,
       sokuonMode: null,
+      pendingExactMatch: null,
     },
     acceptedRomaji: acceptedPattern.slice(state.currentInput.length),
   };

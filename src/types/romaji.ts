@@ -20,6 +20,8 @@ export interface TypingState {
   isComplete: boolean;
   /** 促音の子音重ねモード */
   sokuonMode: SokuonMode | null;
+  /** 保留中の完全一致（より長いパターンがある場合）*/
+  pendingExactMatch: string | null;
 }
 
 // ===== 促音モード =====

@@ -449,19 +449,65 @@ describe('エッジケース', () => {
 
   it('長音を含む文字列', () => {
     let state = createInitialState('らーめん');
-    
+
     // ら
     let result = processKeyInput(state, 'r');
     result = processKeyInput(result.newState, 'a');
-    
+
     // ー
     result = processKeyInput(result.newState, '-');
     expect(result.isTokenComplete).toBe(true);
-    
+
     // め
     result = processKeyInput(result.newState, 'm');
     result = processKeyInput(result.newState, 'e');
-    
+
+    // ん
+    result = processKeyInput(result.newState, 'n');
+    result = processKeyInput(result.newState, 'n');
+    expect(result.isWordComplete).toBe(true);
+  });
+
+  it('長音を母音で代替入力できる', () => {
+    // 「らーめん」を「raamen」で入力
+    let state = createInitialState('らーめん');
+
+    // ら
+    let result = processKeyInput(state, 'r');
+    result = processKeyInput(result.newState, 'a');
+
+    // ー を a で代替
+    result = processKeyInput(result.newState, 'a');
+    expect(result.isTokenComplete).toBe(true);
+
+    // め
+    result = processKeyInput(result.newState, 'm');
+    result = processKeyInput(result.newState, 'e');
+
+    // ん
+    result = processKeyInput(result.newState, 'n');
+    result = processKeyInput(result.newState, 'n');
+    expect(result.isWordComplete).toBe(true);
+  });
+
+  it('「ゔぉーぎん」を母音代替で入力できる', () => {
+    // 「ゔぉーぎん」を「vooginn」で入力（ユーザー要望のウヴォーギン対応）
+    let state = createInitialState('ゔぉーぎん');
+
+    // ゔぉ
+    let result = processKeyInput(state, 'v');
+    result = processKeyInput(result.newState, 'o');
+    expect(result.isTokenComplete).toBe(true);
+
+    // ー を o で代替
+    result = processKeyInput(result.newState, 'o');
+    expect(result.isTokenComplete).toBe(true);
+
+    // ぎ
+    result = processKeyInput(result.newState, 'g');
+    result = processKeyInput(result.newState, 'i');
+    expect(result.isTokenComplete).toBe(true);
+
     // ん
     result = processKeyInput(result.newState, 'n');
     result = processKeyInput(result.newState, 'n');
