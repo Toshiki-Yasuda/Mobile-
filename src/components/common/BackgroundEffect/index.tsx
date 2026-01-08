@@ -98,3 +98,4 @@ export const BackgroundEffect: React.FC<BackgroundEffectProps> = ({
 export default BackgroundEffect;
 
 
+

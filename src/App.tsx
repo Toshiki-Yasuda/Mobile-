@@ -7,6 +7,8 @@ import { StageSelectScreen } from './components/screens/StageSelectScreen';
 import { TypingScreen } from './components/screens/TypingScreen';
 import { ResultScreen } from './components/screens/ResultScreen';
 import { AdminScreen } from './components/screens/AdminScreen';
+import { SettingsScreen } from './components/screens/SettingsScreen';
+import { StatisticsScreen } from './components/screens/StatisticsScreen';
 import { Loading } from './components/common/Loading';
 import { ErrorBoundary } from './components/common/ErrorBoundary';
 
@@ -101,11 +103,9 @@ function App() {
       case 'result':
         return <ResultScreen />;
       case 'settings':
-        // TODO: SettingsScreen
-        return <TitleScreen />;
+        return <SettingsScreen />;
       case 'statistics':
-        // TODO: StatisticsScreen
-        return <TitleScreen />;
+        return <StatisticsScreen />;
       case 'timeAttack':
         // TODO: TimeAttackScreen
         return <TypingScreen />;
