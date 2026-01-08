@@ -111,12 +111,16 @@ export const TitleScreen: React.FC = () => {
   const handleStart = useCallback(() => {
     hasInteractedRef.current = true;
     setShowStartOverlay(false);
+    // メニュー画面ではGAME BGMに切り替え
+    bgmManager.switchTrack('game');
     if (bgmEnabled) {
       playBgm();
     }
   }, [bgmEnabled, playBgm]);
 
   const handleBackToOpening = useCallback(() => {
+    // オープニングに戻るときはOPENING BGMに切り替え
+    bgmManager.switchTrack('opening');
     bgmManager.pause();
     setShowStartOverlay(true);
   }, []);

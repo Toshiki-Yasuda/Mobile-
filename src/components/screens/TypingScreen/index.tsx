@@ -73,12 +73,10 @@ export const TypingScreen: React.FC = () => {
     }
   }, []);
 
-  // タイピング画面ではゲーム用BGMに切り替え＆音量を下げる
+  // タイピング画面ではBGM音量を下げる（GAME BGMのまま継続）
   useEffect(() => {
-    bgmManager.switchTrack('game');
     bgmManager.lowerVolume(0.30);
     return () => {
-      bgmManager.switchTrack('opening');
       bgmManager.restoreVolume();
     };
   }, []);
