@@ -68,12 +68,19 @@ export const TitleScreen: React.FC = () => {
     bgmManager.restoreVolume();
   }, []);
 
-  // オープニング画面で爆発音を1秒後に1回再生
+  // オープニング画面でOPENING BGMを再生 & 爆発音を1秒後に1回再生
   useEffect(() => {
     if (showStartOverlay) {
-      bgmManager.pause();
+      // OPENING BGMに切り替えて再生
+      bgmManager.switchTrack('opening');
+      if (bgmEnabled) {
+        const volume = (bgmVolume / 100) * 0.8;
+        bgmManager.setOriginalVolume(volume);
+        bgmManager.play(volume);
+        hasInteractedRef.current = true;
+      }
       setExplosionTriggered(false);
-      
+
       // 1秒後に爆発音を再生＆アニメーション開始
       explosionTimerRef.current = setTimeout(() => {
         if (!openingAudioRef.current) {
@@ -84,7 +91,7 @@ export const TitleScreen: React.FC = () => {
         openingAudioRef.current.volume = volume;
         openingAudioRef.current.currentTime = 0;
         openingAudioRef.current.play().catch(() => {});
-        
+
         // 爆発アニメーション開始
         setExplosionTriggered(true);
       }, 1000);
@@ -106,7 +113,7 @@ export const TitleScreen: React.FC = () => {
         clearTimeout(explosionTimerRef.current);
       }
     };
-  }, [showStartOverlay, bgmVolume]);
+  }, [showStartOverlay, bgmVolume, bgmEnabled]);
 
   const handleStart = useCallback(() => {
     hasInteractedRef.current = true;
