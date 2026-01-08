@@ -3,17 +3,14 @@
  * コンボに応じてオーラが強くなる
  */
 
-import React from 'react';
+import React, { useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { createNenAuraPulse } from '@/utils/animations';
-
-// 念レベル閾値
-const NEN_THRESHOLDS = {
-  HATSU: 50,   // 発（ハツ）- 必殺技レベル
-  REN: 20,     // 練（レン）- オーラ増幅
-  ZETSU: 10,   // 絶（ゼツ）- オーラ遮断
-  TEN: 5,      // 纏（テン）- オーラ保持
-};
+import {
+  NEN_THRESHOLDS,
+  NEN_AURA_COLORS,
+  NEN_AURA_CONFIG,
+} from '@/constants/gameJuice';
 
 interface NenAuraProps {
   combo: number;
@@ -23,17 +20,29 @@ interface NenAuraProps {
 export const NenAura: React.FC<NenAuraProps> = ({ combo, className = '' }) => {
   const pulseConfig = createNenAuraPulse(combo);
 
+  // パーティクルのランダム値をキャッシュ（マウント時に固定）
+  const particleConfigs = useMemo(() => {
+    return Array.from({ length: NEN_AURA_CONFIG.PARTICLE_MAX_COUNT }, (_, i) => ({
+      left: `${10 + i * 8}%`,
+      durationOffset: Math.random(),
+      delay: Math.random() * 2,
+    }));
+  }, []);
+
   // 念レベルに応じた色
   const getAuraColor = () => {
-    if (combo >= NEN_THRESHOLDS.HATSU) return 'from-red-500/40 to-orange-500/20';
-    if (combo >= NEN_THRESHOLDS.REN) return 'from-orange-400/40 to-yellow-400/20';
-    if (combo >= NEN_THRESHOLDS.ZETSU) return 'from-purple-400/40 to-blue-400/20';
-    if (combo >= NEN_THRESHOLDS.TEN) return 'from-blue-400/40 to-cyan-400/20';
-    return 'from-hunter-gold/30 to-hunter-gold/10';
+    if (combo >= NEN_THRESHOLDS.HATSU) return NEN_AURA_COLORS.HATSU;
+    if (combo >= NEN_THRESHOLDS.REN) return NEN_AURA_COLORS.REN;
+    if (combo >= NEN_THRESHOLDS.ZETSU) return NEN_AURA_COLORS.ZETSU;
+    if (combo >= NEN_THRESHOLDS.TEN) return NEN_AURA_COLORS.TEN;
+    return NEN_AURA_COLORS.DEFAULT;
   };
 
   // オーラの高さ（コンボでゲージのように上昇）
-  const auraHeight = Math.min(combo * 2, 100);
+  const auraHeight = Math.min(
+    combo * NEN_AURA_CONFIG.HEIGHT_MULTIPLIER,
+    NEN_AURA_CONFIG.HEIGHT_MAX
+  );
 
   return (
     <div className={`relative w-full rounded-lg overflow-hidden bg-hunter-dark border border-hunter-gold/10 ${className}`}>
@@ -50,30 +59,35 @@ export const NenAura: React.FC<NenAuraProps> = ({ combo, className = '' }) => {
         {...pulseConfig}
       />
 
-      {/* パーティクル効果（コンボ10以上） */}
-      {combo >= 10 && (
+      {/* パーティクル効果（コンボ閾値以上） */}
+      {combo >= NEN_AURA_CONFIG.PARTICLE_THRESHOLD && (
         <div className="absolute inset-0 overflow-hidden">
-          {[...Array(Math.min(Math.floor(combo / 5), 10))].map((_, i) => (
-            <motion.div
-              key={i}
-              className="absolute w-1 h-1 bg-white/60 rounded-full"
-              initial={{
-                bottom: '0%',
-                left: `${10 + i * 8}%`,
-                opacity: 0,
-              }}
-              animate={{
-                bottom: ['0%', '100%'],
-                opacity: [0, 1, 0],
-              }}
-              transition={{
-                duration: 2 + Math.random(),
-                repeat: Infinity,
-                delay: Math.random() * 2,
-                ease: 'easeOut',
-              }}
-            />
-          ))}
+          {particleConfigs
+            .slice(0, Math.min(
+              Math.floor(combo / NEN_AURA_CONFIG.PARTICLE_DIVISOR),
+              NEN_AURA_CONFIG.PARTICLE_MAX_COUNT
+            ))
+            .map((config, i) => (
+              <motion.div
+                key={i}
+                className="absolute w-1 h-1 bg-white/60 rounded-full"
+                initial={{
+                  bottom: '0%',
+                  left: config.left,
+                  opacity: 0,
+                }}
+                animate={{
+                  bottom: ['0%', '100%'],
+                  opacity: [0, 1, 0],
+                }}
+                transition={{
+                  duration: 2 + config.durationOffset,
+                  repeat: Infinity,
+                  delay: config.delay,
+                  ease: 'easeOut',
+                }}
+              />
+            ))}
         </div>
       )}
     </div>

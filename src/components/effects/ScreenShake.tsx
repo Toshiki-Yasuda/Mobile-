@@ -31,6 +31,8 @@ export const ScreenShake: React.FC<ScreenShakeProps> = ({
     if (trigger !== lastTrigger && trigger > 0) {
       const config = SHAKE_CONFIGS[intensity];
 
+      // 連続ミス時に前のアニメーションを停止してから新しいアニメーションを開始
+      controls.stop();
       controls.start({
         x: config.x,
         transition: {

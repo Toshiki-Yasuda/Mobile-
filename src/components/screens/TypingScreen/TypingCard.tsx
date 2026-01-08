@@ -4,12 +4,18 @@
  * Enter正解時の爆発演出付き
  */
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { APP_CONFIG } from '@/constants/config';
-import { charCorrectVariants, easings } from '@/utils/animations';
+import { EFFECT_DURATIONS, EXPLOSION_CONFIG } from '@/constants/gameJuice';
+import { easings } from '@/utils/animations';
 import type { Word } from '@/types/game';
 import type { TypingState } from '@/types/romaji';
+
+// 放射状光線のインデックス配列（コンポーネント外で定数化）
+const RAY_INDICES = Array.from({ length: EXPLOSION_CONFIG.RAY_COUNT }, (_, i) => i);
+// パーティクルのインデックス配列
+const PARTICLE_INDICES = Array.from({ length: EXPLOSION_CONFIG.PARTICLE_COUNT }, (_, i) => i);
 
 interface InputChar {
   char: string;
@@ -48,11 +54,23 @@ export const TypingCard: React.FC<TypingCardProps> = ({
   // 爆発エフェクト表示状態
   const [showExplosion, setShowExplosion] = useState(false);
 
+  // パーティクルのランダム値をキャッシュ（マウント時に固定）
+  const particleConfigs = useMemo(() => {
+    return PARTICLE_INDICES.map((i) => {
+      const angle = (i / EXPLOSION_CONFIG.PARTICLE_COUNT) * Math.PI * 2;
+      return {
+        angle,
+        distance: EXPLOSION_CONFIG.PARTICLE_DISTANCE_MIN + Math.random() * EXPLOSION_CONFIG.PARTICLE_DISTANCE_RANGE,
+        durationOffset: Math.random() * 0.3,
+      };
+    });
+  }, []);
+
   // explosionTriggerが変わったら爆発エフェクトを表示
   useEffect(() => {
     if (explosionTrigger > 0 && isTypewriterMode) {
       setShowExplosion(true);
-      const timer = setTimeout(() => setShowExplosion(false), 800);
+      const timer = setTimeout(() => setShowExplosion(false), EFFECT_DURATIONS.EXPLOSION);
       return () => clearTimeout(timer);
     }
   }, [explosionTrigger, isTypewriterMode]);
@@ -176,50 +194,46 @@ export const TypingCard: React.FC<TypingCardProps> = ({
             </motion.div>
 
             {/* 放射状の光線 */}
-            {[...Array(8)].map((_, i) => (
+            {RAY_INDICES.map((i) => (
               <motion.div
                 key={`ray-${i}`}
                 className="absolute top-1/2 left-1/2 w-full h-0.5 bg-gradient-to-r from-transparent via-hunter-gold to-transparent pointer-events-none z-20"
-                style={{ 
+                style={{
                   transformOrigin: 'center center',
                 }}
-                initial={{ rotate: i * 45, opacity: 0, scaleX: 0 }}
-                animate={{ 
-                  rotate: i * 45,
+                initial={{ rotate: i * (360 / EXPLOSION_CONFIG.RAY_COUNT), opacity: 0, scaleX: 0 }}
+                animate={{
+                  rotate: i * (360 / EXPLOSION_CONFIG.RAY_COUNT),
                   opacity: [0, 0.8, 0],
                   scaleX: [0, 1.5, 2],
                 }}
                 exit={{ opacity: 0 }}
-                transition={{ 
-                  duration: 0.5, 
+                transition={{
+                  duration: 0.5,
                   ease: 'easeOut',
                 }}
               />
             ))}
 
             {/* 爆発パーティクル */}
-            {[...Array(12)].map((_, i) => {
-              const angle = (i / 12) * Math.PI * 2;
-              const distance = 80 + Math.random() * 60;
-              return (
-                <motion.div
-                  key={`particle-${i}`}
-                  className="absolute top-1/2 left-1/2 w-2 h-2 bg-hunter-gold rounded-full pointer-events-none z-20"
-                  initial={{ x: 0, y: 0, opacity: 1, scale: 1 }}
-                  animate={{ 
-                    x: Math.cos(angle) * distance,
-                    y: Math.sin(angle) * distance,
-                    opacity: 0,
-                    scale: 0,
-                  }}
-                  exit={{ opacity: 0 }}
-                  transition={{ 
-                    duration: 0.5 + Math.random() * 0.3,
-                    ease: 'easeOut',
-                  }}
-                />
-              );
-            })}
+            {particleConfigs.map((config, i) => (
+              <motion.div
+                key={`particle-${i}`}
+                className="absolute top-1/2 left-1/2 w-2 h-2 bg-hunter-gold rounded-full pointer-events-none z-20"
+                initial={{ x: 0, y: 0, opacity: 1, scale: 1 }}
+                animate={{
+                  x: Math.cos(config.angle) * config.distance,
+                  y: Math.sin(config.angle) * config.distance,
+                  opacity: 0,
+                  scale: 0,
+                }}
+                exit={{ opacity: 0 }}
+                transition={{
+                  duration: 0.5 + config.durationOffset,
+                  ease: 'easeOut',
+                }}
+              />
+            ))}
 
             {/* 衝撃波リング */}
             <motion.div

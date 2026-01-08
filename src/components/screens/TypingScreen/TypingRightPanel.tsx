@@ -8,6 +8,7 @@ import { motion } from 'framer-motion';
 import { SidePanel, SidePanelSection } from '@/components/common/SidePanel';
 import { NenAura } from '@/components/effects';
 import { APP_CONFIG } from '@/constants/config';
+import { getNenLevel } from '@/constants/gameJuice';
 import { comboCounterVariants } from '@/utils/animations';
 
 interface TypingRightPanelProps {
@@ -17,15 +18,6 @@ interface TypingRightPanelProps {
   missCount: number;
   correctCount: number;
 }
-
-// 念レベル定義
-const NEN_LEVELS = [
-  { threshold: 50, name: '発', color: 'text-red-500' },
-  { threshold: 20, name: '練', color: 'text-orange-400' },
-  { threshold: 10, name: '絶', color: 'text-purple-400' },
-  { threshold: 5, name: '纏', color: 'text-blue-400' },
-  { threshold: 0, name: '念', color: 'text-hunter-gold' },
-];
 
 export const TypingRightPanel: React.FC<TypingRightPanelProps> = ({
   score,
@@ -39,7 +31,7 @@ export const TypingRightPanel: React.FC<TypingRightPanelProps> = ({
   const prevComboRef = useRef(combo);
 
   // 念レベルを取得
-  const nenLevel = NEN_LEVELS.find(level => combo >= level.threshold) || NEN_LEVELS[NEN_LEVELS.length - 1];
+  const nenLevel = getNenLevel(combo);
 
   // コンボが増えたかどうか
   const comboIncreased = combo > prevComboRef.current;
