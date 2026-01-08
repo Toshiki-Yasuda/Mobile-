@@ -3,10 +3,12 @@
  * クールデザイン
  */
 
-import React from 'react';
+import React, { useRef, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { SidePanel, SidePanelSection } from '@/components/common/SidePanel';
+import { NenAura } from '@/components/effects';
 import { APP_CONFIG } from '@/constants/config';
+import { comboCounterVariants } from '@/utils/animations';
 
 interface TypingRightPanelProps {
   score: number;
@@ -15,6 +17,15 @@ interface TypingRightPanelProps {
   missCount: number;
   correctCount: number;
 }
+
+// 念レベル定義
+const NEN_LEVELS = [
+  { threshold: 50, name: '発', color: 'text-red-500' },
+  { threshold: 20, name: '練', color: 'text-orange-400' },
+  { threshold: 10, name: '絶', color: 'text-purple-400' },
+  { threshold: 5, name: '纏', color: 'text-blue-400' },
+  { threshold: 0, name: '念', color: 'text-hunter-gold' },
+];
 
 export const TypingRightPanel: React.FC<TypingRightPanelProps> = ({
   score,
@@ -25,15 +36,17 @@ export const TypingRightPanel: React.FC<TypingRightPanelProps> = ({
 }) => {
   const totalTyped = correctCount + missCount;
   const accuracy = totalTyped > 0 ? Math.round((correctCount / totalTyped) * 100) : 100;
+  const prevComboRef = useRef(combo);
 
-  const getNenLevel = (comboCount: number): string => {
-    const { NEN_LEVEL_THRESHOLDS } = APP_CONFIG;
-    if (comboCount >= NEN_LEVEL_THRESHOLDS.HATSU) return 'HATSU';
-    if (comboCount >= NEN_LEVEL_THRESHOLDS.REN) return 'REN';
-    if (comboCount >= NEN_LEVEL_THRESHOLDS.ZETSU) return 'ZETSU';
-    if (comboCount >= NEN_LEVEL_THRESHOLDS.TEN) return 'TEN';
-    return 'TRAINING';
-  };
+  // 念レベルを取得
+  const nenLevel = NEN_LEVELS.find(level => combo >= level.threshold) || NEN_LEVELS[NEN_LEVELS.length - 1];
+
+  // コンボが増えたかどうか
+  const comboIncreased = combo > prevComboRef.current;
+
+  useEffect(() => {
+    prevComboRef.current = combo;
+  }, [combo]);
 
   return (
     <SidePanel position="right">
@@ -48,14 +61,27 @@ export const TypingRightPanel: React.FC<TypingRightPanelProps> = ({
       {/* コンボ */}
       <SidePanelSection borderBottom>
         <div className="font-title text-hunter-gold/50 text-xs tracking-[0.3em] mb-2">COMBO</div>
-        <div className="flex items-end gap-2">
-          <span
-            className={`font-title text-4xl xl:text-5xl font-bold ${
-              combo >= 20 ? 'text-hunter-gold nen-glow' : combo >= 10 ? 'text-hunter-gold' : 'text-white'
-            }`}
+        <div className="flex items-end gap-3">
+          <motion.span
+            key={combo}
+            variants={comboCounterVariants}
+            initial="initial"
+            animate={comboIncreased ? "increment" : "initial"}
+            className={`font-title text-4xl xl:text-5xl font-bold ${nenLevel.color}`}
+            style={combo >= 10 ? { textShadow: '0 0 15px currentColor' } : {}}
           >
             {combo}
-          </span>
+          </motion.span>
+          {combo >= 5 && (
+            <motion.span
+              key={nenLevel.name}
+              initial={{ opacity: 0, x: -10 }}
+              animate={{ opacity: 1, x: 0 }}
+              className={`font-title text-sm ${nenLevel.color} opacity-80`}
+            >
+              {nenLevel.name}
+            </motion.span>
+          )}
         </div>
         {maxCombo > 0 && (
           <div className="text-white/30 text-sm mt-2 font-title tracking-wider">MAX: {maxCombo}</div>
@@ -102,23 +128,7 @@ export const TypingRightPanel: React.FC<TypingRightPanelProps> = ({
       {/* 念オーラ */}
       <SidePanelSection borderTop>
         <div className="font-title text-hunter-gold/50 text-xs tracking-[0.3em] mb-3">NEN AURA</div>
-        <div className="relative h-20 rounded overflow-hidden bg-hunter-dark border border-hunter-gold/10">
-          <motion.div
-            className="absolute inset-0 bg-gradient-to-t from-hunter-gold/20 to-transparent"
-            animate={{ opacity: [0.3, 0.5, 0.3] }}
-            transition={{ duration: 2, repeat: Infinity }}
-          />
-          <motion.div
-            className="absolute bottom-0 left-0 right-0 bg-hunter-gold/40"
-            animate={{ height: `${Math.min(combo * 5, 100)}%` }}
-            transition={{ duration: 0.3 }}
-          />
-          <div className="absolute inset-0 flex items-center justify-center">
-            <span className="font-title text-white/70 text-xs font-bold tracking-wider">
-              {getNenLevel(combo)}
-            </span>
-          </div>
-        </div>
+        <NenAura combo={combo} className="h-20" />
       </SidePanelSection>
     </SidePanel>
   );

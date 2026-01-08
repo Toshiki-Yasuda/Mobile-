@@ -35,10 +35,8 @@ export const NenAura: React.FC<NenAuraProps> = ({ combo, className = '' }) => {
   // オーラの高さ（コンボでゲージのように上昇）
   const auraHeight = Math.min(combo * 2, 100);
 
-  if (combo < 3) return null;
-
   return (
-    <div className={`relative h-32 w-full rounded-lg overflow-hidden bg-black/30 ${className}`}>
+    <div className={`relative w-full rounded-lg overflow-hidden bg-hunter-dark border border-hunter-gold/10 ${className}`}>
       {/* ベースオーラ */}
       <motion.div
         className={`absolute bottom-0 left-0 right-0 bg-gradient-to-t ${getAuraColor()}`}

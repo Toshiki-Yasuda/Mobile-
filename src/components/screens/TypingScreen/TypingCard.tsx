@@ -4,9 +4,10 @@
  * Enter正解時の爆発演出付き
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { APP_CONFIG } from '@/constants/config';
+import { charCorrectVariants, easings } from '@/utils/animations';
 import type { Word } from '@/types/game';
 import type { TypingState } from '@/types/romaji';
 
@@ -65,9 +66,31 @@ export const TypingCard: React.FC<TypingCardProps> = ({
     const remaining = displayRomaji.slice(confirmed.length + current.length);
 
     return (
-      <div className="font-mono text-2xl lg:text-3xl tracking-wider">
-        <span className="text-success">{confirmed}</span>
-        <span className="text-hunter-gold font-bold">{current}</span>
+      <div className="font-mono text-2xl lg:text-3xl tracking-wider flex justify-center">
+        {/* 確定済み文字（パルスアニメーション付き） */}
+        {confirmed.split('').map((char, i) => (
+          <motion.span
+            key={`confirmed-${i}`}
+            initial={{ scale: 1, opacity: 0.7 }}
+            animate={{ scale: 1, opacity: 1 }}
+            className="text-success"
+          >
+            {char}
+          </motion.span>
+        ))}
+        {/* 入力中の文字（強調） */}
+        {current.split('').map((char, i) => (
+          <motion.span
+            key={`current-${i}`}
+            initial={{ scale: 1.2, opacity: 0.5 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ duration: 0.1, ease: easings.snap }}
+            className="text-hunter-gold font-bold"
+          >
+            {char}
+          </motion.span>
+        ))}
+        {/* 残りの文字 */}
         <span className="text-white/30">{remaining}</span>
       </div>
     );
