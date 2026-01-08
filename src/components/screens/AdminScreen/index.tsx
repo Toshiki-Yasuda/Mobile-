@@ -42,6 +42,18 @@ export const AdminScreen: React.FC = () => {
     };
   }, []);
 
+  // キーボード操作
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        navigateTo('title');
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [navigateTo]);
+
   const handleUnlockAll = () => CHAPTERS.forEach((c) => unlockChapter(c.id));
   const handleReset = () => { if (confirm('Reset all progress?')) resetAllProgress(); };
 

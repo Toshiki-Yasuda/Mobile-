@@ -3,7 +3,7 @@
  * クールデザイン
  */
 
-import React from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { useGameStore } from '@/stores/gameStore';
 import { useProgressStore } from '@/stores/progressStore';
@@ -85,8 +85,83 @@ export const StageSelectScreen: React.FC = () => {
   const { isStageCleared, getStageResult } = useProgressStore();
   const { handleClick } = useButtonClick();
   const { handleSelect: handleStageClick } = useStageSelect();
+  const [selectedIndex, setSelectedIndex] = useState(0);
 
   const chapter = CHAPTERS.find((c) => c.id === selectedChapter);
+
+  const isStageUnlocked = useCallback((stageNumber: number) => {
+    if (stageNumber === 1) return true;
+    const previousStageId = `${selectedChapter}-${stageNumber - 1}`;
+    return isStageCleared(previousStageId);
+  }, [selectedChapter, isStageCleared]);
+
+  const handleStageSelect = useCallback((stageNumber: number) => {
+    if (!isStageUnlocked(stageNumber)) return;
+
+    const stageId = `${selectedChapter}-${stageNumber}`;
+    const words = getWordsForStage(stageId);
+
+    if (words.length === 0) {
+      console.warn(`Stage ${stageId} has no word data`);
+      return;
+    }
+
+    selectStage(selectedChapter, stageNumber);
+    startSession(words);
+    navigateTo('typing');
+  }, [selectedChapter, isStageUnlocked, selectStage, startSession, navigateTo]);
+
+  // キーボード操作
+  useEffect(() => {
+    if (!chapter) return;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      const stageCount = chapter.stages.length;
+
+      switch (e.key) {
+        case 'ArrowUp':
+          e.preventDefault();
+          setSelectedIndex(prev => (prev - 3 + stageCount) % stageCount);
+          break;
+        case 'ArrowDown':
+          e.preventDefault();
+          setSelectedIndex(prev => (prev + 3) % stageCount);
+          break;
+        case 'ArrowLeft':
+          e.preventDefault();
+          setSelectedIndex(prev => (prev - 1 + stageCount) % stageCount);
+          break;
+        case 'ArrowRight':
+          e.preventDefault();
+          setSelectedIndex(prev => (prev + 1) % stageCount);
+          break;
+        case 'Enter':
+        case ' ':
+          e.preventDefault();
+          handleStageClick(() => handleStageSelect(chapter.stages[selectedIndex].number))();
+          break;
+        case 'Escape':
+          e.preventDefault();
+          handleClick(() => navigateTo('levelSelect'))();
+          break;
+        case '1':
+        case '2':
+        case '3':
+        case '4':
+        case '5':
+        case '6':
+          const num = parseInt(e.key);
+          if (num <= stageCount) {
+            setSelectedIndex(num - 1);
+            handleStageClick(() => handleStageSelect(num))();
+          }
+          break;
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [chapter, selectedIndex, handleStageSelect, handleStageClick, handleClick, navigateTo]);
 
   if (!chapter) {
     return (
@@ -103,26 +178,6 @@ export const StageSelectScreen: React.FC = () => {
       </div>
     );
   }
-
-  const handleStageSelect = (stageNumber: number) => {
-    const stageId = `${selectedChapter}-${stageNumber}`;
-    const words = getWordsForStage(stageId);
-    
-    if (words.length === 0) {
-      console.warn(`Stage ${stageId} has no word data`);
-      return;
-    }
-
-    selectStage(selectedChapter, stageNumber);
-    startSession(words);
-    navigateTo('typing');
-  };
-
-  const isStageUnlocked = (stageNumber: number) => {
-    if (stageNumber === 1) return true;
-    const previousStageId = `${selectedChapter}-${stageNumber - 1}`;
-    return isStageCleared(previousStageId);
-  };
 
   return (
     <div className="min-h-screen bg-hunter-dark relative overflow-hidden">
@@ -159,15 +214,18 @@ export const StageSelectScreen: React.FC = () => {
               <motion.button
                 key={stage.number}
                 initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
+                animate={{ opacity: 1, y: selectedIndex === index ? -2 : 0 }}
                 transition={{ delay: index * 0.08 }}
                 onClick={unlocked ? handleStageClick(() => handleStageSelect(stage.number)) : undefined}
+                onMouseEnter={() => setSelectedIndex(index)}
                 disabled={!unlocked}
                 whileHover={unlocked ? { scale: 1.02, y: -2 } : {}}
                 whileTap={unlocked ? { scale: 0.98 } : {}}
                 className={`relative text-left p-5 rounded-lg transition-all ${
                   unlocked
-                    ? 'bg-hunter-dark-light/40 border border-hunter-gold/20 hover:border-hunter-gold/50 cursor-pointer'
+                    ? selectedIndex === index
+                      ? 'bg-hunter-dark-light/60 border-2 border-hunter-gold/70 cursor-pointer ring-2 ring-hunter-gold/30'
+                      : 'bg-hunter-dark-light/40 border border-hunter-gold/20 hover:border-hunter-gold/50 cursor-pointer'
                     : 'bg-hunter-dark-light/10 border border-white/5 opacity-40 cursor-not-allowed'
                 }`}
               >

@@ -10,24 +10,35 @@ import { useSettingsStore } from '@/stores/settingsStore';
 import { useButtonClick } from '@/utils/soundUtils';
 import { bgmManager } from '@/utils/bgmManager';
 
+// メニュー項目定義
+const MENU_ITEMS = [
+  { label: 'START TRAINING', screen: 'levelSelect' as const, isMain: true },
+  { label: 'TIME ATTACK', screen: 'timeAttack' as const },
+  { label: 'FREE PRACTICE', screen: 'freePlay' as const },
+  { label: 'STATISTICS', screen: 'statistics' as const },
+  { label: 'SETTINGS', screen: 'settings' as const },
+  { label: 'ADMIN', screen: 'admin' as const },
+];
+
 export const TitleScreen: React.FC = () => {
   const { navigateTo } = useGameStore();
-  const { 
-    soundEnabled, 
-    bgmEnabled, 
+  const {
+    soundEnabled,
+    bgmEnabled,
     soundVolume,
     bgmVolume,
-    setSoundEnabled, 
+    setSoundEnabled,
     setBgmEnabled,
     setSoundVolume,
-    setBgmVolume 
+    setBgmVolume
   } = useSettingsStore();
   const { handleClick } = useButtonClick();
   const [showStartOverlay, setShowStartOverlay] = useState(true);
   const [explosionTriggered, setExplosionTriggered] = useState(false);
+  const [selectedIndex, setSelectedIndex] = useState(0);
   const hasInteractedRef = useRef(false);
   const openingAudioRef = useRef<HTMLAudioElement | null>(null);
-  const explosionTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const explosionTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const playBgm = useCallback(() => {
     const volume = (bgmVolume / 100) * 0.8;
@@ -109,6 +120,56 @@ export const TitleScreen: React.FC = () => {
     bgmManager.pause();
     setShowStartOverlay(true);
   }, []);
+
+  // キーボード操作
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // オーバーレイ表示中
+      if (showStartOverlay) {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          handleStart();
+        }
+        return;
+      }
+
+      // メニュー画面
+      switch (e.key) {
+        case 'ArrowUp':
+          e.preventDefault();
+          setSelectedIndex(prev => (prev - 1 + MENU_ITEMS.length) % MENU_ITEMS.length);
+          break;
+        case 'ArrowDown':
+          e.preventDefault();
+          setSelectedIndex(prev => (prev + 1) % MENU_ITEMS.length);
+          break;
+        case 'Enter':
+        case ' ':
+          e.preventDefault();
+          handleClick(() => navigateTo(MENU_ITEMS[selectedIndex].screen))();
+          break;
+        case 'Escape':
+          e.preventDefault();
+          handleBackToOpening();
+          break;
+        case '1':
+        case '2':
+        case '3':
+        case '4':
+        case '5':
+        case '6':
+          const num = parseInt(e.key) - 1;
+          if (num < MENU_ITEMS.length) {
+            setSelectedIndex(num);
+            handleClick(() => navigateTo(MENU_ITEMS[num].screen))();
+          }
+          break;
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [showStartOverlay, selectedIndex, handleStart, handleBackToOpening, handleClick, navigateTo]);
 
   return (
     <div className="min-h-screen bg-hunter-dark relative overflow-hidden">
@@ -422,38 +483,47 @@ export const TitleScreen: React.FC = () => {
             {/* メインボタン */}
             <motion.button
               onClick={handleClick(() => navigateTo('levelSelect'))}
-              className="w-full relative group overflow-hidden"
+              onMouseEnter={() => setSelectedIndex(0)}
+              className={`w-full relative group overflow-hidden ${selectedIndex === 0 ? 'ring-2 ring-hunter-gold' : ''}`}
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
+              animate={selectedIndex === 0 ? { scale: 1.02 } : { scale: 1 }}
             >
               <div className="absolute inset-0 bg-hunter-green/80 rounded-lg" />
-              <div className="absolute inset-0 bg-gradient-to-r from-hunter-green to-hunter-green-light opacity-0 group-hover:opacity-100 transition-opacity rounded-lg" />
+              <div className={`absolute inset-0 bg-gradient-to-r from-hunter-green to-hunter-green-light transition-opacity rounded-lg ${selectedIndex === 0 ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`} />
               <div className="relative font-title text-white font-bold py-4 px-8 rounded-lg text-lg tracking-wider uppercase flex items-center justify-center gap-3 border border-hunter-green-light/30">
                 <span className="text-xl">▶</span>
                 <span>START TRAINING</span>
+                <span className="ml-auto text-xs opacity-50">1</span>
               </div>
             </motion.button>
 
             {/* サブメニュー */}
             <div className="space-y-2">
-              {[
-                { label: 'TIME ATTACK', action: () => navigateTo('timeAttack') },
-                { label: 'FREE PRACTICE', action: () => navigateTo('freePlay') },
-                { label: 'ADMIN', action: () => navigateTo('admin') },
-              ].map((item, index) => (
-                <motion.button
-                  key={item.label}
-                  onClick={handleClick(item.action)}
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.3 + index * 0.08 }}
-                  whileHover={{ scale: 1.02, x: 4 }}
-                  whileTap={{ scale: 0.98 }}
-                  className="w-full bg-hunter-dark-light/30 hover:bg-hunter-dark-light/60 border border-hunter-gold/20 hover:border-hunter-gold/40 rounded-lg py-3 px-4 transition-all text-white/70 hover:text-white font-title tracking-wider uppercase text-sm"
-                >
-                  {item.label}
-                </motion.button>
-              ))}
+              {MENU_ITEMS.slice(1).map((item, index) => {
+                const menuIndex = index + 1;
+                const isSelected = selectedIndex === menuIndex;
+                return (
+                  <motion.button
+                    key={item.label}
+                    onClick={handleClick(() => navigateTo(item.screen))}
+                    onMouseEnter={() => setSelectedIndex(menuIndex)}
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: isSelected ? 4 : 0 }}
+                    transition={{ delay: 0.3 + index * 0.08 }}
+                    whileHover={{ scale: 1.02, x: 4 }}
+                    whileTap={{ scale: 0.98 }}
+                    className={`w-full rounded-lg py-3 px-4 transition-all font-title tracking-wider uppercase text-sm flex items-center justify-between ${
+                      isSelected
+                        ? 'bg-hunter-dark-light/60 border-hunter-gold/60 text-white border-2'
+                        : 'bg-hunter-dark-light/30 hover:bg-hunter-dark-light/60 border border-hunter-gold/20 hover:border-hunter-gold/40 text-white/70 hover:text-white'
+                    }`}
+                  >
+                    <span>{item.label}</span>
+                    <span className="text-xs opacity-50">{menuIndex + 1}</span>
+                  </motion.button>
+                );
+              })}
             </div>
 
             {/* オープニングに戻るボタン */}

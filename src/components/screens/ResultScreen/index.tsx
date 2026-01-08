@@ -329,16 +329,37 @@ export const ResultScreen: React.FC = () => {
     navigateTo('typing');
   }, [resetSession, navigateTo]);
 
+  // ボタン選択状態 (0: NEXT/BACK, 1: RETRY)
+  const [selectedButton, setSelectedButton] = useState(0);
+
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Enter') {
-        e.preventDefault();
-        handleNextStage();
+      switch (e.key) {
+        case 'ArrowLeft':
+        case 'ArrowRight':
+        case 'ArrowUp':
+        case 'ArrowDown':
+          e.preventDefault();
+          setSelectedButton(prev => (prev + 1) % 2);
+          break;
+        case 'Enter':
+        case ' ':
+          e.preventDefault();
+          if (selectedButton === 0) {
+            handleNextStage();
+          } else {
+            handleRetry();
+          }
+          break;
+        case 'Escape':
+          e.preventDefault();
+          navigateTo('stageSelect');
+          break;
       }
     };
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);
-  }, [handleNextStage]);
+  }, [handleNextStage, handleRetry, navigateTo, selectedButton]);
 
   if (!result) {
     return (
@@ -473,9 +494,15 @@ export const ResultScreen: React.FC = () => {
             <div className="flex flex-col sm:flex-row gap-3">
               <motion.button
                 onClick={handleNextStage}
-                className="flex-1 bg-hunter-green hover:bg-hunter-green-light text-white font-title font-bold py-3 px-6 rounded-lg transition-all tracking-wider uppercase text-sm"
+                onMouseEnter={() => setSelectedButton(0)}
+                className={`flex-1 text-white font-title font-bold py-3 px-6 rounded-lg transition-all tracking-wider uppercase text-sm ${
+                  selectedButton === 0
+                    ? 'bg-hunter-green-light ring-2 ring-hunter-gold'
+                    : 'bg-hunter-green hover:bg-hunter-green-light'
+                }`}
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
+                animate={selectedButton === 0 ? { scale: 1.02 } : { scale: 1 }}
               >
                 {hasNextStage ? 'NEXT →' : 'SELECT STAGE'}
                 <span className="text-xs opacity-60 ml-2">[ENTER]</span>
@@ -483,11 +510,18 @@ export const ResultScreen: React.FC = () => {
 
               <motion.button
                 onClick={handleRetry}
-                className="flex-1 bg-transparent border border-hunter-gold/30 hover:border-hunter-gold/60 text-white font-title font-bold py-3 px-6 rounded-lg transition-all tracking-wider uppercase text-sm"
+                onMouseEnter={() => setSelectedButton(1)}
+                className={`flex-1 bg-transparent text-white font-title font-bold py-3 px-6 rounded-lg transition-all tracking-wider uppercase text-sm ${
+                  selectedButton === 1
+                    ? 'border-2 border-hunter-gold ring-2 ring-hunter-gold/50'
+                    : 'border border-hunter-gold/30 hover:border-hunter-gold/60'
+                }`}
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
+                animate={selectedButton === 1 ? { scale: 1.02 } : { scale: 1 }}
               >
                 RETRY
+                <span className="text-xs opacity-60 ml-2">[←/→]</span>
               </motion.button>
             </div>
           </div>
