@@ -12,6 +12,7 @@ import { useSound } from '@/hooks/useSound';
 import { bgmManager } from '@/utils/bgmManager';
 import { BackgroundEffect } from '@/components/common/BackgroundEffect';
 import { VirtualKeyboard } from '@/components/common/VirtualKeyboard';
+import { ScreenShake } from '@/components/effects';
 import { TypingLeftPanel } from './TypingLeftPanel';
 import { TypingRightPanel } from './TypingRightPanel';
 import { TypingCard } from './TypingCard';
@@ -121,10 +122,11 @@ export const TypingScreen: React.FC = () => {
     <div ref={containerRef} className="min-h-screen bg-hunter-dark relative overflow-hidden">
       <BackgroundEffect variant="typing" />
 
-      {/* メインコンテンツ - 3カラムレイアウト */}
-      <div className="relative z-10 min-h-screen flex flex-col lg:flex-row">
-        {/* 左サイドパネル */}
-        <TypingLeftPanel
+      {/* メインコンテンツ - 3カラムレイアウト（ミス時にシェイク） */}
+      <ScreenShake trigger={missCount} intensity="light">
+        <div className="relative z-10 min-h-screen flex flex-col lg:flex-row">
+          {/* 左サイドパネル */}
+          <TypingLeftPanel
           onBack={() => navigateTo('stageSelect')}
           chapterName={getChapterName(selectedChapter)}
           stageName={`ステージ ${selectedStage}`}
@@ -176,15 +178,16 @@ export const TypingScreen: React.FC = () => {
           )}
         </main>
 
-        {/* 右サイドパネル */}
-        <TypingRightPanel
-          score={score}
-          combo={combo}
-          maxCombo={session.maxCombo}
-          missCount={missCount}
-          correctCount={session.correctCount}
-        />
-      </div>
+          {/* 右サイドパネル */}
+          <TypingRightPanel
+            score={score}
+            combo={combo}
+            maxCombo={session.maxCombo}
+            missCount={missCount}
+            correctCount={session.correctCount}
+          />
+        </div>
+      </ScreenShake>
     </div>
   );
 };
