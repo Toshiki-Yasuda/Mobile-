@@ -87,7 +87,7 @@ export const TitleScreen: React.FC = () => {
           openingAudioRef.current = new Audio('/Mobile-/opening.mp3');
           openingAudioRef.current.loop = false; // 1回だけ再生
         }
-        const volume = Math.min(1, (bgmVolume / 100) * 1.6); // 倍の音量（最大1.0）
+        const volume = 1.0; // 最大音量
         openingAudioRef.current.volume = volume;
         openingAudioRef.current.currentTime = 0;
         openingAudioRef.current.play().catch(() => {});
