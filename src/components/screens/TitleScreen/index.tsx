@@ -71,10 +71,10 @@ export const TitleScreen: React.FC = () => {
   // オープニング画面でOPENING BGMを再生 & 爆発音を1秒後に1回再生
   useEffect(() => {
     if (showStartOverlay) {
-      // OPENING BGMに切り替えて再生
+      // OPENING BGMに切り替えて再生（音量60%）
       bgmManager.switchTrack('opening');
       if (bgmEnabled) {
-        const volume = (bgmVolume / 100) * 0.8;
+        const volume = (bgmVolume / 100) * 0.8 * 0.6; // 60%の音量
         bgmManager.setOriginalVolume(volume);
         bgmManager.play(volume);
         hasInteractedRef.current = true;
@@ -140,6 +140,10 @@ export const TitleScreen: React.FC = () => {
         if (e.key === 'Enter' || e.key === ' ') {
           e.preventDefault();
           handleStart();
+        } else if (e.key === 'Escape') {
+          e.preventDefault();
+          bgmManager.pause();
+          navigateTo('opening');
         }
         return;
       }
