@@ -3,8 +3,17 @@
  * グローバルにBGMの再生・停止・音量調整を行う
  */
 
+// BGMトラック定義
+export const BGM_TRACKS = {
+  opening: '/Mobile-/opening-bgm.mp3',
+  game: '/Mobile-/game-bgm.mp3',
+} as const;
+
+export type BGMTrack = keyof typeof BGM_TRACKS;
+
 let bgmAudio: HTMLAudioElement | null = null;
 let originalVolume = 0.7;
+let currentTrack: BGMTrack | null = null;
 
 export const bgmManager = {
   /**
@@ -12,10 +21,34 @@ export const bgmManager = {
    */
   getAudio: (src?: string): HTMLAudioElement => {
     if (!bgmAudio) {
-      bgmAudio = new Audio(src || '/Mobile-/bgm-title.mp3');
+      bgmAudio = new Audio(src || BGM_TRACKS.opening);
       bgmAudio.loop = true;
     }
     return bgmAudio;
+  },
+
+  /**
+   * BGMトラックを切り替え
+   */
+  switchTrack: (track: BGMTrack): void => {
+    if (currentTrack === track && bgmAudio) return;
+
+    const wasPlaying = bgmManager.isPlaying();
+    const prevVolume = bgmAudio?.volume || originalVolume;
+
+    if (bgmAudio) {
+      bgmAudio.pause();
+      bgmAudio.src = '';
+    }
+
+    bgmAudio = new Audio(BGM_TRACKS[track]);
+    bgmAudio.loop = true;
+    bgmAudio.volume = prevVolume;
+    currentTrack = track;
+
+    if (wasPlaying) {
+      bgmAudio.play().catch(() => {});
+    }
   },
 
   /**
@@ -82,6 +115,7 @@ export const bgmManager = {
     return bgmAudio ? !bgmAudio.paused : false;
   },
 };
+
 
 
 
