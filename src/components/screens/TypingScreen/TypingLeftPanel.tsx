@@ -6,6 +6,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { SidePanel, SidePanelHeader, SidePanelSection } from '@/components/common/SidePanel';
+import { HPBar } from '@/components/effects';
 import type { Word } from '@/types/game';
 
 interface TypingLeftPanelProps {
@@ -16,6 +17,8 @@ interface TypingLeftPanelProps {
   totalWords: number;
   progress: number;
   words: Word[];
+  currentHP: number;
+  maxHP: number;
 }
 
 export const TypingLeftPanel: React.FC<TypingLeftPanelProps> = ({
@@ -26,6 +29,8 @@ export const TypingLeftPanel: React.FC<TypingLeftPanelProps> = ({
   totalWords,
   progress,
   words,
+  currentHP,
+  maxHP,
 }) => {
   return (
     <SidePanel position="left">
@@ -38,6 +43,11 @@ export const TypingLeftPanel: React.FC<TypingLeftPanelProps> = ({
         </div>
         <h2 className="font-title text-white text-xl font-bold tracking-wider mb-1">{chapterName}</h2>
         <p className="text-hunter-gold/60 text-sm font-title">{stageName}</p>
+      </SidePanelSection>
+
+      {/* HPバー */}
+      <SidePanelSection borderBottom>
+        <HPBar currentHP={currentHP} maxHP={maxHP} />
       </SidePanelSection>
 
       {/* 進捗 */}

@@ -7,8 +7,9 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { APP_CONFIG } from '@/constants/config';
-import { EFFECT_DURATIONS, EXPLOSION_CONFIG } from '@/constants/gameJuice';
+import { EFFECT_DURATIONS, EXPLOSION_CONFIG, getDestructionType } from '@/constants/gameJuice';
 import { easings } from '@/utils/animations';
+import { CardDestruction } from '@/components/effects';
 import type { Word } from '@/types/game';
 import type { TypingState } from '@/types/romaji';
 
@@ -172,6 +173,12 @@ export const TypingCard: React.FC<TypingCardProps> = ({
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
     >
+      {/* カード破壊演出（コンボに応じて変化） */}
+      <CardDestruction
+        type={getDestructionType(combo)}
+        isActive={showExplosion}
+      />
+
       {/* 爆発エフェクト */}
       <AnimatePresence>
         {showExplosion && (

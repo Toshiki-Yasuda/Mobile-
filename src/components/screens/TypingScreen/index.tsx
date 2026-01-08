@@ -12,7 +12,7 @@ import { useSound } from '@/hooks/useSound';
 import { bgmManager } from '@/utils/bgmManager';
 import { BackgroundEffect } from '@/components/common/BackgroundEffect';
 import { VirtualKeyboard } from '@/components/common/VirtualKeyboard';
-import { ScreenShake } from '@/components/effects';
+import { ScreenShake, ScreenFlash, ComboEffect } from '@/components/effects';
 import { TypingLeftPanel } from './TypingLeftPanel';
 import { TypingRightPanel } from './TypingRightPanel';
 import { TypingCard } from './TypingCard';
@@ -38,6 +38,9 @@ export const TypingScreen: React.FC = () => {
     explosionTrigger,
     isPerfect,
     recentPressedKeys,
+    successShakeTrigger,
+    currentHP,
+    maxHP,
   } = useTyping();
 
   // AudioContextを初期化するためのクリックハンドラー
@@ -122,8 +125,23 @@ export const TypingScreen: React.FC = () => {
     <div ref={containerRef} className="min-h-screen bg-hunter-dark relative overflow-hidden">
       <BackgroundEffect variant="typing" />
 
-      {/* メインコンテンツ - 3カラムレイアウト（ミス時にシェイク） */}
-      <ScreenShake trigger={missCount} intensity="light">
+      {/* 画面フラッシュ（最上位レイヤー） */}
+      <ScreenFlash
+        successTrigger={successShakeTrigger}
+        missTrigger={missCount}
+        combo={combo}
+      />
+
+      {/* コンボマイルストーン演出 */}
+      <ComboEffect combo={combo} />
+
+      {/* メインコンテンツ - 3カラムレイアウト（ミス時・正解時にシェイク） */}
+      <ScreenShake
+        trigger={missCount}
+        intensity="light"
+        successTrigger={successShakeTrigger}
+        combo={combo}
+      >
         <div className="relative z-10 min-h-screen flex flex-col lg:flex-row">
           {/* 左サイドパネル */}
           <TypingLeftPanel
@@ -134,6 +152,8 @@ export const TypingScreen: React.FC = () => {
           totalWords={session.words.length}
           progress={progress}
           words={session.words}
+          currentHP={currentHP}
+          maxHP={maxHP}
         />
 
         {/* 中央 - メインタイピングエリア */}

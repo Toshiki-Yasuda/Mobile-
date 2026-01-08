@@ -85,24 +85,32 @@ export function useSound() {
 
   /**
    * タイピング音（軽いパンチ）
+   * コンボが高いほど少し力強い音に
    */
-  const playTypeSound = useCallback(() => {
-    playSound('type', 0.6);
+  const playTypeSound = useCallback((combo: number = 0) => {
+    // コンボに応じて音量を上げる（0.5 → 0.7）
+    const baseVolume = 0.5;
+    const comboBonus = Math.min(combo * 0.01, 0.2);
+    playSound('type', baseVolume + comboBonus);
   }, [playSound]);
 
   /**
    * 確定音（スローモーション突入）- 単語完了時の決め音
+   * コンボが高いほど派手な音に
    */
-  const playConfirmSound = useCallback(() => {
-    playSound('complete', 0.8);
+  const playConfirmSound = useCallback((combo: number = 0) => {
+    // コンボに応じて音量を上げる（0.6 → 0.95）
+    const baseVolume = 0.6;
+    const comboBonus = Math.min(combo * 0.015, 0.35);
+    playSound('complete', baseVolume + comboBonus);
   }, [playSound]);
 
   /**
-   * ミス音（軽めの音）
+   * ミス音（ダメージ感のある音）
    */
   const playMissSound = useCallback(() => {
-    // ミス音は軽いパンチを小さめの音量で
-    playSound('type', 0.3);
+    // heavy音でダメージ感を演出
+    playSound('heavy', 0.5);
   }, [playSound]);
 
   /**
@@ -160,8 +168,10 @@ export function useSound() {
   /**
    * コンボ音
    */
-  const playComboSound = useCallback((_combo: number) => {
-    playSound('type', 0.5);
+  const playComboSound = useCallback((combo: number) => {
+    // コンボ数に応じて音量を上げる
+    const volumeMultiplier = Math.min(0.5 + (combo / 50), 0.9);
+    playSound('complete', volumeMultiplier);
   }, [playSound]);
 
   return {

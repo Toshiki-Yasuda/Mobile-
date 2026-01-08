@@ -17,6 +17,7 @@ import {
 } from '@/engine/romajiEngine';
 import type { TypingState } from '@/types/romaji';
 import { APP_CONFIG } from '@/constants/config';
+import { HP_CONFIG } from '@/constants/gameJuice';
 import type { Word } from '@/types/game';
 
 // タイプライターモードを使用するチャプター閾値
@@ -37,14 +38,20 @@ export function useTyping() {
   } = useGameStore();
 
   const { updateKeyStats } = useProgressStore();
-  const { playTypeSound, playConfirmSound, playMissSound } = useSound();
+  const { playTypeSound, playConfirmSound, playMissSound, playComboSound } = useSound();
 
   // タイプライターモード用の入力テキスト
   const [userInput, setUserInput] = useState('');
   
   // 爆発エフェクト用のトリガー（タイムスタンプ）
   const [explosionTrigger, setExplosionTrigger] = useState(0);
-  
+
+  // 正解時シェイク用のトリガー（タイムスタンプ）
+  const [successShakeTrigger, setSuccessShakeTrigger] = useState(0);
+
+  // HPシステム
+  const [currentHP, setCurrentHP] = useState(HP_CONFIG.maxHP);
+
   // この単語でミスがあったかどうか
   const [hadMissThisWord, setHadMissThisWord] = useState(false);
   
@@ -120,11 +127,30 @@ export function useTyping() {
   // 単語完了処理
   const handleWordComplete = useCallback(() => {
     const now = performance.now();
-    playConfirmSound();
+    const currentCombo = session?.combo || 0;
+    playConfirmSound(currentCombo);
+
+    // 正解時シェイクを発動
+    setSuccessShakeTrigger(Date.now());
+
     const wordTime = now - wordStartTimeRef.current;
     const score = calculateScore(wordTime, session?.combo || 0);
     addScore(score);
     incrementCombo();
+
+    // コンボ音（5コンボ以上で鳴らす）
+    const newCombo = (session?.combo || 0) + 1;
+    if (newCombo >= 5 && newCombo % 5 === 0) {
+      playComboSound(newCombo);
+    }
+
+    // HP回復
+    let healAmount = HP_CONFIG.correctRecovery;
+    // 5コンボごとにボーナス回復
+    if (newCombo >= 5 && newCombo % 5 === 0) {
+      healAmount += HP_CONFIG.comboRecoveryBonus;
+    }
+    setCurrentHP(prev => Math.min(HP_CONFIG.maxHP, prev + healAmount));
 
     const nextIndex = (session?.currentWordIndex || 0) + 1;
     if (nextIndex >= (session?.words.length || 0)) {
@@ -137,7 +163,7 @@ export function useTyping() {
         setTimeout(() => initializeWord(nextWordData), 300);
       }
     }
-  }, [session, addScore, incrementCombo, nextWord, endSession, navigateTo, initializeWord, playConfirmSound]);
+  }, [session, addScore, incrementCombo, nextWord, endSession, navigateTo, initializeWord, playConfirmSound, playComboSound]);
 
   // インスタントモード: キー入力を処理
   const handleInstantKeyInput = useCallback(
@@ -159,6 +185,8 @@ export function useTyping() {
       if (result.isMiss) {
         recordMiss();
         playMissSound();
+        // HPダメージ
+        setCurrentHP(prev => Math.max(0, prev - HP_CONFIG.missDamage));
         return;
       }
 
@@ -168,7 +196,7 @@ export function useTyping() {
         if (result.isWordComplete) {
           handleWordComplete();
         } else {
-          playTypeSound();
+          playTypeSound(session?.combo || 0);
         }
       }
     },
@@ -197,9 +225,9 @@ export function useTyping() {
       // 文字を追加
       const newInput = userInput + key;
       setUserInput(newInput);
-      
-      // 入力音を鳴らす
-      playTypeSound();
+
+      // 入力音を鳴らす（コンボ連動）
+      playTypeSound(session?.combo || 0);
       
       // キー統計を更新（この時点では正誤は確定しない）
       updateKeyStats(key.toLowerCase(), true, latency);
@@ -242,6 +270,8 @@ export function useTyping() {
       playMissSound();
       setUserInput('');
       setHadMissThisWord(true);
+      // HPダメージ
+      setCurrentHP(prev => Math.max(0, prev - HP_CONFIG.missDamage));
     }
   }, [currentWord, userInput, validateTypewriterInput, handleWordComplete, recordMiss, playMissSound, playEnterExplosion]);
 
@@ -371,5 +401,10 @@ export function useTyping() {
     isPerfect: lastExplosionWasPerfect,
     // キーボード演出用
     recentPressedKeys,
+    // 正解時シェイク用
+    successShakeTrigger,
+    // HPシステム
+    currentHP,
+    maxHP: HP_CONFIG.maxHP,
   };
 }
