@@ -78,6 +78,17 @@ const CHAPTERS = [
       { number: 6, name: '最終決戦', description: '総合チャレンジ' },
     ],
   },
+  {
+    id: 7, kanji: '選挙・暗黒大陸編', romaji: 'ELECTION & DARK CONTINENT',
+    stages: [
+      { number: 1, name: '選挙編キャラ', description: '十二支ん' },
+      { number: 2, name: 'アルカ・ナニカ編', description: 'キルアの妹' },
+      { number: 3, name: '暗黒大陸の脅威', description: '五大厄災' },
+      { number: 4, name: '王位継承戦', description: 'カキン帝国' },
+      { number: 5, name: '旅団追加メンバー', description: '新メンバー' },
+      { number: 6, name: '高度な念能力', description: '総合チャレンジ' },
+    ],
+  },
 ];
 
 export const StageSelectScreen: React.FC = () => {
