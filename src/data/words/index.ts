@@ -8,6 +8,7 @@ import { chapter3Stages } from './chapter3';
 import { chapter4Stages } from './chapter4';
 import { chapter5Stages } from './chapter5';
 import { chapter6Stages } from './chapter6';
+import { chapter7Stages } from './chapter7';
 import type { Word } from '@/types/game';
 import { APP_CONFIG } from '@/constants/config';
 
@@ -19,6 +20,7 @@ export const allStages: Record<string, Word[]> = {
   ...chapter4Stages,
   ...chapter5Stages,
   ...chapter6Stages,
+  ...chapter7Stages,
 };
 
 // 配列をシャッフル（Fisher-Yates）
@@ -64,4 +66,4 @@ export function getRandomWords(count: number, maxDifficulty: number = 5): Word[]
   return shuffled.slice(0, count);
 }
 
-export { chapter1Stages, chapter2Stages, chapter3Stages, chapter4Stages, chapter5Stages, chapter6Stages };
+export { chapter1Stages, chapter2Stages, chapter3Stages, chapter4Stages, chapter5Stages, chapter6Stages, chapter7Stages };
