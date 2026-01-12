@@ -17,6 +17,7 @@ const CHAPTERS = [
   { id: 4, name: 'REN', subtitle: '練' },
   { id: 5, name: 'HATSU', subtitle: '発' },
   { id: 6, name: 'MASTER', subtitle: '極意' },
+  { id: 7, name: 'NEW ERA', subtitle: '新章' },
 ];
 
 export const AdminScreen: React.FC = () => {
