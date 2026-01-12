@@ -78,6 +78,17 @@ const CHAPTERS = [
       { number: 6, name: '最終決戦', description: '総合チャレンジ' },
     ],
   },
+  {
+    id: 7, kanji: '選挙編・暗黒大陸編', romaji: 'ELECTION ARC & DARK CONTINENT',
+    stages: [
+      { number: 1, name: '選挙編キャラクター', description: 'パリストン、チードルなど' },
+      { number: 2, name: 'アルカ・ナニカ編', description: 'キルアの家族' },
+      { number: 3, name: '暗黒大陸の脅威', description: '五大厄災など' },
+      { number: 4, name: '王位継承戦キャラクター', description: 'ベンジャミン、カミーラなど' },
+      { number: 5, name: '幻影旅団追加メンバー', description: 'ボノレノフ、コルトピなど' },
+      { number: 6, name: 'ボスステージ', description: '総合チャレンジ' },
+    ],
+  },
 ];
 
 export const StageSelectScreen: React.FC = () => {

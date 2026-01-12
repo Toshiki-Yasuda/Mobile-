@@ -17,6 +17,7 @@ const CHAPTERS = [
   { id: 4, kanji: 'ヨークシン編', romaji: 'YORKNEW CITY', description: 'オークションと対決', stages: 6 },
   { id: 5, kanji: 'G・I編', romaji: 'GREED ISLAND', description: 'ゲームの冒険', stages: 6 },
   { id: 6, kanji: 'キメラアント編', romaji: 'CHIMERA ANT', description: '最終決戦', stages: 6 },
+  { id: 7, kanji: '選挙編・暗黒大陸編', romaji: 'ELECTION ARC & DARK CONTINENT', description: '王位継承戦と未知の大陸', stages: 6 },
 ];
 
 export const LevelSelectScreen: React.FC = () => {
