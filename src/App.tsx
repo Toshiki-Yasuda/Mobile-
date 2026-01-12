@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useGameStore } from './stores/gameStore';
 import { PasswordScreen } from './components/screens/PasswordScreen';
 import { TitleScreen } from './components/screens/TitleScreen';
@@ -11,27 +11,38 @@ import { SettingsScreen } from './components/screens/SettingsScreen';
 import { StatisticsScreen } from './components/screens/StatisticsScreen';
 import { Loading } from './components/common/Loading';
 import { ErrorBoundary } from './components/common/ErrorBoundary';
+import { SkipLink, LiveRegion } from './components/common/Accessibility';
 
-/**
- * メインアプリケーションコンポーネント
- * 画面遷移の管理とグローバル状態の初期化を行う
- */
+const SCREEN_LABELS: Record<string, string> = {
+  password: 'パスワード入力',
+  title: 'タイトル',
+  levelSelect: 'レベル選択',
+  stageSelect: 'ステージ選択',
+  typing: 'タイピング',
+  result: '結果',
+  settings: '設定',
+  statistics: '統計',
+  timeAttack: 'タイムアタック',
+  freePlay: 'フリープレイ',
+  admin: '管理者',
+};
+
 function App() {
   const { currentScreen, loading, error, clearError } = useGameStore();
   const audioInitializedRef = useRef(false);
+  const mainRef = useRef<HTMLDivElement>(null);
+  const [announcement, setAnnouncement] = useState('');
+  const previousScreenRef = useRef<string | null>(null);
 
-  // AudioContextを初期化するためのクリックハンドラー（一度だけ）
   useEffect(() => {
     const initializeAudio = async () => {
       if (audioInitializedRef.current) return;
-      
       try {
-        const AudioContext = window.AudioContext || (window as any).webkitAudioContext;
+        const AudioContext = window.AudioContext || (window as unknown as { webkitAudioContext: typeof window.AudioContext }).webkitAudioContext;
         const ctx = new AudioContext();
         if (ctx.state === 'suspended') {
           await ctx.resume();
         }
-        // 無音の短い音を再生してAudioContextを有効化
         const oscillator = ctx.createOscillator();
         const gainNode = ctx.createGain();
         oscillator.connect(gainNode);
@@ -49,13 +60,11 @@ function App() {
 
     const handleUserInteraction = () => {
       initializeAudio();
-      // 一度初期化したらリスナーを削除
       document.removeEventListener('click', handleUserInteraction);
       document.removeEventListener('keydown', handleUserInteraction);
       document.removeEventListener('touchstart', handleUserInteraction);
     };
 
-    // ユーザーインタラクションを待つ
     document.addEventListener('click', handleUserInteraction, { once: true });
     document.addEventListener('keydown', handleUserInteraction, { once: true });
     document.addEventListener('touchstart', handleUserInteraction, { once: true });
@@ -67,27 +76,38 @@ function App() {
     };
   }, []);
 
-  // エラー発生時の自動クリア（5秒後）
+  useEffect(() => {
+    if (previousScreenRef.current !== currentScreen) {
+      previousScreenRef.current = currentScreen;
+      const screenLabel = SCREEN_LABELS[currentScreen] || currentScreen;
+      setAnnouncement(screenLabel + '画面に移動しました');
+      setTimeout(() => {
+        if (mainRef.current) {
+          mainRef.current.focus();
+        }
+      }, 100);
+    }
+  }, [currentScreen]);
+
   useEffect(() => {
     if (error.hasError) {
+      setAnnouncement('エラー: ' + (error.errorMessage || 'エラーが発生しました'));
       const timer = setTimeout(() => {
         clearError();
       }, 5000);
       return () => clearTimeout(timer);
     }
-  }, [error.hasError, clearError]);
+  }, [error.hasError, error.errorMessage, clearError]);
 
-  // ローディング中の表示
   if (loading.isLoading) {
     return (
-      <Loading 
-        message={loading.loadingMessage} 
-        progress={loading.progress} 
+      <Loading
+        message={loading.loadingMessage}
+        progress={loading.progress}
       />
     );
   }
 
-  // 画面遷移
   const renderScreen = () => {
     switch (currentScreen) {
       case 'password':
@@ -107,10 +127,8 @@ function App() {
       case 'statistics':
         return <StatisticsScreen />;
       case 'timeAttack':
-        // TODO: TimeAttackScreen
         return <TypingScreen />;
       case 'freePlay':
-        // TODO: FreePlayScreen
         return <TypingScreen />;
       case 'admin':
         return <AdminScreen />;
@@ -119,20 +137,47 @@ function App() {
     }
   };
 
+  const screenLabel = SCREEN_LABELS[currentScreen] || currentScreen;
+
   return (
     <ErrorBoundary>
-      <div className="min-h-screen bg-background">
-        {/* エラー通知 */}
+      <SkipLink targetId="main-content">メインコンテンツへスキップ</SkipLink>
+      <LiveRegion message={announcement} priority="polite" />
+
+      <div
+        className="min-h-screen bg-background"
+        role="application"
+        aria-label="HUNTER×HUNTER タイピングマスター"
+      >
         {error.hasError && (
-          <div className="fixed top-4 right-4 z-50 animate-slide-down">
+          <div
+            className="fixed top-4 right-4 z-50 animate-slide-down"
+            role="alert"
+            aria-live="assertive"
+          >
             <div className="bg-error text-primary px-4 py-2 rounded-md border border-error/50">
+              <span className="sr-only">エラー: </span>
               {error.errorMessage || 'エラーが発生しました'}
+              <button
+                onClick={clearError}
+                className="ml-4 text-white/80 hover:text-white focus:outline-none focus:ring-2 focus:ring-white"
+                aria-label="エラーを閉じる"
+              >
+                ✕
+              </button>
             </div>
           </div>
         )}
-        
-        {/* メイン画面 */}
-        {renderScreen()}
+
+        <main
+          id="main-content"
+          ref={mainRef}
+          tabIndex={-1}
+          aria-label={screenLabel + '画面'}
+          className="outline-none"
+        >
+          {renderScreen()}
+        </main>
       </div>
     </ErrorBoundary>
   );

@@ -1,0 +1,227 @@
+/* ===== Accessibility Styles ===== */
+/* WCAG 2.1 Level AA 準拠のためのスタイル */
+
+/* スクリーンリーダー専用（視覚的に非表示） */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* フォーカス時に表示（スキップリンク等） */
+.sr-only-focusable:focus {
+  position: static;
+  width: auto;
+  height: auto;
+  padding: inherit;
+  margin: inherit;
+  overflow: visible;
+  clip: auto;
+  white-space: normal;
+}
+
+/* スキップリンク */
+.skip-link {
+  position: absolute;
+  top: -100%;
+  left: 0;
+  z-index: 9999;
+  padding: 1rem 1.5rem;
+  background-color: #D4AF37;
+  color: #1A1A2E;
+  font-weight: bold;
+  text-decoration: none;
+  border-radius: 0 0 0.5rem 0;
+  transition: top 0.2s ease;
+}
+
+.skip-link:focus {
+  top: 0;
+  outline: 3px solid #FFD700;
+  outline-offset: 2px;
+}
+
+/* フォーカス表示の強化（キーボードユーザー向け） */
+*:focus-visible {
+  outline: 3px solid #D4AF37 !important;
+  outline-offset: 2px !important;
+}
+
+/* フォーカスリング（ボタン等） */
+.focus-ring:focus-visible {
+  box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.5);
+}
+
+/* 高コントラストモード対応 */
+@media (prefers-contrast: more) {
+  .btn,
+  .card,
+  .typing-area {
+    border-width: 2px !important;
+  }
+
+  .char-pending {
+    color: rgba(255, 255, 255, 0.8) !important;
+  }
+
+  .keyboard-key {
+    border-width: 2px !important;
+  }
+
+  /* テキストの強調 */
+  .text-gradient {
+    background: none !important;
+    -webkit-background-clip: unset !important;
+    background-clip: unset !important;
+    -webkit-text-fill-color: #FFD700 !important;
+    color: #FFD700 !important;
+  }
+}
+
+/* アニメーション軽減モード対応 */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .animate-pulse-slow,
+  .animate-bounce-light,
+  .nen-glow,
+  .combo-fire,
+  .screen-shake,
+  .animate-typing-cursor {
+    animation: none !important;
+  }
+}
+
+/* ライブリージョン（スクリーンリーダー用） */
+[aria-live] {
+  /* ライブリージョンは視覚的には見えない */
+}
+
+/* プログレスバーのアクセシビリティ */
+[role="progressbar"] {
+  position: relative;
+}
+
+[role="progressbar"]::before {
+  content: attr(aria-valuenow) '%';
+  position: absolute;
+  left: -9999px;
+}
+
+/* メニューのキーボードナビゲーション */
+[role="menu"] [role="menuitem"]:focus {
+  background-color: rgba(212, 175, 55, 0.2);
+  outline: 2px solid #D4AF37;
+  outline-offset: -2px;
+}
+
+/* アラート・エラーメッセージ */
+[role="alert"] {
+  border-left: 4px solid #EF4444;
+  padding-left: 1rem;
+}
+
+[role="status"] {
+  /* ステータスメッセージ用 */
+}
+
+/* タブパネル */
+[role="tablist"] {
+  display: flex;
+  gap: 0.5rem;
+}
+
+[role="tab"] {
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+}
+
+[role="tab"][aria-selected="true"] {
+  border-bottom: 2px solid #D4AF37;
+  color: #D4AF37;
+}
+
+[role="tab"]:focus-visible {
+  outline: 2px solid #D4AF37;
+  outline-offset: 2px;
+}
+
+/* ダイアログ・モーダル */
+[role="dialog"] {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 1000;
+}
+
+[role="dialog"]::backdrop {
+  background-color: rgba(0, 0, 0, 0.7);
+}
+
+/* ボタンの状態表示 */
+button[aria-pressed="true"] {
+  background-color: rgba(212, 175, 55, 0.3);
+}
+
+button[aria-expanded="true"] {
+  /* 展開状態 */
+}
+
+button:disabled,
+button[aria-disabled="true"] {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* フォーム要素 */
+input:invalid,
+select:invalid,
+textarea:invalid {
+  border-color: #EF4444;
+}
+
+input:valid,
+select:valid,
+textarea:valid {
+  border-color: #10B981;
+}
+
+/* 必須フィールド */
+[aria-required="true"]::after {
+  content: " *";
+  color: #EF4444;
+}
+
+/* エラーメッセージ */
+[aria-errormessage] {
+  color: #EF4444;
+  font-size: 0.875rem;
+  margin-top: 0.25rem;
+}
+
+/* タッチターゲットサイズ（モバイル向け） */
+@media (pointer: coarse) {
+  button,
+  [role="button"],
+  a,
+  input,
+  select,
+  textarea {
+    min-height: 44px;
+    min-width: 44px;
+  }
+}
