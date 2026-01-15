@@ -276,8 +276,8 @@ export const getBossAttackPattern = (chapter: number, phase: number): string => 
       // Chapter 3: 複合パターン（速度 + 多段攻撃）
       return phase >= 3 ? 'combined' : 'aggressive';
     case 4:
-      // Chapter 4: 時間経過で段階的に強化
-      return phase >= 2 ? 'aggressive' : 'normal';
+      // Chapter 4: フェーズ3で複合攻撃に強化
+      return phase >= 3 ? 'combined' : phase >= 2 ? 'aggressive' : 'normal';
     case 5:
       // Chapter 5: 常に複合攻撃
       return 'combined';
