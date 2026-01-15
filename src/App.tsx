@@ -187,7 +187,7 @@ function App() {
             maxCombo={boss.maxCombo}
             elapsedTime={boss.elapsedTime}
             rewards={boss.rewards}
-            onRetry={() => {
+            onRetry={boss.isVictory ? undefined : () => {
               setBossResult(null);
               useGameStore.getState().startBossBattle(selectedChapter);
             }}
