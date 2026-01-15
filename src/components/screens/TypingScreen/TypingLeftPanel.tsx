@@ -51,8 +51,8 @@ export const TypingLeftPanel: React.FC<TypingLeftPanelProps> = ({
       </SidePanelSection>
 
       {/* 進捗 */}
-      <SidePanelSection title="PROGRESS" className="flex-1">
-        <div className="mb-6">
+      <SidePanelSection title="PROGRESS" className="flex-1 flex flex-col">
+        <div className="mb-6 flex-shrink-0">
           <div className="flex justify-between items-end mb-2">
             <span className="text-white/50 text-sm font-title tracking-wider">WORD</span>
             <span className="font-title text-white text-2xl font-bold">
@@ -70,43 +70,45 @@ export const TypingLeftPanel: React.FC<TypingLeftPanelProps> = ({
           </div>
         </div>
 
-        {/* 単語リスト */}
-        <div className="space-y-2">
-          {words.slice(0, 8).map((word, index) => {
-            const isCurrent = index === currentIndex;
-            const isCompleted = index < currentIndex;
+        {/* スクロール可能な単語リスト */}
+        <div className="flex-1 overflow-y-auto pr-2">
+          <div className="space-y-2">
+            {words.map((word, index) => {
+              const isCurrent = index === currentIndex;
+              const isNext = index === currentIndex + 1;
+              const isCompleted = index < currentIndex;
 
-            return (
-              <div
-                key={word.id}
-                className={`flex items-center gap-3 p-2 rounded transition-all ${
-                  isCurrent
-                    ? 'bg-hunter-gold/10 border border-hunter-gold/30'
-                    : isCompleted ? 'opacity-40' : 'opacity-20'
-                }`}
-              >
-                <div
-                  className={`w-6 h-6 rounded flex items-center justify-center text-xs font-title ${
-                    isCompleted
-                      ? 'bg-success/20 text-success'
-                      : isCurrent
-                        ? 'bg-hunter-gold/20 text-hunter-gold'
-                        : 'bg-white/5 text-white/30'
+              return (
+                <motion.div
+                  key={word.id}
+                  initial={isCurrent ? { backgroundColor: 'rgba(212, 175, 55, 0.1)' } : {}}
+                  animate={isCurrent ? { backgroundColor: 'rgba(212, 175, 55, 0.1)' } : {}}
+                  transition={{ duration: 0.2 }}
+                  className={`flex items-center gap-3 p-2 rounded transition-all ${
+                    isCurrent
+                      ? 'bg-hunter-gold/10 border border-hunter-gold/30'
+                      : isNext ? 'bg-white/5 border border-white/10'
+                      : isCompleted ? 'opacity-40' : 'opacity-20'
                   }`}
                 >
-                  {isCompleted ? '✓' : String(index + 1).padStart(2, '0')}
-                </div>
-                <span className={`text-sm ${isCurrent ? 'text-white font-bold' : 'text-white/50'}`}>
-                  {word.display}
-                </span>
-              </div>
-            );
-          })}
-          {words.length > 8 && (
-            <div className="text-center text-white/20 text-sm py-2 font-title">
-              +{words.length - 8} MORE
-            </div>
-          )}
+                  <div
+                    className={`w-6 h-6 rounded flex-shrink-0 flex items-center justify-center text-xs font-title ${
+                      isCompleted
+                        ? 'bg-success/20 text-success'
+                        : isCurrent
+                          ? 'bg-hunter-gold/20 text-hunter-gold'
+                          : 'bg-white/5 text-white/30'
+                    }`}
+                  >
+                    {isCompleted ? '✓' : String(index + 1).padStart(2, '0')}
+                  </div>
+                  <span className={`text-sm truncate ${isCurrent ? 'text-white font-bold' : isNext ? 'text-white/70' : 'text-white/50'}`}>
+                    {word.display}
+                  </span>
+                </motion.div>
+              );
+            })}
+          </div>
         </div>
       </SidePanelSection>
 
