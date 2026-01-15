@@ -9,14 +9,24 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { APP_CONFIG } from '@/constants/config';
 import { EFFECT_DURATIONS, EXPLOSION_CONFIG, getDestructionType } from '@/constants/gameJuice';
 import { easings } from '@/utils/animations';
+import { isLowPowerDevice } from '@/utils/deviceUtils';
 import { CardDestruction } from '@/components/effects';
 import type { Word } from '@/types/game';
 import type { TypingState } from '@/types/romaji';
 
-// 放射状光線のインデックス配列（コンポーネント外で定数化）
-const RAY_INDICES = Array.from({ length: EXPLOSION_CONFIG.RAY_COUNT }, (_, i) => i);
-// パーティクルのインデックス配列
-const PARTICLE_INDICES = Array.from({ length: EXPLOSION_CONFIG.PARTICLE_COUNT }, (_, i) => i);
+// 低性能デバイス向けのインデックス配列を生成する関数
+const getExplosionIndices = () => {
+  const lowPower = isLowPowerDevice();
+  // 低性能デバイスでは光線を8個→4個、パーティクルを12個→6個に削減
+  const rayCount = lowPower ? Math.ceil(EXPLOSION_CONFIG.RAY_COUNT / 2) : EXPLOSION_CONFIG.RAY_COUNT;
+  const particleCount = lowPower ? Math.ceil(EXPLOSION_CONFIG.PARTICLE_COUNT / 2) : EXPLOSION_CONFIG.PARTICLE_COUNT;
+
+  return {
+    rayIndices: Array.from({ length: rayCount }, (_, i) => i),
+    particleIndices: Array.from({ length: particleCount }, (_, i) => i),
+    lowPower,
+  };
+};
 
 interface InputChar {
   char: string;
@@ -55,17 +65,20 @@ export const TypingCard: React.FC<TypingCardProps> = ({
   // 爆発エフェクト表示状態
   const [showExplosion, setShowExplosion] = useState(false);
 
+  // 低性能デバイス判定とインデックス取得
+  const { rayIndices, particleIndices, lowPower } = useMemo(() => getExplosionIndices(), []);
+
   // パーティクルのランダム値をキャッシュ（マウント時に固定）
   const particleConfigs = useMemo(() => {
-    return PARTICLE_INDICES.map((i) => {
-      const angle = (i / EXPLOSION_CONFIG.PARTICLE_COUNT) * Math.PI * 2;
+    return particleIndices.map((i) => {
+      const angle = (i / particleIndices.length) * Math.PI * 2;
       return {
         angle,
         distance: EXPLOSION_CONFIG.PARTICLE_DISTANCE_MIN + Math.random() * EXPLOSION_CONFIG.PARTICLE_DISTANCE_RANGE,
         durationOffset: Math.random() * 0.3,
       };
     });
-  }, []);
+  }, [particleIndices]);
 
   // explosionTriggerが変わったら爆発エフェクトを表示
   useEffect(() => {
@@ -136,11 +149,12 @@ export const TypingCard: React.FC<TypingCardProps> = ({
                 {c.char}
               </span>
             ))}
-            {/* カーソル */}
-            <motion.span
-              className="inline-block w-0.5 h-8 bg-hunter-gold ml-0.5"
-              animate={{ opacity: [1, 0, 1] }}
-              transition={{ duration: 1, repeat: Infinity }}
+            {/* カーソル（CSS アニメーション版） */}
+            <span
+              className="inline-block w-0.5 h-8 bg-hunter-gold ml-0.5 cursor-blink"
+              style={{
+                animation: 'cursor-blink 1s step-start infinite',
+              }}
             />
           </div>
 
@@ -200,17 +214,17 @@ export const TypingCard: React.FC<TypingCardProps> = ({
               />
             </motion.div>
 
-            {/* 放射状の光線 */}
-            {RAY_INDICES.map((i) => (
+            {/* 放射状の光線（低性能デバイスでは削減） */}
+            {rayIndices.map((i) => (
               <motion.div
                 key={`ray-${i}`}
                 className="absolute top-1/2 left-1/2 w-full h-0.5 bg-gradient-to-r from-transparent via-hunter-gold to-transparent pointer-events-none z-20"
                 style={{
                   transformOrigin: 'center center',
                 }}
-                initial={{ rotate: i * (360 / EXPLOSION_CONFIG.RAY_COUNT), opacity: 0, scaleX: 0 }}
+                initial={{ rotate: i * (360 / rayIndices.length), opacity: 0, scaleX: 0 }}
                 animate={{
-                  rotate: i * (360 / EXPLOSION_CONFIG.RAY_COUNT),
+                  rotate: i * (360 / rayIndices.length),
                   opacity: [0, 0.8, 0],
                   scaleX: [0, 1.5, 2],
                 }}

@@ -236,6 +236,12 @@
   50% { opacity: 0; }
 }
 
+/* カーソル点滅（CSS最適化版） */
+@keyframes cursor-blink {
+  0%, 49%, 100% { opacity: 1; }
+  50%, 99% { opacity: 0; }
+}
+
 /* コンボエフェクト */
 .combo-fire {
   animation: combo-scale 0.3s ease-out;
