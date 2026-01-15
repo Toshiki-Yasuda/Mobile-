@@ -27,12 +27,14 @@ export const SettingsScreen: React.FC = () => {
     bgmVolume,
     keyboardVisible,
     romajiGuideLevel,
+    darkMode,
     setSoundEnabled,
     setBgmEnabled,
     setSoundVolume,
     setBgmVolume,
     setKeyboardVisible,
     setRomajiGuideLevel,
+    setDarkMode,
     resetSettings,
   } = useSettingsStore();
   const { handleClick } = useButtonClick();
@@ -218,6 +220,28 @@ export const SettingsScreen: React.FC = () => {
                   <motion.div
                     className="w-5 h-5 bg-white rounded-full absolute top-1"
                     animate={{ left: keyboardVisible ? '1.75rem' : '0.25rem' }}
+                    transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+                  />
+                </button>
+              </div>
+
+              <div className="h-px bg-hunter-gold/10" />
+
+              {/* ダークモード */}
+              <div className="flex items-center justify-between">
+                <div>
+                  <span className="text-white text-sm">ダークモード</span>
+                  <p className="text-white/40 text-xs mt-0.5">ダークモード/ライトモード</p>
+                </div>
+                <button
+                  onClick={() => setDarkMode(!darkMode)}
+                  className={`w-14 h-7 rounded-full relative transition-colors ${
+                    darkMode ? 'bg-hunter-gold' : 'bg-hunter-dark-light'
+                  }`}
+                >
+                  <motion.div
+                    className="w-5 h-5 bg-white rounded-full absolute top-1"
+                    animate={{ left: darkMode ? '1.75rem' : '0.25rem' }}
                     transition={{ type: 'spring', stiffness: 500, damping: 30 }}
                   />
                 </button>
