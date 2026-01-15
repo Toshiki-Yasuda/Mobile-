@@ -1,11 +1,12 @@
 /**
  * HPバーコンポーネント
- * ダメージ/回復のアニメーション付き
+ * ダメージ/回復のアニメーション付き + ハプティックフィードバック
  */
 
 import React, { useEffect, useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { HP_CONFIG } from '@/constants/gameJuice';
+import { useHaptics } from '@/hooks/useHaptics';
 
 interface HPBarProps {
   currentHP: number;
@@ -21,6 +22,7 @@ export const HPBar: React.FC<HPBarProps> = ({
   const percentage = Math.max(0, (currentHP / maxHP) * 100);
   const isCritical = currentHP <= HP_CONFIG.criticalThreshold;
   const prevHPRef = useRef(currentHP);
+  const { damage, critical } = useHaptics();
 
   // ダメージ/回復エフェクト
   const [showDamage, setShowDamage] = useState(false);
@@ -35,6 +37,14 @@ export const HPBar: React.FC<HPBarProps> = ({
       // ダメージ
       setDamageAmount(Math.abs(diff));
       setShowDamage(true);
+      damage(); // ハプティック: ダメージ振動
+
+      // クリティカル状態への移行時の警告
+      const newHP = currentHP;
+      if (newHP <= HP_CONFIG.criticalThreshold && prevHPRef.current > HP_CONFIG.criticalThreshold) {
+        critical(); // ハプティック: クリティカル警告
+      }
+
       setTimeout(() => setShowDamage(false), 500);
     } else if (diff > 0) {
       // 回復
@@ -44,7 +54,7 @@ export const HPBar: React.FC<HPBarProps> = ({
     }
 
     prevHPRef.current = currentHP;
-  }, [currentHP]);
+  }, [currentHP, damage, critical]);
 
   // HPバーの色
   const getBarColor = () => {

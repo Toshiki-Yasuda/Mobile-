@@ -5,59 +5,75 @@
 
 import { useSound } from '@/hooks/useSound';
 
+type SoundType = 'click' | 'menuSelect' | 'stageSelect';
+
+interface SoundConfig {
+  delay: number;
+}
+
+const SOUND_CONFIGS: Record<SoundType, SoundConfig> = {
+  click: { delay: 10 },
+  menuSelect: { delay: 50 },
+  stageSelect: { delay: 50 },
+};
+
 /**
- * ボタンクリックハンドラーを作成するフック
+ * 汎用の音声再生ハンドラーを作成するフック
+ */
+function usePlaySound(soundType: SoundType) {
+  const { playClickSound, playMenuSelectSound, playStageSelectSound } = useSound();
+  const config = SOUND_CONFIGS[soundType];
+
+  const playSoundByType = () => {
+    switch (soundType) {
+      case 'click':
+        playClickSound();
+        break;
+      case 'menuSelect':
+        playMenuSelectSound();
+        break;
+      case 'stageSelect':
+        playStageSelectSound();
+        break;
+    }
+  };
+
+  const handleAction = (callback: () => void) => {
+    return () => {
+      playSoundByType();
+      setTimeout(() => {
+        callback();
+      }, config.delay);
+    };
+  };
+
+  return { handleAction };
+}
+
+/**
+ * ボタンクリックハンドラーを作成するフック（互換性維持）
  */
 export function useButtonClick() {
-  const { playClickSound } = useSound();
-
-  const handleClick = (callback: () => void) => {
-    return () => {
-      // 音を先に鳴らしてからコールバックを実行
-      playClickSound();
-      // 少し遅延させてからコールバックを実行（音が確実に鳴るように）
-      setTimeout(() => {
-        callback();
-      }, 10);
-    };
-  };
-
-  return { handleClick };
+  const { handleAction } = usePlaySound('click');
+  return { handleClick: handleAction };
 }
 
 /**
- * メニュー選択ハンドラーを作成するフック
+ * メニュー選択ハンドラーを作成するフック（互換性維持）
  */
 export function useMenuSelect() {
-  const { playMenuSelectSound } = useSound();
-
-  const handleSelect = (callback: () => void) => {
-    return () => {
-      playMenuSelectSound();
-      setTimeout(() => {
-        callback();
-      }, 50);
-    };
-  };
-
-  return { handleSelect };
+  const { handleAction } = usePlaySound('menuSelect');
+  return { handleSelect: handleAction };
 }
 
 /**
- * ステージ選択ハンドラーを作成するフック
+ * ステージ選択ハンドラーを作成するフック（互換性維持）
  */
 export function useStageSelect() {
-  const { playStageSelectSound } = useSound();
-
-  const handleSelect = (callback: () => void) => {
-    return () => {
-      playStageSelectSound();
-      setTimeout(() => {
-        callback();
-      }, 50);
-    };
-  };
-
-  return { handleSelect };
+  const { handleAction } = usePlaySound('stageSelect');
+  return { handleSelect: handleAction };
 }
+
+// 汎用hookをエクスポート
+export { usePlaySound };
 

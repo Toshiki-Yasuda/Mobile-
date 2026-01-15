@@ -36,6 +36,9 @@ interface GameStore {
   // === タイピングセッション ===
   session: TypingSession | null;
 
+  // === ボス戦フラグ ===
+  isBossBattle: boolean;
+
   // === ローディング ===
   loading: LoadingState;
 
@@ -49,6 +52,10 @@ interface GameStore {
   // === アクション: ステージ選択 ===
   selectChapter: (chapter: number) => void;
   selectStage: (chapter: number, stage: number) => void;
+
+  // === アクション: ボス戦 ===
+  startBossBattle: (chapterId: number) => void;
+  endBossBattle: () => void;
 
   // === アクション: タイピングセッション ===
   startSession: (words: Word[]) => void;
@@ -82,6 +89,7 @@ export const useGameStore = create<GameStore>()(
       selectedChapter: 1,
       selectedStage: 1,
       session: null,
+      isBossBattle: false,
       loading: {
         isLoading: false,
         loadingMessage: '',
@@ -113,6 +121,23 @@ export const useGameStore = create<GameStore>()(
         set({
           selectedChapter: chapter,
           selectedStage: stage,
+        }),
+
+      // === ボス戦 ===
+      startBossBattle: (chapterId) =>
+        set((state) => ({
+          previousScreen: state.currentScreen,
+          currentScreen: 'bossStage',
+          selectedChapter: chapterId,
+          selectedStage: 6,
+          isBossBattle: true,
+          session: null,
+        })),
+
+      endBossBattle: () =>
+        set({
+          isBossBattle: false,
+          session: null,
         }),
 
       // === タイピングセッション ===

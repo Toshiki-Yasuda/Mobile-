@@ -21,10 +21,12 @@ interface ProgressStore {
   statistics: Statistics;
   keyStatistics: KeyStatistics;
   dailyLogs: DailyLog[];
+  defeatedBosses: Set<string>;
 
   // === アクション ===
   unlockChapter: (chapter: number) => void;
   saveStageResult: (stageId: string, result: StageResult) => void;
+  markBossDefeated: (bossId: string) => void;
   addAchievement: (achievementId: string) => void;
   updateStatistics: (updates: Partial<Statistics>) => void;
   updateKeyStats: (key: string, isCorrect: boolean, latency: number) => void;
@@ -36,6 +38,7 @@ interface ProgressStore {
   isStageCleared: (stageId: string) => boolean;
   getStageResult: (stageId: string) => StageResult | undefined;
   isChapterUnlocked: (chapter: number) => boolean;
+  isBossDefeated: (bossId: string) => boolean;
   getAccuracyForKey: (key: string) => number;
 }
 
@@ -54,6 +57,7 @@ export const useProgressStore = create<ProgressStore>()(
       statistics: DEFAULT_STATISTICS,
       keyStatistics: {},
       dailyLogs: [],
+      defeatedBosses: new Set(),
 
       // === アクション ===
       unlockChapter: (chapter) =>
@@ -79,6 +83,11 @@ export const useProgressStore = create<ProgressStore>()(
           }
           return state;
         }),
+
+      markBossDefeated: (bossId) =>
+        set((state) => ({
+          defeatedBosses: new Set([...state.defeatedBosses, bossId]),
+        })),
 
       addAchievement: (achievementId) =>
         set((state) => ({
@@ -191,6 +200,7 @@ export const useProgressStore = create<ProgressStore>()(
           statistics: DEFAULT_STATISTICS,
           keyStatistics: {},
           dailyLogs: [],
+          defeatedBosses: new Set(),
         }),
 
       // === ゲッター ===
@@ -199,6 +209,8 @@ export const useProgressStore = create<ProgressStore>()(
       getStageResult: (stageId) => get().clearedStages[stageId],
 
       isChapterUnlocked: (chapter) => get().unlockedChapters.includes(chapter),
+
+      isBossDefeated: (bossId) => get().defeatedBosses.has(bossId),
 
       getAccuracyForKey: (key) => {
         const stats = get().keyStatistics[key];
@@ -223,6 +235,7 @@ export const useProgressStore = create<ProgressStore>()(
             statistics: { ...DEFAULT_STATISTICS, ...state.statistics },
             keyStatistics: state.keyStatistics || {},
             dailyLogs: state.dailyLogs || [],
+            defeatedBosses: new Set(),
           };
         }
         return persistedState as ProgressStore;

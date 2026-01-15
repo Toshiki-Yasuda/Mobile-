@@ -8,6 +8,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useGameStore } from '@/stores/gameStore';
 import { useSettingsStore } from '@/stores/settingsStore';
 import { useButtonClick } from '@/utils/soundUtils';
+import { useHaptics } from '@/hooks/useHaptics';
 import { bgmManager } from '@/utils/bgmManager';
 
 // メニュー項目定義
@@ -33,6 +34,7 @@ export const TitleScreen: React.FC = () => {
     setBgmVolume
   } = useSettingsStore();
   const { handleClick } = useButtonClick();
+  const { menuMove, uiSelect } = useHaptics();
   const [showStartOverlay, setShowStartOverlay] = useState(true);
   const [explosionTriggered, setExplosionTriggered] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(0);
@@ -152,15 +154,18 @@ export const TitleScreen: React.FC = () => {
       switch (e.key) {
         case 'ArrowUp':
           e.preventDefault();
+          menuMove(); // ハプティック: メニュー移動
           setSelectedIndex(prev => (prev - 1 + MENU_ITEMS.length) % MENU_ITEMS.length);
           break;
         case 'ArrowDown':
           e.preventDefault();
+          menuMove(); // ハプティック: メニュー移動
           setSelectedIndex(prev => (prev + 1) % MENU_ITEMS.length);
           break;
         case 'Enter':
         case ' ':
           e.preventDefault();
+          uiSelect(); // ハプティック: UI選択
           handleClick(() => navigateTo(MENU_ITEMS[selectedIndex].screen))();
           break;
         case 'Escape':
@@ -175,7 +180,9 @@ export const TitleScreen: React.FC = () => {
         case '6':
           const num = parseInt(e.key) - 1;
           if (num < MENU_ITEMS.length) {
+            menuMove(); // ハプティック: メニュー移動
             setSelectedIndex(num);
+            uiSelect(); // ハプティック: UI選択
             handleClick(() => navigateTo(MENU_ITEMS[num].screen))();
           }
           break;
@@ -184,7 +191,7 @@ export const TitleScreen: React.FC = () => {
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [showStartOverlay, selectedIndex, handleStart, handleBackToOpening, handleClick, navigateTo]);
+  }, [showStartOverlay, selectedIndex, handleStart, handleBackToOpening, handleClick, navigateTo, menuMove, uiSelect]);
 
   return (
     <div className="min-h-screen bg-hunter-dark relative overflow-hidden">

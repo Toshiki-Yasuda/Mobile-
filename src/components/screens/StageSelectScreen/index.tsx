@@ -92,8 +92,8 @@ const CHAPTERS = [
 ];
 
 export const StageSelectScreen: React.FC = () => {
-  const { selectedChapter, selectStage, navigateTo, startSession } = useGameStore();
-  const { isStageCleared, getStageResult } = useProgressStore();
+  const { selectedChapter, selectStage, navigateTo, startSession, startBossBattle } = useGameStore();
+  const { isStageCleared, getStageResult, isBossDefeated } = useProgressStore();
   const { handleClick } = useButtonClick();
   const { handleSelect: handleStageClick } = useStageSelect();
   const [selectedIndex, setSelectedIndex] = useState(0);
@@ -109,6 +109,13 @@ export const StageSelectScreen: React.FC = () => {
   const handleStageSelect = useCallback((stageNumber: number) => {
     if (!isStageUnlocked(stageNumber)) return;
 
+    // ボスステージ（Stage 6）の場合
+    if (stageNumber === 6) {
+      startBossBattle(selectedChapter);
+      return;
+    }
+
+    // 通常ステージの処理
     const stageId = `${selectedChapter}-${stageNumber}`;
     const words = getWordsForStage(stageId);
 
@@ -120,7 +127,7 @@ export const StageSelectScreen: React.FC = () => {
     selectStage(selectedChapter, stageNumber);
     startSession(words);
     navigateTo('typing');
-  }, [selectedChapter, isStageUnlocked, selectStage, startSession, navigateTo]);
+  }, [selectedChapter, isStageUnlocked, selectStage, startSession, navigateTo, startBossBattle]);
 
   // キーボード操作
   useEffect(() => {
@@ -221,6 +228,9 @@ export const StageSelectScreen: React.FC = () => {
             const cleared = isStageCleared(stageId);
             const result = getStageResult(stageId);
 
+            const isBoss = stage.number === 6;
+            const bossDefeated = isBoss && isBossDefeated(`boss_chapter${selectedChapter}`);
+
             return (
               <motion.button
                 key={stage.number}
@@ -235,17 +245,25 @@ export const StageSelectScreen: React.FC = () => {
                 className={`relative text-left p-5 rounded-lg transition-all ${
                   unlocked
                     ? selectedIndex === index
-                      ? 'bg-hunter-dark-light/60 border-2 border-hunter-gold/70 cursor-pointer ring-2 ring-hunter-gold/30'
+                      ? isBoss && bossDefeated
+                        ? 'bg-purple-900/30 border-2 border-purple-400/70 cursor-pointer ring-2 ring-purple-400/30'
+                        : 'bg-hunter-dark-light/60 border-2 border-hunter-gold/70 cursor-pointer ring-2 ring-hunter-gold/30'
+                      : isBoss && bossDefeated
+                      ? 'bg-purple-900/20 border border-purple-400/20 hover:border-purple-400/50 cursor-pointer'
                       : 'bg-hunter-dark-light/40 border border-hunter-gold/20 hover:border-hunter-gold/50 cursor-pointer'
                     : 'bg-hunter-dark-light/10 border border-white/5 opacity-40 cursor-not-allowed'
                 }`}
               >
-                {/* クリアマーク */}
-                {cleared && (
+                {/* ボス撃破マーク / クリアマーク */}
+                {isBoss && bossDefeated ? (
+                  <div className="absolute top-3 right-3 w-6 h-6 bg-purple-500/20 rounded flex items-center justify-center">
+                    <span className="text-purple-300 text-xs">⭐</span>
+                  </div>
+                ) : cleared && !isBoss ? (
                   <div className="absolute top-3 right-3 w-6 h-6 bg-success/20 rounded flex items-center justify-center">
                     <span className="text-success text-xs">✓</span>
                   </div>
-                )}
+                ) : null}
 
                 {/* ロック */}
                 {!unlocked && (
@@ -254,9 +272,12 @@ export const StageSelectScreen: React.FC = () => {
                   </div>
                 )}
 
-                {/* ステージ番号 */}
-                <div className="font-title text-hunter-gold/50 text-xs tracking-[0.3em] mb-2">
-                  STAGE {String(stage.number).padStart(2, '0')}
+                {/* ステージ番号 & ボスアイコン */}
+                <div className="flex items-center justify-between font-title text-hunter-gold/50 text-xs tracking-[0.3em] mb-2">
+                  <span>STAGE {String(stage.number).padStart(2, '0')}</span>
+                  {stage.number === 6 && (
+                    <span className="text-orange-500 text-sm">👹 BOSS</span>
+                  )}
                 </div>
 
                 {/* タイトル */}

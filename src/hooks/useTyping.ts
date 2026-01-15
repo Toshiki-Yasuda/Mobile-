@@ -9,6 +9,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { useGameStore } from '@/stores/gameStore';
 import { useProgressStore } from '@/stores/progressStore';
 import { useSound } from '@/hooks/useSound';
+import { useHaptics } from '@/hooks/useHaptics';
 import {
   createInitialState,
   processKeyInput,
@@ -17,7 +18,7 @@ import {
 } from '@/engine/romajiEngine';
 import type { TypingState } from '@/types/romaji';
 import { APP_CONFIG } from '@/constants/config';
-import { HP_CONFIG } from '@/constants/gameJuice';
+import { HP_CONFIG, ANIMATION_TIMINGS } from '@/constants/gameJuice';
 import type { Word } from '@/types/game';
 
 // タイプライターモードを使用するチャプター閾値
@@ -39,6 +40,7 @@ export function useTyping() {
 
   const { updateKeyStats } = useProgressStore();
   const { playTypeSound, playConfirmSound, playMissSound, playComboSound } = useSound();
+  const { tap, success, comboMilestone, damage, critical } = useHaptics();
 
   // タイプライターモード用の入力テキスト
   const [userInput, setUserInput] = useState('');
@@ -130,6 +132,9 @@ export function useTyping() {
     const currentCombo = session?.combo || 0;
     playConfirmSound(currentCombo);
 
+    // ハプティック: 成功
+    success();
+
     // 正解時シェイクを発動
     setSuccessShakeTrigger(Date.now());
 
@@ -142,6 +147,7 @@ export function useTyping() {
     const newCombo = (session?.combo || 0) + 1;
     if (newCombo >= 5 && newCombo % 5 === 0) {
       playComboSound(newCombo);
+      comboMilestone(newCombo); // ハプティック: コンボマイルストーン
     }
 
     // HP回復
@@ -178,6 +184,9 @@ export function useTyping() {
         : 0;
       lastKeyTimeRef.current = now;
 
+      // ハプティック: 入力タップ
+      tap();
+
       const result = processKeyInput(session.typingState, key);
 
       updateKeyStats(key.toLowerCase(), result.isValid, latency);
@@ -185,12 +194,20 @@ export function useTyping() {
       if (result.isMiss) {
         recordMiss();
         playMissSound();
+        damage(); // ハプティック: ダメージ
         // HPダメージ
-        setCurrentHP(prev => Math.max(0, prev - HP_CONFIG.missDamage));
+        const newHP = Math.max(0, currentHP - HP_CONFIG.missDamage);
+        setCurrentHP(newHP);
+
+        // クリティカル警告ハプティック
+        if (newHP <= HP_CONFIG.criticalThreshold && newHP > 0) {
+          critical();
+        }
         return;
       }
 
       if (result.isValid) {
+        success(); // ハプティック: 入力成功
         setTypingState(result.newState);
 
         if (result.isWordComplete) {
@@ -202,12 +219,17 @@ export function useTyping() {
     },
     [
       session,
+      currentHP,
       setTypingState,
       recordMiss,
       updateKeyStats,
       playTypeSound,
       playMissSound,
       handleWordComplete,
+      tap,
+      success,
+      damage,
+      critical,
     ]
   );
 
@@ -259,6 +281,7 @@ export function useTyping() {
     if (isCorrect) {
       // 正解 - 爆発音と演出を鳴らして次へ
       playEnterExplosion();
+      success(); // ハプティック: 成功
       setLastExplosionWasPerfect(!hadMissThisWord);
       setExplosionTrigger(Date.now());
       handleWordComplete();
@@ -268,12 +291,19 @@ export function useTyping() {
       // 不正解 - ミスを記録して入力をクリア
       recordMiss();
       playMissSound();
+      damage(); // ハプティック: ダメージ
       setUserInput('');
       setHadMissThisWord(true);
       // HPダメージ
-      setCurrentHP(prev => Math.max(0, prev - HP_CONFIG.missDamage));
+      const newHP = Math.max(0, currentHP - HP_CONFIG.missDamage);
+      setCurrentHP(newHP);
+
+      // クリティカル警告ハプティック
+      if (newHP <= HP_CONFIG.criticalThreshold && newHP > 0) {
+        critical();
+      }
     }
-  }, [currentWord, userInput, validateTypewriterInput, handleWordComplete, recordMiss, playMissSound, playEnterExplosion]);
+  }, [currentWord, userInput, currentHP, validateTypewriterInput, handleWordComplete, recordMiss, playMissSound, playEnterExplosion, success, damage, critical]);
 
   // 押されたキーを光らせる（2秒かけてフェードアウト）
   const flashKey = useCallback((key: string) => {
