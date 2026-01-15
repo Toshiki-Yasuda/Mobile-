@@ -9,14 +9,37 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { APP_CONFIG } from '@/constants/config';
 import { EFFECT_DURATIONS, EXPLOSION_CONFIG, getDestructionType } from '@/constants/gameJuice';
 import { easings } from '@/utils/animations';
+import { isLowPowerDevice, prefersReducedMotion } from '@/utils/deviceUtils';
 import { CardDestruction } from '@/components/effects';
 import type { Word } from '@/types/game';
 import type { TypingState } from '@/types/romaji';
 
-// 放射状光線のインデックス配列（コンポーネント外で定数化）
-const RAY_INDICES = Array.from({ length: EXPLOSION_CONFIG.RAY_COUNT }, (_, i) => i);
-// パーティクルのインデックス配列
-const PARTICLE_INDICES = Array.from({ length: EXPLOSION_CONFIG.PARTICLE_COUNT }, (_, i) => i);
+// 低性能デバイス向けのインデックス配列を生成する関数
+const getExplosionIndices = () => {
+  const lowPower = isLowPowerDevice();
+  const reduceMotion = prefersReducedMotion();
+
+  // motion-reduceの場合は爆発エフェクトを完全に無効化
+  if (reduceMotion) {
+    return {
+      rayIndices: [],
+      particleIndices: [],
+      lowPower: true,
+      reduceMotion: true,
+    };
+  }
+
+  // 低性能デバイスでは光線を8個→4個、パーティクルを12個→6個に削減
+  const rayCount = lowPower ? Math.ceil(EXPLOSION_CONFIG.RAY_COUNT / 2) : EXPLOSION_CONFIG.RAY_COUNT;
+  const particleCount = lowPower ? Math.ceil(EXPLOSION_CONFIG.PARTICLE_COUNT / 2) : EXPLOSION_CONFIG.PARTICLE_COUNT;
+
+  return {
+    rayIndices: Array.from({ length: rayCount }, (_, i) => i),
+    particleIndices: Array.from({ length: particleCount }, (_, i) => i),
+    lowPower,
+    reduceMotion: false,
+  };
+};
 
 interface InputChar {
   char: string;
@@ -55,17 +78,20 @@ export const TypingCard: React.FC<TypingCardProps> = ({
   // 爆発エフェクト表示状態
   const [showExplosion, setShowExplosion] = useState(false);
 
+  // 低性能デバイス判定とインデックス取得
+  const { rayIndices, particleIndices, lowPower, reduceMotion } = useMemo(() => getExplosionIndices(), []);
+
   // パーティクルのランダム値をキャッシュ（マウント時に固定）
   const particleConfigs = useMemo(() => {
-    return PARTICLE_INDICES.map((i) => {
-      const angle = (i / EXPLOSION_CONFIG.PARTICLE_COUNT) * Math.PI * 2;
+    return particleIndices.map((i) => {
+      const angle = (i / particleIndices.length) * Math.PI * 2;
       return {
         angle,
         distance: EXPLOSION_CONFIG.PARTICLE_DISTANCE_MIN + Math.random() * EXPLOSION_CONFIG.PARTICLE_DISTANCE_RANGE,
         durationOffset: Math.random() * 0.3,
       };
     });
-  }, []);
+  }, [particleIndices]);
 
   // explosionTriggerが変わったら爆発エフェクトを表示
   useEffect(() => {
@@ -136,11 +162,12 @@ export const TypingCard: React.FC<TypingCardProps> = ({
                 {c.char}
               </span>
             ))}
-            {/* カーソル */}
-            <motion.span
-              className="inline-block w-0.5 h-8 bg-hunter-gold ml-0.5"
-              animate={{ opacity: [1, 0, 1] }}
-              transition={{ duration: 1, repeat: Infinity }}
+            {/* カーソル（CSS アニメーション版） */}
+            <span
+              className="inline-block w-0.5 h-8 bg-hunter-gold ml-0.5 cursor-blink"
+              style={{
+                animation: 'cursor-blink 1s step-start infinite',
+              }}
             />
           </div>
 
@@ -179,9 +206,9 @@ export const TypingCard: React.FC<TypingCardProps> = ({
         isActive={showExplosion}
       />
 
-      {/* 爆発エフェクト */}
+      {/* 爆発エフェクト（motion-reduceでは無効） */}
       <AnimatePresence>
-        {showExplosion && (
+        {showExplosion && !reduceMotion && (
           <>
             {/* 中央からの光の爆発 */}
             <motion.div
@@ -190,27 +217,37 @@ export const TypingCard: React.FC<TypingCardProps> = ({
               animate={{ opacity: [0, 1, 0] }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.6, times: [0, 0.1, 1] }}
+              style={{
+                willChange: 'opacity',
+                backfaceVisibility: 'hidden',
+              }}
             >
               <motion.div
                 className="w-4 h-4 bg-hunter-gold rounded-full"
                 initial={{ scale: 0 }}
                 animate={{ scale: [0, 30, 40] }}
                 transition={{ duration: 0.6, ease: 'easeOut' }}
-                style={{ filter: 'blur(40px)' }}
+                style={{
+                  filter: 'blur(40px)',
+                  willChange: 'transform',
+                  backfaceVisibility: 'hidden',
+                }}
               />
             </motion.div>
 
-            {/* 放射状の光線 */}
-            {RAY_INDICES.map((i) => (
+            {/* 放射状の光線（低性能デバイスでは削減） */}
+            {rayIndices.map((i) => (
               <motion.div
                 key={`ray-${i}`}
                 className="absolute top-1/2 left-1/2 w-full h-0.5 bg-gradient-to-r from-transparent via-hunter-gold to-transparent pointer-events-none z-20"
                 style={{
                   transformOrigin: 'center center',
+                  willChange: 'transform, opacity',
+                  backfaceVisibility: 'hidden',
                 }}
-                initial={{ rotate: i * (360 / EXPLOSION_CONFIG.RAY_COUNT), opacity: 0, scaleX: 0 }}
+                initial={{ rotate: i * (360 / rayIndices.length), opacity: 0, scaleX: 0 }}
                 animate={{
-                  rotate: i * (360 / EXPLOSION_CONFIG.RAY_COUNT),
+                  rotate: i * (360 / rayIndices.length),
                   opacity: [0, 0.8, 0],
                   scaleX: [0, 1.5, 2],
                 }}
@@ -239,6 +276,10 @@ export const TypingCard: React.FC<TypingCardProps> = ({
                   duration: 0.5 + config.durationOffset,
                   ease: 'easeOut',
                 }}
+                style={{
+                  willChange: 'transform, opacity',
+                  backfaceVisibility: 'hidden',
+                }}
               />
             ))}
 
@@ -246,15 +287,19 @@ export const TypingCard: React.FC<TypingCardProps> = ({
             <motion.div
               className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 border-2 border-hunter-gold rounded-full pointer-events-none z-20"
               initial={{ width: 0, height: 0, opacity: 1 }}
-              animate={{ 
+              animate={{
                 width: [0, 300, 400],
                 height: [0, 300, 400],
                 opacity: [1, 0.5, 0],
               }}
               exit={{ opacity: 0 }}
-              transition={{ 
+              transition={{
                 duration: 0.5,
                 ease: 'easeOut',
+              }}
+              style={{
+                willChange: 'width, height, opacity',
+                backfaceVisibility: 'hidden',
               }}
             />
 
@@ -263,12 +308,16 @@ export const TypingCard: React.FC<TypingCardProps> = ({
               <motion.div
                 className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none z-30"
                 initial={{ scale: 0, opacity: 0 }}
-                animate={{ 
+                animate={{
                   scale: [0, 1.2, 1],
                   opacity: [0, 1, 0],
                 }}
                 exit={{ opacity: 0 }}
                 transition={{ duration: 0.6, ease: 'easeOut' }}
+                style={{
+                  willChange: 'transform, opacity',
+                  backfaceVisibility: 'hidden',
+                }}
               >
                 <span className="font-title text-4xl font-bold text-hunter-gold drop-shadow-lg">
                   PERFECT!
@@ -281,20 +330,28 @@ export const TypingCard: React.FC<TypingCardProps> = ({
 
       <div className="relative">
         {/* カード背景 */}
-        <motion.div 
+        <motion.div
           className="absolute inset-0 bg-gradient-to-br from-hunter-gold/5 to-transparent rounded-lg"
           animate={showExplosion ? {
             backgroundColor: ['rgba(212,175,55,0.05)', 'rgba(212,175,55,0.2)', 'rgba(212,175,55,0.05)'],
           } : {}}
           transition={{ duration: 0.3 }}
+          style={{
+            willChange: showExplosion ? 'background-color, opacity' : 'auto',
+            backfaceVisibility: 'hidden',
+          }}
         />
-        <motion.div 
+        <motion.div
           className="absolute inset-0 border border-hunter-gold/20 rounded-lg"
           animate={showExplosion ? {
             borderColor: ['rgba(212,175,55,0.2)', 'rgba(212,175,55,0.8)', 'rgba(212,175,55,0.2)'],
             boxShadow: ['0 0 0 rgba(212,175,55,0)', '0 0 30px rgba(212,175,55,0.5)', '0 0 0 rgba(212,175,55,0)'],
           } : {}}
           transition={{ duration: 0.3 }}
+          style={{
+            willChange: showExplosion ? 'border-color, box-shadow' : 'auto',
+            backfaceVisibility: 'hidden',
+          }}
         />
 
         {/* コンテンツ */}

@@ -3,10 +3,11 @@
  * ダメージ/回復のアニメーション付き + ハプティックフィードバック
  */
 
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { HP_CONFIG } from '@/constants/gameJuice';
 import { useHaptics } from '@/hooks/useHaptics';
+import { isLowPowerDevice, prefersReducedMotion } from '@/utils/deviceUtils';
 
 interface HPBarProps {
   currentHP: number;
@@ -23,6 +24,14 @@ export const HPBar: React.FC<HPBarProps> = ({
   const isCritical = currentHP <= HP_CONFIG.criticalThreshold;
   const prevHPRef = useRef(currentHP);
   const { damage, critical } = useHaptics();
+  const lowPowerDevice = useMemo(() => isLowPowerDevice(), []);
+  const shouldReduceMotion = useMemo(() => prefersReducedMotion(), []);
+
+  // パフォーマンス最適化：低性能デバイスまたはmotion-reduceでパルスアニメーションを無効化
+  const pulseAnimation = useMemo(() => ({
+    duration: lowPowerDevice || shouldReduceMotion ? 0 : 1.2,
+    repeat: lowPowerDevice || shouldReduceMotion ? 0 : Infinity,
+  }), [lowPowerDevice, shouldReduceMotion]);
 
   // ダメージ/回復エフェクト
   const [showDamage, setShowDamage] = useState(false);
@@ -63,6 +72,20 @@ export const HPBar: React.FC<HPBarProps> = ({
     return 'from-green-500 to-emerald-500';
   };
 
+  // HPステータステキスト（色覚異常対応）
+  const getHPStatusText = () => {
+    if (isCritical) return '危険 (CRITICAL)';
+    if (percentage <= 50) return '注意 (CAUTION)';
+    return '安全 (SAFE)';
+  };
+
+  // HPステータスアイコン
+  const getHPStatusIcon = () => {
+    if (isCritical) return '🔴';
+    if (percentage <= 50) return '🟡';
+    return '🟢';
+  };
+
   return (
     <div className={`relative ${className}`}>
       {/* ラベル */}
@@ -73,14 +96,32 @@ export const HPBar: React.FC<HPBarProps> = ({
         </span>
       </div>
 
+      {/* HPステータス表示（アクセシビリティ） */}
+      <div className="text-xs text-gray-400 mb-1 flex items-center gap-1">
+        <span>{getHPStatusIcon()}</span>
+        <span>{getHPStatusText()}</span>
+      </div>
+
       {/* HPバー本体 */}
-      <div className="relative h-3 bg-hunter-dark-light rounded-full overflow-hidden border border-hunter-gold/20">
-        {/* 背景グロー（危険時） */}
-        {isCritical && (
+      <div
+        className="relative h-3 bg-hunter-dark-light rounded-full overflow-hidden border border-hunter-gold/20"
+        role="progressbar"
+        aria-label="Health Points"
+        aria-valuenow={currentHP}
+        aria-valuemin={0}
+        aria-valuemax={maxHP}
+        aria-valuetext={`${currentHP} out of ${maxHP} HP, ${getHPStatusText()}`}
+      >
+        {/* 背景グロー（危険時、低性能デバイスでは無効） */}
+        {isCritical && !lowPowerDevice && (
           <motion.div
             className="absolute inset-0 bg-red-500/20"
             animate={{ opacity: [0.2, 0.5, 0.2] }}
-            transition={{ duration: 0.5, repeat: Infinity }}
+            transition={{ duration: pulseAnimation.duration, repeat: pulseAnimation.repeat }}
+            style={{
+              willChange: 'opacity',
+              backfaceVisibility: 'hidden',
+            }}
           />
         )}
 
@@ -92,6 +133,10 @@ export const HPBar: React.FC<HPBarProps> = ({
             width: `${percentage}%`,
           }}
           transition={{ duration: 0.3, ease: 'easeOut' }}
+          style={{
+            willChange: 'width',
+            backfaceVisibility: 'hidden',
+          }}
         >
           {/* 光沢エフェクト */}
           <div className="absolute inset-0 bg-gradient-to-b from-white/30 to-transparent h-1/2" />
@@ -106,6 +151,10 @@ export const HPBar: React.FC<HPBarProps> = ({
               animate={{ opacity: 0 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.3 }}
+              style={{
+                willChange: 'opacity',
+                backfaceVisibility: 'hidden',
+              }}
             />
           )}
         </AnimatePresence>
@@ -119,6 +168,10 @@ export const HPBar: React.FC<HPBarProps> = ({
               animate={{ opacity: 0 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.3 }}
+              style={{
+                willChange: 'opacity',
+                backfaceVisibility: 'hidden',
+              }}
             />
           )}
         </AnimatePresence>
@@ -133,6 +186,10 @@ export const HPBar: React.FC<HPBarProps> = ({
             animate={{ y: -20, opacity: 0 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.5 }}
+            style={{
+              willChange: 'transform, opacity',
+              backfaceVisibility: 'hidden',
+            }}
           >
             -{damageAmount}
           </motion.div>
@@ -148,6 +205,10 @@ export const HPBar: React.FC<HPBarProps> = ({
             animate={{ y: -20, opacity: 0 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.5 }}
+            style={{
+              willChange: 'transform, opacity',
+              backfaceVisibility: 'hidden',
+            }}
           >
             +{healAmount}
           </motion.div>
@@ -160,6 +221,12 @@ export const HPBar: React.FC<HPBarProps> = ({
           className="mt-1 text-center"
           animate={{ opacity: [0.5, 1, 0.5] }}
           transition={{ duration: 0.5, repeat: Infinity }}
+          style={{
+            willChange: 'opacity',
+            backfaceVisibility: 'hidden',
+          }}
+          role="alert"
+          aria-live="assertive"
         >
           <span className="font-title text-xs text-red-500 tracking-wider">DANGER!</span>
         </motion.div>

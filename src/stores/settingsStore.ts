@@ -12,6 +12,9 @@ import { DEFAULT_SETTINGS } from '@/constants/config';
 // ===== ローマ字ガイドレベル =====
 type RomajiGuideLevel = 'full' | 'partial' | 'none';
 
+// ===== パーティクル品質 =====
+type ParticleQuality = 'auto' | 'high' | 'medium' | 'low';
+
 // ===== ストア型定義 =====
 interface SettingsStore {
   // === 音声設定 ===
@@ -23,10 +26,20 @@ interface SettingsStore {
   // === 表示設定 ===
   keyboardVisible: boolean;
   romajiGuideLevel: RomajiGuideLevel;
+  darkMode: boolean;
 
   // === ハプティック設定 ===
   hapticEnabled: boolean;
   hapticIntensity: number; // 0-100
+
+  // === パフォーマンス設定 ===
+  particleQuality: ParticleQuality;
+  reduceAnimations: boolean;
+
+  // === アクセシビリティ設定 ===
+  enableScreenReader: boolean;
+  enableCaptions: boolean;
+  enableHighContrast: boolean;
 
   // === アクション ===
   setSoundEnabled: (enabled: boolean) => void;
@@ -35,8 +48,14 @@ interface SettingsStore {
   setBgmVolume: (volume: number) => void;
   setKeyboardVisible: (visible: boolean) => void;
   setRomajiGuideLevel: (level: RomajiGuideLevel) => void;
+  setDarkMode: (darkMode: boolean) => void;
   setHapticEnabled: (enabled: boolean) => void;
   setHapticIntensity: (intensity: number) => void;
+  setParticleQuality: (quality: ParticleQuality) => void;
+  setReduceAnimations: (reduce: boolean) => void;
+  setEnableScreenReader: (enabled: boolean) => void;
+  setEnableCaptions: (enabled: boolean) => void;
+  setEnableHighContrast: (enabled: boolean) => void;
   resetSettings: () => void;
 }
 
@@ -62,10 +81,22 @@ export const useSettingsStore = create<SettingsStore>()(
 
       setRomajiGuideLevel: (level) => set({ romajiGuideLevel: level }),
 
+      setDarkMode: (darkMode) => set({ darkMode }),
+
       setHapticEnabled: (enabled) => set({ hapticEnabled: enabled }),
 
       setHapticIntensity: (intensity) =>
         set({ hapticIntensity: Math.max(0, Math.min(100, intensity)) }),
+
+      setParticleQuality: (quality) => set({ particleQuality: quality }),
+
+      setReduceAnimations: (reduce) => set({ reduceAnimations: reduce }),
+
+      setEnableScreenReader: (enabled) => set({ enableScreenReader: enabled }),
+
+      setEnableCaptions: (enabled) => set({ enableCaptions: enabled }),
+
+      setEnableHighContrast: (enabled) => set({ enableHighContrast: enabled }),
 
       resetSettings: () => set(DEFAULT_SETTINGS),
     }),

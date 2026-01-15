@@ -9,6 +9,7 @@
 import React, { useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { DESTRUCTION_CONFIGS, DestructionType } from '@/constants/gameJuice';
+import { isLowPowerDevice, getParticleLimit, prefersReducedMotion } from '@/utils/deviceUtils';
 
 interface CardDestructionProps {
   type: DestructionType;
@@ -18,9 +19,13 @@ interface CardDestructionProps {
 // ガラス割れ演出
 const ShatterEffect: React.FC<{ isActive: boolean }> = ({ isActive }) => {
   const config = DESTRUCTION_CONFIGS.shatter;
+  const lowPowerDevice = useMemo(() => isLowPowerDevice(), []);
+  const shouldReduceMotion = useMemo(() => prefersReducedMotion(), []);
 
   const fragments = useMemo(() => {
-    return Array.from({ length: config.fragments }, (_, i) => {
+    // motion-reduceまたは低性能デバイスではフラグメント数を削減（6 → 0または3）
+    const fragmentCount = shouldReduceMotion ? 0 : (lowPowerDevice ? Math.ceil(config.fragments / 2) : config.fragments);
+    return Array.from({ length: fragmentCount }, (_, i) => {
       const angle = (i / config.fragments) * Math.PI * 2;
       const distance = config.spread * (0.5 + Math.random() * 0.5);
       return {
@@ -44,6 +49,8 @@ const ShatterEffect: React.FC<{ isActive: boolean }> = ({ isActive }) => {
           className="absolute top-1/2 left-1/2 w-8 h-8 bg-gradient-to-br from-hunter-gold/60 to-hunter-gold/20 rounded"
           style={{
             clipPath: 'polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%)',
+            willChange: 'transform, opacity',
+            backfaceVisibility: 'hidden',
           }}
           initial={{
             x: '-50%',
@@ -72,7 +79,11 @@ const ShatterEffect: React.FC<{ isActive: boolean }> = ({ isActive }) => {
         initial={{ scale: 0, opacity: 1 }}
         animate={{ scale: 20, opacity: 0 }}
         transition={{ duration: 0.4, ease: 'easeOut' }}
-        style={{ filter: 'blur(10px)' }}
+        style={{
+          filter: 'blur(10px)',
+          willChange: 'transform, opacity',
+          backfaceVisibility: 'hidden',
+        }}
       />
     </>
   );
@@ -81,8 +92,10 @@ const ShatterEffect: React.FC<{ isActive: boolean }> = ({ isActive }) => {
 // 斬撃演出
 const SliceEffect: React.FC<{ isActive: boolean }> = ({ isActive }) => {
   const config = DESTRUCTION_CONFIGS.slice;
+  const shouldReduceMotion = useMemo(() => prefersReducedMotion(), []);
 
   if (!isActive) return null;
+  if (shouldReduceMotion) return null;  // motion-reduceでは斬撃演出を無効化
 
   return (
     <>
@@ -91,6 +104,8 @@ const SliceEffect: React.FC<{ isActive: boolean }> = ({ isActive }) => {
         className="absolute top-1/2 left-1/2 w-[200%] h-1 bg-gradient-to-r from-transparent via-cyan-400 to-transparent"
         style={{
           transformOrigin: 'center center',
+          willChange: 'transform, opacity',
+          backfaceVisibility: 'hidden',
         }}
         initial={{
           x: '-50%',
@@ -114,6 +129,10 @@ const SliceEffect: React.FC<{ isActive: boolean }> = ({ isActive }) => {
         initial={{ y: 0, opacity: 1 }}
         animate={{ y: -config.gap, opacity: 0 }}
         transition={{ duration: config.duration, delay: 0.1, ease: 'easeOut' }}
+        style={{
+          willChange: 'transform, opacity',
+          backfaceVisibility: 'hidden',
+        }}
       >
         <div className="absolute inset-0 bg-gradient-to-b from-hunter-gold/30 to-transparent" />
       </motion.div>
@@ -123,11 +142,15 @@ const SliceEffect: React.FC<{ isActive: boolean }> = ({ isActive }) => {
         initial={{ y: 0, opacity: 1 }}
         animate={{ y: config.gap, opacity: 0 }}
         transition={{ duration: config.duration, delay: 0.1, ease: 'easeOut' }}
+        style={{
+          willChange: 'transform, opacity',
+          backfaceVisibility: 'hidden',
+        }}
       >
         <div className="absolute inset-0 bg-gradient-to-t from-hunter-gold/30 to-transparent" />
       </motion.div>
-      {/* 電撃スパーク */}
-      {[...Array(5)].map((_, i) => (
+      {/* 電撃スパーク（低性能デバイスでは削減） */}
+      {[...Array(isLowPowerDevice() ? 2 : 5)].map((_, i) => (
         <motion.div
           key={i}
           className="absolute top-1/2 left-1/2 w-1 h-1 bg-cyan-300 rounded-full"
@@ -148,7 +171,11 @@ const SliceEffect: React.FC<{ isActive: boolean }> = ({ isActive }) => {
             delay: i * 0.02,
             ease: 'easeOut',
           }}
-          style={{ boxShadow: '0 0 8px 2px rgba(34, 211, 238, 0.8)' }}
+          style={{
+            boxShadow: '0 0 8px 2px rgba(34, 211, 238, 0.8)',
+            willChange: 'transform, opacity',
+            backfaceVisibility: 'hidden',
+          }}
         />
       ))}
     </>
@@ -158,9 +185,14 @@ const SliceEffect: React.FC<{ isActive: boolean }> = ({ isActive }) => {
 // 吹き飛び演出
 const ExplodeEffect: React.FC<{ isActive: boolean }> = ({ isActive }) => {
   const config = DESTRUCTION_CONFIGS.explode;
+  const lowPowerDevice = useMemo(() => isLowPowerDevice(), []);
+  const particleLimit = useMemo(() => getParticleLimit(), []);
+  const shouldReduceMotion = useMemo(() => prefersReducedMotion(), []);
 
   const particles = useMemo(() => {
-    return Array.from({ length: config.particles }, (_, i) => {
+    // motion-reduceまたは低性能デバイスではパーティクル数を制限（10 → 0または5）
+    const particleCount = shouldReduceMotion ? 0 : (lowPowerDevice ? Math.min(config.particles / 2, particleLimit) : config.particles);
+    return Array.from({ length: Math.ceil(particleCount) }, (_, i) => {
       const angle = (i / config.particles) * Math.PI * 2;
       const distance = config.spread * (0.6 + Math.random() * 0.4);
       return {
@@ -183,7 +215,11 @@ const ExplodeEffect: React.FC<{ isActive: boolean }> = ({ isActive }) => {
         initial={{ scale: 0, opacity: 1 }}
         animate={{ scale: [0, 15, 20], opacity: [1, 0.8, 0] }}
         transition={{ duration: 0.5, ease: 'easeOut' }}
-        style={{ filter: 'blur(20px)' }}
+        style={{
+          filter: 'blur(20px)',
+          willChange: 'transform, opacity',
+          backfaceVisibility: 'hidden',
+        }}
       />
       {/* パーティクル */}
       {particles.map((p) => (
@@ -193,6 +229,8 @@ const ExplodeEffect: React.FC<{ isActive: boolean }> = ({ isActive }) => {
           style={{
             width: p.size,
             height: p.size,
+            willChange: 'transform, opacity',
+            backfaceVisibility: 'hidden',
           }}
           initial={{
             x: '-50%',
@@ -223,6 +261,10 @@ const ExplodeEffect: React.FC<{ isActive: boolean }> = ({ isActive }) => {
           opacity: [1, 0.6, 0],
         }}
         transition={{ duration: 0.5, ease: 'easeOut' }}
+        style={{
+          willChange: 'width, height, opacity',
+          backfaceVisibility: 'hidden',
+        }}
       />
       {/* 二重衝撃波 */}
       <motion.div
@@ -234,6 +276,10 @@ const ExplodeEffect: React.FC<{ isActive: boolean }> = ({ isActive }) => {
           opacity: [1, 0.4, 0],
         }}
         transition={{ duration: 0.4, delay: 0.1, ease: 'easeOut' }}
+        style={{
+          willChange: 'width, height, opacity',
+          backfaceVisibility: 'hidden',
+        }}
       />
     </>
   );

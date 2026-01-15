@@ -6,6 +6,8 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useBossStore } from '@/stores/bossStore';
+import { useSettingsStore } from '@/stores/settingsStore';
+import { useSound } from '@/hooks/useSound';
 import { BossCharacter, BossHPBar, BossEffects, BossDialog } from '@/components/boss';
 import {
   calculateBossDamage,
@@ -39,6 +41,8 @@ interface BossScreenProps {
 export const BossScreen: React.FC<BossScreenProps> = ({ chapterId, onBattleComplete, onExit }) => {
   const store = useBossStore();
   const battle = store.currentBattle;
+  const { enableCaptions } = useSettingsStore();
+  const { playStartSound, playMissSound, playConfirmSound, playComboSound, playSuccessSound } = useSound();
 
   // ローカル状態
   const [showingEffect, setShowingEffect] = useState<{
@@ -49,6 +53,8 @@ export const BossScreen: React.FC<BossScreenProps> = ({ chapterId, onBattleCompl
   const [maxCombo, setMaxCombo] = useState(0);
   const [startTime] = useState(Date.now());
   const [gameActive, setGameActive] = useState(true);
+  const prevComboRef = useRef(0);
+  const gameStartedRef = useRef(false);
 
   // 敵攻撃タイマー用
   const attackTimerRef = useRef<NodeJS.Timeout | null>(null);
@@ -61,6 +67,10 @@ export const BossScreen: React.FC<BossScreenProps> = ({ chapterId, onBattleCompl
     // コンボ更新
     if (battle.comboCount > maxCombo) {
       setMaxCombo(battle.comboCount);
+      // コンボ5の倍数でサウンド
+      if (battle.comboCount > 0 && battle.comboCount % 5 === 0) {
+        playComboSound(battle.comboCount);
+      }
     }
 
     // フェーズ変化の検出
@@ -68,16 +78,18 @@ export const BossScreen: React.FC<BossScreenProps> = ({ chapterId, onBattleCompl
     if (newPhase !== battle.currentPhase) {
       setBossMessage(`フェーズ ${newPhase} へ進行！`);
     }
-  }, [battle?.bossHP, battle?.comboCount, maxCombo, battle?.currentPhase]);
+  }, [battle?.bossHP, battle?.comboCount, maxCombo, battle?.currentPhase, playComboSound]);
 
   // プレイヤーへのダメージ表示
   const handlePlayerTakeDamage = useCallback((damage: number) => {
     setShowingEffect({ type: 'damage', amount: damage });
+    // ダメージ音を再生
+    playMissSound();
     // ハプティックフィードバック（実装済みの場合）
     if (navigator.vibrate) {
       navigator.vibrate(100);
     }
-  }, []);
+  }, [playMissSound]);
 
   // 敵への攻撃ダメージ表示
   const handleBossTakeDamage = useCallback((damage: number) => {
@@ -87,7 +99,9 @@ export const BossScreen: React.FC<BossScreenProps> = ({ chapterId, onBattleCompl
     } else {
       setShowingEffect({ type: 'damage', amount: damage });
     }
-  }, []);
+    // ヒット音を再生（クリティカルでもそうでなくても）
+    playConfirmSound(0);
+  }, [playConfirmSound]);
 
   // コンボ達成時の表示
   const handleComboMilestone = useCallback(() => {
@@ -183,6 +197,9 @@ export const BossScreen: React.FC<BossScreenProps> = ({ chapterId, onBattleCompl
         battle.missCount
       );
 
+      // 勝利音を再生
+      playSuccessSound();
+
       setBossMessage(generateBossVictoryMessage(battle.currentBoss.name, rank));
 
       // 報酬生成（ここではプレースホルダー）
@@ -198,14 +215,20 @@ export const BossScreen: React.FC<BossScreenProps> = ({ chapterId, onBattleCompl
         rewards,
       });
     }
-  }, [battle?.playerHP, battle?.isDefeated, gameActive, startTime, chapterId, maxCombo, onBattleComplete]);
+  }, [battle?.playerHP, battle?.isDefeated, gameActive, startTime, chapterId, maxCombo, onBattleComplete, playSuccessSound]);
 
-  // 初回敵攻撃スケジュール
+  // 初回敵攻撃スケジュール＆ゲーム開始音
   useEffect(() => {
     if (!battle || !gameActive) return;
 
     const difficulty = ALL_BOSS_DIFFICULTIES[chapterId];
     if (!difficulty) return;
+
+    // ゲーム開始時のサウンド（最初の1回だけ）
+    if (!gameStartedRef.current) {
+      playStartSound();
+      gameStartedRef.current = true;
+    }
 
     // 最初の攻撃まで10秒待機
     if (attackTimerRef.current) clearTimeout(attackTimerRef.current);
@@ -217,7 +240,7 @@ export const BossScreen: React.FC<BossScreenProps> = ({ chapterId, onBattleCompl
     return () => {
       if (attackTimerRef.current) clearTimeout(attackTimerRef.current);
     };
-  }, [battle, gameActive, chapterId, executeEnemyAttack]);
+  }, [battle, gameActive, chapterId, executeEnemyAttack, playStartSound]);
 
   // クリーンアップ
   useEffect(() => {
@@ -341,6 +364,31 @@ export const BossScreen: React.FC<BossScreenProps> = ({ chapterId, onBattleCompl
           transition={{ duration: 0.3 }}
         >
           Phase {calculateBossPhase(battle.bossHP, battle.bossMaxHP, 4)}
+        </motion.div>
+      )}
+
+      {/* キャプション表示（アクセシビリティ） */}
+      {enableCaptions && showingEffect.type !== 'none' && (
+        <motion.div
+          className="absolute bottom-40 left-1/2 -translate-x-1/2 bg-black/80 border border-white/20 rounded px-4 py-2 z-30 max-w-sm"
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -10 }}
+          transition={{ duration: 0.2 }}
+        >
+          <p className="text-white text-xs text-center font-mono">
+            {showingEffect.type === 'damage' && '[ダメージ音]'}
+            {showingEffect.type === 'critical' && '[クリティカルヒット]'}
+            {showingEffect.type === 'attack' && '[敵の攻撃]'}
+            {showingEffect.type === 'heal' && '[回復]'}
+            {showingEffect.type === 'combo' && '[コンボ達成]'}
+          </p>
+          {showingEffect.amount && (
+            <p className="text-yellow-400 text-xs text-center mt-1 font-bold">
+              {showingEffect.type === 'damage' && `${showingEffect.amount} ダメージ`}
+              {showingEffect.type === 'heal' && `${showingEffect.amount} 回復`}
+            </p>
+          )}
         </motion.div>
       )}
 

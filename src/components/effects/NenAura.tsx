@@ -6,6 +6,7 @@
 import React, { useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { createNenAuraPulse } from '@/utils/animations';
+import { isLowPowerDevice, getParticleLimit, prefersReducedMotion } from '@/utils/deviceUtils';
 import {
   NEN_THRESHOLDS,
   NEN_AURA_COLORS,
@@ -19,15 +20,20 @@ interface NenAuraProps {
 
 export const NenAura: React.FC<NenAuraProps> = ({ combo, className = '' }) => {
   const pulseConfig = createNenAuraPulse(combo);
+  const lowPowerDevice = useMemo(() => isLowPowerDevice(), []);
+  const particleLimit = useMemo(() => getParticleLimit(), []);
+  const shouldReduceMotion = useMemo(() => prefersReducedMotion(), []);
 
   // パーティクルのランダム値をキャッシュ（マウント時に固定）
   const particleConfigs = useMemo(() => {
-    return Array.from({ length: NEN_AURA_CONFIG.PARTICLE_MAX_COUNT }, (_, i) => ({
+    // 低性能デバイスではパーティクル数を制限
+    const maxParticles = lowPowerDevice ? 0 : NEN_AURA_CONFIG.PARTICLE_MAX_COUNT;
+    return Array.from({ length: maxParticles }, (_, i) => ({
       left: `${10 + i * 8}%`,
       durationOffset: Math.random(),
       delay: Math.random() * 2,
     }));
-  }, []);
+  }, [lowPowerDevice]);
 
   // 念レベルに応じた色
   const getAuraColor = () => {
@@ -51,21 +57,29 @@ export const NenAura: React.FC<NenAuraProps> = ({ combo, className = '' }) => {
         className={`absolute bottom-0 left-0 right-0 bg-gradient-to-t ${getAuraColor()}`}
         animate={{ height: `${auraHeight}%` }}
         transition={{ duration: 0.3, ease: 'easeOut' }}
+        style={{
+          willChange: 'height, opacity',
+          backfaceVisibility: 'hidden',
+        }}
       />
 
       {/* 脈動するオーバーレイ */}
       <motion.div
         className="absolute inset-0 bg-gradient-to-t from-white/10 to-transparent"
         {...pulseConfig}
+        style={{
+          willChange: 'opacity',
+          backfaceVisibility: 'hidden',
+        }}
       />
 
-      {/* パーティクル効果（コンボ閾値以上） */}
-      {combo >= NEN_AURA_CONFIG.PARTICLE_THRESHOLD && (
+      {/* パーティクル効果（コンボ閾値以上、低性能デバイスでは無効、motion-reduceでも無効） */}
+      {combo >= NEN_AURA_CONFIG.PARTICLE_THRESHOLD && !lowPowerDevice && !shouldReduceMotion && particleConfigs.length > 0 && (
         <div className="absolute inset-0 overflow-hidden">
           {particleConfigs
             .slice(0, Math.min(
               Math.floor(combo / NEN_AURA_CONFIG.PARTICLE_DIVISOR),
-              NEN_AURA_CONFIG.PARTICLE_MAX_COUNT
+              particleLimit  // デバイスに応じた制限
             ))
             .map((config, i) => (
               <motion.div
@@ -85,6 +99,10 @@ export const NenAura: React.FC<NenAuraProps> = ({ combo, className = '' }) => {
                   repeat: Infinity,
                   delay: config.delay,
                   ease: 'easeOut',
+                }}
+                style={{
+                  willChange: 'bottom, opacity',
+                  backfaceVisibility: 'hidden',
                 }}
               />
             ))}

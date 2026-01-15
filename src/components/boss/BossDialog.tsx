@@ -24,6 +24,7 @@ export const BossDialog: React.FC<BossDialogProps> = ({
     if (message) {
       setCurrentMessage(message);
       setIsVisible(true);
+      // Auto-hide after duration (accounting for animation time)
       const timer = setTimeout(() => setIsVisible(false), duration);
       return () => clearTimeout(timer);
     }
@@ -71,7 +72,12 @@ export const BossDialog: React.FC<BossDialogProps> = ({
           initial={{ opacity: 0, y: 20, scale: 0.9 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
           exit={{ opacity: 0, y: -20, scale: 0.9 }}
-          transition={{ duration: 0.3 }}
+          transition={{ duration: 0.3, ease: 'easeInOut' }}
+          role="dialog"
+          aria-modal="true"
+          aria-label="Boss message"
+          aria-live="polite"
+          aria-atomic="true"
         >
           <div
             className={`${getBackgroundColor()} ${getTextColor()} px-8 py-4 rounded-lg border-3 ${getBorderColor()} max-w-2xl shadow-2xl`}
@@ -85,8 +91,10 @@ export const BossDialog: React.FC<BossDialogProps> = ({
             {priority === 'high' && (
               <motion.div
                 className="absolute -top-3 left-1/2 -translate-x-1/2 bg-red-600 px-3 py-1 rounded-full text-xs font-bold text-white"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.8 }}
+                transition={{ duration: 0.2, ease: 'easeOut' }}
               >
                 ⚠️ 重要
               </motion.div>
@@ -97,7 +105,7 @@ export const BossDialog: React.FC<BossDialogProps> = ({
               className={`absolute -inset-1 rounded-lg border-2 ${getBorderColor()} pointer-events-none`}
               initial={{ opacity: 0 }}
               animate={{ opacity: [0, 0.5, 0] }}
-              transition={{ duration: 1.5, repeat: Infinity }}
+              transition={{ duration: 1.5, repeat: Infinity, ease: 'easeInOut', times: [0, 0.5, 1] }}
             />
           </div>
 

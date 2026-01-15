@@ -11,6 +11,7 @@ interface BossCharacterProps {
   boss: BossCharacter;
   isAttacking: boolean;
   isDamaged: boolean;
+  isCritical?: boolean;
   phase?: number;
   scale?: number;
 }
@@ -19,6 +20,7 @@ export const BossCharacter: React.FC<BossCharacterProps> = ({
   boss,
   isAttacking,
   isDamaged,
+  isCritical = false,
   phase = 1,
   scale = 1,
 }) => {
@@ -27,7 +29,8 @@ export const BossCharacter: React.FC<BossCharacterProps> = ({
       idle: {
         x: 0,
         y: 0,
-        transition: { duration: 0.3 },
+        filter: 'brightness(1)',
+        transition: { duration: 0.3, ease: 'easeInOut' },
       },
       attacking: {
         x: [0, -20, 0],
@@ -38,11 +41,19 @@ export const BossCharacter: React.FC<BossCharacterProps> = ({
         x: [-15, 15, -15, 15, 0],
         transition: { duration: 0.4, ease: 'easeInOut' },
       },
+      critical: {
+        // クリティカル時: 明るくなって揺れる
+        filter: ['brightness(1.2)', 'brightness(1.4)', 'brightness(1.2)', 'brightness(1)'],
+        x: [-25, 25, -25, 0],
+        y: [0, -15, 0],
+        transition: { duration: 0.6, ease: 'easeInOut' },
+      },
     }),
     []
   );
 
   const getAnimationState = () => {
+    if (isCritical) return 'critical';
     if (isDamaged) return 'damaged';
     if (isAttacking) return 'attacking';
     return 'idle';
@@ -85,23 +96,41 @@ export const BossCharacter: React.FC<BossCharacterProps> = ({
           </motion.div>
         )}
 
+        {/* クリティカルエフェクト（最優先） */}
+        {isCritical && (
+          <>
+            <motion.div
+              className="absolute inset-0 bg-gradient-to-b from-yellow-300 via-red-500 to-transparent rounded-lg"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: [0, 0.8, 0.6, 0] }}
+              transition={{ duration: 0.6, ease: 'easeOut' }}
+            />
+            <motion.div
+              className="absolute inset-0 border-4 border-yellow-300 rounded-lg"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: [0, 1, 0.5, 0] }}
+              transition={{ duration: 0.6, ease: 'easeOut' }}
+            />
+          </>
+        )}
+
         {/* ダメージエフェクト */}
-        {isDamaged && (
+        {isDamaged && !isCritical && (
           <motion.div
             className="absolute inset-0 bg-red-600 rounded-lg"
             initial={{ opacity: 0.5 }}
             animate={{ opacity: [0.5, 0.2, 0] }}
-            transition={{ duration: 0.3 }}
+            transition={{ duration: 0.3, ease: 'easeOut' }}
           />
         )}
 
-        {/* 攻撃エフェクト */}
-        {isAttacking && (
+        {/* 攻撃エフェクト （ダメージやクリティカルが優先） */}
+        {isAttacking && !isDamaged && !isCritical && (
           <motion.div
             className="absolute inset-0 bg-gradient-to-t from-yellow-400 to-transparent rounded-lg"
             initial={{ opacity: 0 }}
             animate={{ opacity: [0, 0.3, 0] }}
-            transition={{ duration: 0.5 }}
+            transition={{ duration: 0.5, ease: 'easeInOut' }}
           />
         )}
       </motion.div>
