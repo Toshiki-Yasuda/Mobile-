@@ -9,6 +9,7 @@ import { useGameStore } from '@/stores/gameStore';
 import { useProgressStore } from '@/stores/progressStore';
 import { useButtonClick, useMenuSelect } from '@/utils/soundUtils';
 import { BackgroundEffect } from '@/components/common/BackgroundEffect';
+import { preloadLateChapters } from '@/data/words';
 
 const CHAPTERS = [
   { id: 1, kanji: 'ハンター試験編', romaji: 'HUNTER EXAM', description: '念の基礎・ホームポジション', stages: 6 },
@@ -41,6 +42,13 @@ export const LevelSelectScreen: React.FC = () => {
       navigateTo('stageSelect');
     }
   }, [isChapterUnlocked, selectChapter, navigateTo]);
+
+  // chapter5-7の事前ロード
+  useEffect(() => {
+    preloadLateChapters().catch(err => {
+      console.error('Failed to preload late chapters:', err);
+    });
+  }, []);
 
   // キーボード操作
   useEffect(() => {
