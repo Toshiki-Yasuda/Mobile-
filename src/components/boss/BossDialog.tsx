@@ -73,6 +73,11 @@ export const BossDialog: React.FC<BossDialogProps> = ({
           animate={{ opacity: 1, y: 0, scale: 1 }}
           exit={{ opacity: 0, y: -20, scale: 0.9 }}
           transition={{ duration: 0.3, ease: 'easeInOut' }}
+          role="dialog"
+          aria-modal="true"
+          aria-label="Boss message"
+          aria-live="polite"
+          aria-atomic="true"
         >
           <div
             className={`${getBackgroundColor()} ${getTextColor()} px-8 py-4 rounded-lg border-3 ${getBorderColor()} max-w-2xl shadow-2xl`}
