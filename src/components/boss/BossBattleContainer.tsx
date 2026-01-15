@@ -7,7 +7,7 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useBossStore } from '@/stores/bossStore';
 import { useBossBattle } from '@/hooks/useBossBattle';
-import { BossScreen } from './BossScreen';
+import { BossScreen } from '@/components/screens/BossScreen';
 import { generateBossRewards } from '@/constants/bossConfigs';
 import type { BossReward } from '@/types/boss';
 

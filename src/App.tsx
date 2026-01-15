@@ -1,23 +1,28 @@
 import { useEffect, useRef } from 'react';
 import { useGameStore } from './stores/gameStore';
+import { useProgressStore } from './stores/progressStore';
 import { PasswordScreen } from './components/screens/PasswordScreen';
 import { TitleScreen } from './components/screens/TitleScreen';
 import { LevelSelectScreen } from './components/screens/LevelSelectScreen';
 import { StageSelectScreen } from './components/screens/StageSelectScreen';
 import { TypingScreen } from './components/screens/TypingScreen';
 import { ResultScreen } from './components/screens/ResultScreen';
+import { BossBattleContainer } from './components/boss/BossBattleContainer';
+import { BossResultScreen } from './components/screens/BossResultScreen';
 import { AdminScreen } from './components/screens/AdminScreen';
 import { SettingsScreen } from './components/screens/SettingsScreen';
 import { StatisticsScreen } from './components/screens/StatisticsScreen';
 import { Loading } from './components/common/Loading';
 import { ErrorBoundary } from './components/common/ErrorBoundary';
+import { getWordsForStage } from './data/words';
 
 /**
  * メインアプリケーションコンポーネント
  * 画面遷移の管理とグローバル状態の初期化を行う
  */
 function App() {
-  const { currentScreen, loading, error, clearError } = useGameStore();
+  const { currentScreen, loading, error, clearError, selectedChapter } = useGameStore();
+  const { markBossDefeated } = useProgressStore();
   const audioInitializedRef = useRef(false);
 
   // AudioContextを初期化するためのクリックハンドラー（一度だけ）
@@ -87,6 +92,19 @@ function App() {
     );
   }
 
+  // ボス戦完了ハンドラー
+  const handleBossBattleComplete = (result: {
+    isVictory: boolean;
+    rank: 'S+' | 'S' | 'A+' | 'A' | 'B+' | 'B' | 'C' | 'D';
+    rewards: any[];
+  }) => {
+    if (result.isVictory) {
+      // ボス撃破を記録
+      const bossId = `boss_chapter${selectedChapter}`;
+      markBossDefeated(bossId);
+    }
+  };
+
   // 画面遷移
   const renderScreen = () => {
     switch (currentScreen) {
@@ -102,6 +120,23 @@ function App() {
         return <TypingScreen />;
       case 'result':
         return <ResultScreen />;
+      case 'bossStage': {
+        const stageId = `${selectedChapter}-6`;
+        const words = getWordsForStage(stageId);
+        return (
+          <BossBattleContainer
+            chapterId={selectedChapter}
+            words={words}
+            onBattleComplete={handleBossBattleComplete}
+            onExit={() => {
+              useGameStore.getState().navigateTo('stageSelect');
+            }}
+          />
+        );
+      }
+      case 'bossResult':
+        // TODO: Implement BossResultScreen navigation
+        return <BossResultScreen isVictory={true} rank="A" bossName="Boss" correctCount={50} missCount={5} maxCombo={10} elapsedTime={120} rewards={[]} onRetry={() => {}} onContinue={() => {}} />;
       case 'settings':
         return <SettingsScreen />;
       case 'statistics':

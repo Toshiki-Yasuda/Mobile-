@@ -10,6 +10,8 @@ export type Screen =
   | 'stageSelect'
   | 'typing'
   | 'result'
+  | 'bossStage'
+  | 'bossResult'
   | 'settings'
   | 'statistics'
   | 'timeAttack'
