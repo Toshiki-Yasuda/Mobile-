@@ -12,6 +12,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useGameStore } from '@/stores/gameStore';
 import { useProgressStore } from '@/stores/progressStore';
 import { useSound } from '@/hooks/useSound';
+import { useHaptics } from '@/hooks/useHaptics';
 import { BackgroundEffect } from '@/components/common/BackgroundEffect';
 import { GoldParticles, NewRecordParticles, NewRecordBanner } from './ParticleEffects';
 import { StatCard } from './StatCard';
@@ -23,6 +24,7 @@ export const ResultScreen: React.FC = () => {
   const { session, navigateTo, resetSession, selectedChapter, selectedStage } = useGameStore();
   const { saveStageResult, updateStatistics, updateStreak, clearedStages, unlockChapter } = useProgressStore();
   const { playSuccessSound, playResultSound, playAchievementSound } = useSound();
+  const { success, comboMilestone } = useHaptics();
 
   const [previousResult, setPreviousResult] = useState<StageResult | null>(null);
   const [showNewRecord, setShowNewRecord] = useState(false);
@@ -48,19 +50,23 @@ export const ResultScreen: React.FC = () => {
     }
   }, [hasInitialized, stageId, clearedStages]);
 
-  // 結果保存・サウンド
+  // 結果保存・サウンド・ハプティック
   useEffect(() => {
     if (!result || !stageId || !hasInitialized) return;
 
     setTimeout(() => {
       playSuccessSound();
-      setTimeout(() => playResultSound(result.rank), 400);
+      success(); // ハプティック: 成功
+      setTimeout(() => {
+        playResultSound(result.rank);
+      }, 400);
     }, 300);
 
     if (isNewRecord) {
       setTimeout(() => {
         setShowNewRecord(true);
         playAchievementSound(result.rank);
+        comboMilestone(result.score); // ハプティック: 新記録達成時の振動
       }, 800);
     }
 
