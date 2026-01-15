@@ -9,6 +9,7 @@
 import React, { useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { DESTRUCTION_CONFIGS, DestructionType } from '@/constants/gameJuice';
+import { isLowPowerDevice, getParticleLimit } from '@/utils/deviceUtils';
 
 interface CardDestructionProps {
   type: DestructionType;
@@ -18,9 +19,12 @@ interface CardDestructionProps {
 // ガラス割れ演出
 const ShatterEffect: React.FC<{ isActive: boolean }> = ({ isActive }) => {
   const config = DESTRUCTION_CONFIGS.shatter;
+  const lowPowerDevice = useMemo(() => isLowPowerDevice(), []);
 
   const fragments = useMemo(() => {
-    return Array.from({ length: config.fragments }, (_, i) => {
+    // 低性能デバイスではフラグメント数を削減（6 → 3）
+    const fragmentCount = lowPowerDevice ? Math.ceil(config.fragments / 2) : config.fragments;
+    return Array.from({ length: fragmentCount }, (_, i) => {
       const angle = (i / config.fragments) * Math.PI * 2;
       const distance = config.spread * (0.5 + Math.random() * 0.5);
       return {
@@ -126,8 +130,8 @@ const SliceEffect: React.FC<{ isActive: boolean }> = ({ isActive }) => {
       >
         <div className="absolute inset-0 bg-gradient-to-t from-hunter-gold/30 to-transparent" />
       </motion.div>
-      {/* 電撃スパーク */}
-      {[...Array(5)].map((_, i) => (
+      {/* 電撃スパーク（低性能デバイスでは削減） */}
+      {[...Array(isLowPowerDevice() ? 2 : 5)].map((_, i) => (
         <motion.div
           key={i}
           className="absolute top-1/2 left-1/2 w-1 h-1 bg-cyan-300 rounded-full"
@@ -158,9 +162,13 @@ const SliceEffect: React.FC<{ isActive: boolean }> = ({ isActive }) => {
 // 吹き飛び演出
 const ExplodeEffect: React.FC<{ isActive: boolean }> = ({ isActive }) => {
   const config = DESTRUCTION_CONFIGS.explode;
+  const lowPowerDevice = useMemo(() => isLowPowerDevice(), []);
+  const particleLimit = useMemo(() => getParticleLimit(), []);
 
   const particles = useMemo(() => {
-    return Array.from({ length: config.particles }, (_, i) => {
+    // 低性能デバイスではパーティクル数を制限（10 → 5）
+    const particleCount = lowPowerDevice ? Math.min(config.particles / 2, particleLimit) : config.particles;
+    return Array.from({ length: Math.ceil(particleCount) }, (_, i) => {
       const angle = (i / config.particles) * Math.PI * 2;
       const distance = config.spread * (0.6 + Math.random() * 0.4);
       return {

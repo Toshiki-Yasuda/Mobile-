@@ -3,10 +3,11 @@
  * ダメージ/回復のアニメーション付き + ハプティックフィードバック
  */
 
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { HP_CONFIG } from '@/constants/gameJuice';
 import { useHaptics } from '@/hooks/useHaptics';
+import { isLowPowerDevice } from '@/utils/deviceUtils';
 
 interface HPBarProps {
   currentHP: number;
@@ -23,6 +24,13 @@ export const HPBar: React.FC<HPBarProps> = ({
   const isCritical = currentHP <= HP_CONFIG.criticalThreshold;
   const prevHPRef = useRef(currentHP);
   const { damage, critical } = useHaptics();
+  const lowPowerDevice = useMemo(() => isLowPowerDevice(), []);
+
+  // パフォーマンス最適化：低性能デバイスではパルスアニメーションを無効化
+  const pulseAnimation = useMemo(() => ({
+    duration: lowPowerDevice ? 0 : 1.2,  // 低性能デバイスでは無効
+    repeat: lowPowerDevice ? 0 : Infinity,
+  }), [lowPowerDevice]);
 
   // ダメージ/回復エフェクト
   const [showDamage, setShowDamage] = useState(false);
@@ -75,12 +83,12 @@ export const HPBar: React.FC<HPBarProps> = ({
 
       {/* HPバー本体 */}
       <div className="relative h-3 bg-hunter-dark-light rounded-full overflow-hidden border border-hunter-gold/20">
-        {/* 背景グロー（危険時） */}
-        {isCritical && (
+        {/* 背景グロー（危険時、低性能デバイスでは無効） */}
+        {isCritical && !lowPowerDevice && (
           <motion.div
             className="absolute inset-0 bg-red-500/20"
             animate={{ opacity: [0.2, 0.5, 0.2] }}
-            transition={{ duration: 0.5, repeat: Infinity }}
+            transition={{ duration: pulseAnimation.duration, repeat: pulseAnimation.repeat }}
           />
         )}
 
