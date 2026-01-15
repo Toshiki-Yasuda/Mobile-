@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useGameStore } from './stores/gameStore';
 import { useProgressStore } from './stores/progressStore';
+import { useTheme } from './hooks/useTheme';
 import { PasswordScreen } from './components/screens/PasswordScreen';
 import { TitleScreen } from './components/screens/TitleScreen';
 import { LevelSelectScreen } from './components/screens/LevelSelectScreen';
@@ -22,6 +23,9 @@ import { ALL_BOSS_CHARACTERS } from './constants/bossConfigs';
  * 画面遷移の管理とグローバル状態の初期化を行う
  */
 function App() {
+  // Theme initialization
+  useTheme();
+
   const { currentScreen, loading, error, clearError, selectedChapter, navigateTo } = useGameStore();
   const { markBossDefeated, updateStatistics, unlockChapter } = useProgressStore();
   const audioInitializedRef = useRef(false);

@@ -10,9 +10,15 @@
     -moz-osx-font-smoothing: grayscale;
   }
 
+  /* ダークモード（デフォルト） */
   body {
     @apply bg-hunter-dark text-white;
     overflow-x: hidden;
+  }
+
+  /* ライトモード */
+  html.light-mode body {
+    @apply bg-white text-gray-900;
   }
 
   /* フォーカス時のアウトライン */
@@ -20,9 +26,14 @@
     @apply outline-2 outline-offset-2 outline-hunter-gold;
   }
 
-  /* 選択時のスタイル */
+  /* 選択時のスタイル（ダークモード） */
   ::selection {
     @apply bg-hunter-gold/30 text-white;
+  }
+
+  /* 選択時のスタイル（ライトモード） */
+  html.light-mode ::selection {
+    @apply bg-hunter-gold/20 text-gray-900;
   }
 }
 
