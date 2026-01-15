@@ -48,6 +48,8 @@ const ShatterEffect: React.FC<{ isActive: boolean }> = ({ isActive }) => {
           className="absolute top-1/2 left-1/2 w-8 h-8 bg-gradient-to-br from-hunter-gold/60 to-hunter-gold/20 rounded"
           style={{
             clipPath: 'polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%)',
+            willChange: 'transform, opacity',
+            backfaceVisibility: 'hidden',
           }}
           initial={{
             x: '-50%',
@@ -76,7 +78,11 @@ const ShatterEffect: React.FC<{ isActive: boolean }> = ({ isActive }) => {
         initial={{ scale: 0, opacity: 1 }}
         animate={{ scale: 20, opacity: 0 }}
         transition={{ duration: 0.4, ease: 'easeOut' }}
-        style={{ filter: 'blur(10px)' }}
+        style={{
+          filter: 'blur(10px)',
+          willChange: 'transform, opacity',
+          backfaceVisibility: 'hidden',
+        }}
       />
     </>
   );
@@ -95,6 +101,8 @@ const SliceEffect: React.FC<{ isActive: boolean }> = ({ isActive }) => {
         className="absolute top-1/2 left-1/2 w-[200%] h-1 bg-gradient-to-r from-transparent via-cyan-400 to-transparent"
         style={{
           transformOrigin: 'center center',
+          willChange: 'transform, opacity',
+          backfaceVisibility: 'hidden',
         }}
         initial={{
           x: '-50%',
@@ -118,6 +126,10 @@ const SliceEffect: React.FC<{ isActive: boolean }> = ({ isActive }) => {
         initial={{ y: 0, opacity: 1 }}
         animate={{ y: -config.gap, opacity: 0 }}
         transition={{ duration: config.duration, delay: 0.1, ease: 'easeOut' }}
+        style={{
+          willChange: 'transform, opacity',
+          backfaceVisibility: 'hidden',
+        }}
       >
         <div className="absolute inset-0 bg-gradient-to-b from-hunter-gold/30 to-transparent" />
       </motion.div>
@@ -127,6 +139,10 @@ const SliceEffect: React.FC<{ isActive: boolean }> = ({ isActive }) => {
         initial={{ y: 0, opacity: 1 }}
         animate={{ y: config.gap, opacity: 0 }}
         transition={{ duration: config.duration, delay: 0.1, ease: 'easeOut' }}
+        style={{
+          willChange: 'transform, opacity',
+          backfaceVisibility: 'hidden',
+        }}
       >
         <div className="absolute inset-0 bg-gradient-to-t from-hunter-gold/30 to-transparent" />
       </motion.div>
@@ -152,7 +168,11 @@ const SliceEffect: React.FC<{ isActive: boolean }> = ({ isActive }) => {
             delay: i * 0.02,
             ease: 'easeOut',
           }}
-          style={{ boxShadow: '0 0 8px 2px rgba(34, 211, 238, 0.8)' }}
+          style={{
+            boxShadow: '0 0 8px 2px rgba(34, 211, 238, 0.8)',
+            willChange: 'transform, opacity',
+            backfaceVisibility: 'hidden',
+          }}
         />
       ))}
     </>
@@ -191,7 +211,11 @@ const ExplodeEffect: React.FC<{ isActive: boolean }> = ({ isActive }) => {
         initial={{ scale: 0, opacity: 1 }}
         animate={{ scale: [0, 15, 20], opacity: [1, 0.8, 0] }}
         transition={{ duration: 0.5, ease: 'easeOut' }}
-        style={{ filter: 'blur(20px)' }}
+        style={{
+          filter: 'blur(20px)',
+          willChange: 'transform, opacity',
+          backfaceVisibility: 'hidden',
+        }}
       />
       {/* パーティクル */}
       {particles.map((p) => (
@@ -201,6 +225,8 @@ const ExplodeEffect: React.FC<{ isActive: boolean }> = ({ isActive }) => {
           style={{
             width: p.size,
             height: p.size,
+            willChange: 'transform, opacity',
+            backfaceVisibility: 'hidden',
           }}
           initial={{
             x: '-50%',
@@ -231,6 +257,10 @@ const ExplodeEffect: React.FC<{ isActive: boolean }> = ({ isActive }) => {
           opacity: [1, 0.6, 0],
         }}
         transition={{ duration: 0.5, ease: 'easeOut' }}
+        style={{
+          willChange: 'width, height, opacity',
+          backfaceVisibility: 'hidden',
+        }}
       />
       {/* 二重衝撃波 */}
       <motion.div
@@ -242,6 +272,10 @@ const ExplodeEffect: React.FC<{ isActive: boolean }> = ({ isActive }) => {
           opacity: [1, 0.4, 0],
         }}
         transition={{ duration: 0.4, delay: 0.1, ease: 'easeOut' }}
+        style={{
+          willChange: 'width, height, opacity',
+          backfaceVisibility: 'hidden',
+        }}
       />
     </>
   );

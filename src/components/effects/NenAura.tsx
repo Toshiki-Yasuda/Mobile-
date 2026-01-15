@@ -56,12 +56,20 @@ export const NenAura: React.FC<NenAuraProps> = ({ combo, className = '' }) => {
         className={`absolute bottom-0 left-0 right-0 bg-gradient-to-t ${getAuraColor()}`}
         animate={{ height: `${auraHeight}%` }}
         transition={{ duration: 0.3, ease: 'easeOut' }}
+        style={{
+          willChange: 'height, opacity',
+          backfaceVisibility: 'hidden',
+        }}
       />
 
       {/* 脈動するオーバーレイ */}
       <motion.div
         className="absolute inset-0 bg-gradient-to-t from-white/10 to-transparent"
         {...pulseConfig}
+        style={{
+          willChange: 'opacity',
+          backfaceVisibility: 'hidden',
+        }}
       />
 
       {/* パーティクル効果（コンボ閾値以上、低性能デバイスでは無効） */}
@@ -90,6 +98,10 @@ export const NenAura: React.FC<NenAuraProps> = ({ combo, className = '' }) => {
                   repeat: Infinity,
                   delay: config.delay,
                   ease: 'easeOut',
+                }}
+                style={{
+                  willChange: 'bottom, opacity',
+                  backfaceVisibility: 'hidden',
                 }}
               />
             ))}

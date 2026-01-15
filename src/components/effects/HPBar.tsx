@@ -89,6 +89,10 @@ export const HPBar: React.FC<HPBarProps> = ({
             className="absolute inset-0 bg-red-500/20"
             animate={{ opacity: [0.2, 0.5, 0.2] }}
             transition={{ duration: pulseAnimation.duration, repeat: pulseAnimation.repeat }}
+            style={{
+              willChange: 'opacity',
+              backfaceVisibility: 'hidden',
+            }}
           />
         )}
 
@@ -100,6 +104,10 @@ export const HPBar: React.FC<HPBarProps> = ({
             width: `${percentage}%`,
           }}
           transition={{ duration: 0.3, ease: 'easeOut' }}
+          style={{
+            willChange: 'width',
+            backfaceVisibility: 'hidden',
+          }}
         >
           {/* 光沢エフェクト */}
           <div className="absolute inset-0 bg-gradient-to-b from-white/30 to-transparent h-1/2" />
@@ -114,6 +122,10 @@ export const HPBar: React.FC<HPBarProps> = ({
               animate={{ opacity: 0 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.3 }}
+              style={{
+                willChange: 'opacity',
+                backfaceVisibility: 'hidden',
+              }}
             />
           )}
         </AnimatePresence>
@@ -127,6 +139,10 @@ export const HPBar: React.FC<HPBarProps> = ({
               animate={{ opacity: 0 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.3 }}
+              style={{
+                willChange: 'opacity',
+                backfaceVisibility: 'hidden',
+              }}
             />
           )}
         </AnimatePresence>
@@ -141,6 +157,10 @@ export const HPBar: React.FC<HPBarProps> = ({
             animate={{ y: -20, opacity: 0 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.5 }}
+            style={{
+              willChange: 'transform, opacity',
+              backfaceVisibility: 'hidden',
+            }}
           >
             -{damageAmount}
           </motion.div>
@@ -156,6 +176,10 @@ export const HPBar: React.FC<HPBarProps> = ({
             animate={{ y: -20, opacity: 0 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.5 }}
+            style={{
+              willChange: 'transform, opacity',
+              backfaceVisibility: 'hidden',
+            }}
           >
             +{healAmount}
           </motion.div>
@@ -168,6 +192,10 @@ export const HPBar: React.FC<HPBarProps> = ({
           className="mt-1 text-center"
           animate={{ opacity: [0.5, 1, 0.5] }}
           transition={{ duration: 0.5, repeat: Infinity }}
+          style={{
+            willChange: 'opacity',
+            backfaceVisibility: 'hidden',
+          }}
         >
           <span className="font-title text-xs text-red-500 tracking-wider">DANGER!</span>
         </motion.div>

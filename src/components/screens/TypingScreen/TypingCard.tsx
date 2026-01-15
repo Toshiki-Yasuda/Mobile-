@@ -204,13 +204,21 @@ export const TypingCard: React.FC<TypingCardProps> = ({
               animate={{ opacity: [0, 1, 0] }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.6, times: [0, 0.1, 1] }}
+              style={{
+                willChange: 'opacity',
+                backfaceVisibility: 'hidden',
+              }}
             >
               <motion.div
                 className="w-4 h-4 bg-hunter-gold rounded-full"
                 initial={{ scale: 0 }}
                 animate={{ scale: [0, 30, 40] }}
                 transition={{ duration: 0.6, ease: 'easeOut' }}
-                style={{ filter: 'blur(40px)' }}
+                style={{
+                  filter: 'blur(40px)',
+                  willChange: 'transform',
+                  backfaceVisibility: 'hidden',
+                }}
               />
             </motion.div>
 
@@ -221,6 +229,8 @@ export const TypingCard: React.FC<TypingCardProps> = ({
                 className="absolute top-1/2 left-1/2 w-full h-0.5 bg-gradient-to-r from-transparent via-hunter-gold to-transparent pointer-events-none z-20"
                 style={{
                   transformOrigin: 'center center',
+                  willChange: 'transform, opacity',
+                  backfaceVisibility: 'hidden',
                 }}
                 initial={{ rotate: i * (360 / rayIndices.length), opacity: 0, scaleX: 0 }}
                 animate={{
@@ -253,6 +263,10 @@ export const TypingCard: React.FC<TypingCardProps> = ({
                   duration: 0.5 + config.durationOffset,
                   ease: 'easeOut',
                 }}
+                style={{
+                  willChange: 'transform, opacity',
+                  backfaceVisibility: 'hidden',
+                }}
               />
             ))}
 
@@ -260,15 +274,19 @@ export const TypingCard: React.FC<TypingCardProps> = ({
             <motion.div
               className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 border-2 border-hunter-gold rounded-full pointer-events-none z-20"
               initial={{ width: 0, height: 0, opacity: 1 }}
-              animate={{ 
+              animate={{
                 width: [0, 300, 400],
                 height: [0, 300, 400],
                 opacity: [1, 0.5, 0],
               }}
               exit={{ opacity: 0 }}
-              transition={{ 
+              transition={{
                 duration: 0.5,
                 ease: 'easeOut',
+              }}
+              style={{
+                willChange: 'width, height, opacity',
+                backfaceVisibility: 'hidden',
               }}
             />
 
@@ -277,12 +295,16 @@ export const TypingCard: React.FC<TypingCardProps> = ({
               <motion.div
                 className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none z-30"
                 initial={{ scale: 0, opacity: 0 }}
-                animate={{ 
+                animate={{
                   scale: [0, 1.2, 1],
                   opacity: [0, 1, 0],
                 }}
                 exit={{ opacity: 0 }}
                 transition={{ duration: 0.6, ease: 'easeOut' }}
+                style={{
+                  willChange: 'transform, opacity',
+                  backfaceVisibility: 'hidden',
+                }}
               >
                 <span className="font-title text-4xl font-bold text-hunter-gold drop-shadow-lg">
                   PERFECT!
@@ -295,20 +317,28 @@ export const TypingCard: React.FC<TypingCardProps> = ({
 
       <div className="relative">
         {/* カード背景 */}
-        <motion.div 
+        <motion.div
           className="absolute inset-0 bg-gradient-to-br from-hunter-gold/5 to-transparent rounded-lg"
           animate={showExplosion ? {
             backgroundColor: ['rgba(212,175,55,0.05)', 'rgba(212,175,55,0.2)', 'rgba(212,175,55,0.05)'],
           } : {}}
           transition={{ duration: 0.3 }}
+          style={{
+            willChange: showExplosion ? 'background-color, opacity' : 'auto',
+            backfaceVisibility: 'hidden',
+          }}
         />
-        <motion.div 
+        <motion.div
           className="absolute inset-0 border border-hunter-gold/20 rounded-lg"
           animate={showExplosion ? {
             borderColor: ['rgba(212,175,55,0.2)', 'rgba(212,175,55,0.8)', 'rgba(212,175,55,0.2)'],
             boxShadow: ['0 0 0 rgba(212,175,55,0)', '0 0 30px rgba(212,175,55,0.5)', '0 0 0 rgba(212,175,55,0)'],
           } : {}}
           transition={{ duration: 0.3 }}
+          style={{
+            willChange: showExplosion ? 'border-color, box-shadow' : 'auto',
+            backfaceVisibility: 'hidden',
+          }}
         />
 
         {/* コンテンツ */}
