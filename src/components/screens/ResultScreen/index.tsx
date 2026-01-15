@@ -1,214 +1,24 @@
 /**
  * 結果画面コンポーネント
- * クールデザイン + ハイスコア演出
+ *
+ * サブコンポーネント:
+ * - ParticleEffects: ゴールド・新記録パーティクル
+ * - StatCard: 統計情報カード
+ * - useResultCalculation: 結果計算ロジック
  */
 
-import React, { useMemo, useEffect, useCallback, useState } from 'react';
+import React, { useEffect, useCallback, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useGameStore } from '@/stores/gameStore';
 import { useProgressStore } from '@/stores/progressStore';
 import { useSound } from '@/hooks/useSound';
 import { BackgroundEffect } from '@/components/common/BackgroundEffect';
-import { chapter1Stages, chapter2Stages } from '@/data/words';
-import type { Rank } from '@/types/game';
+import { GoldParticles, NewRecordParticles, NewRecordBanner } from './ParticleEffects';
+import { StatCard } from './StatCard';
+import { useResultCalculation } from './useResultCalculation';
+import { RANK_CONFIGS, CHAPTER_STAGE_COUNTS } from './resultConstants';
 import type { StageResult } from '@/types/progress';
 
-// ===== 型定義 =====
-interface RankConfig {
-  borderColor: string;
-  bgColor: string;
-  textColor: string;
-  glowColor: string;
-  message: string;
-  subMessage: string;
-}
-
-interface ScoreDiff {
-  score: number;
-  wpm: number;
-  accuracy: number;
-}
-
-interface StatCardProps {
-  label: string;
-  value: string;
-  highlight?: boolean;
-  diff?: number | null;
-  diffSuffix?: string;
-}
-
-// ===== 定数 =====
-const CHAPTER_STAGE_COUNTS: Record<number, number> = {
-  1: Object.keys(chapter1Stages).length,
-  2: Object.keys(chapter2Stages).length,
-  3: 6, 4: 6, 5: 6, 6: 6,
-};
-
-const RANK_CONFIGS: Record<Rank, RankConfig> = {
-  S: {
-    borderColor: 'border-hunter-gold',
-    bgColor: 'bg-hunter-gold/10',
-    textColor: 'text-hunter-gold',
-    glowColor: 'rgba(212,175,55,0.5)',
-    message: 'PERFECT',
-    subMessage: 'You are a true Hunter',
-  },
-  A: {
-    borderColor: 'border-hunter-green',
-    bgColor: 'bg-hunter-green/10',
-    textColor: 'text-hunter-green',
-    glowColor: 'rgba(45,90,39,0.5)',
-    message: 'EXCELLENT',
-    subMessage: 'Almost master level',
-  },
-  B: {
-    borderColor: 'border-nen-transmutation',
-    bgColor: 'bg-nen-transmutation/10',
-    textColor: 'text-nen-transmutation',
-    glowColor: 'rgba(78,205,196,0.5)',
-    message: 'GOOD',
-    subMessage: 'Keep training',
-  },
-  C: {
-    borderColor: 'border-white/30',
-    bgColor: 'bg-white/5',
-    textColor: 'text-white',
-    glowColor: 'rgba(255,255,255,0.2)',
-    message: 'CLEAR',
-    subMessage: 'Practice makes perfect',
-  },
-};
-
-// ===== ユーティリティ =====
-const calculateRank = (accuracy: number, wpm: number): Rank => {
-  if (accuracy >= 98 && wpm >= 100) return 'S';
-  if (accuracy >= 95 && wpm >= 80) return 'A';
-  if (accuracy >= 90 && wpm >= 60) return 'B';
-  return 'C';
-};
-
-const formatDiff = (value: number, suffix = ''): string => {
-  const prefix = value > 0 ? '+' : '';
-  return `${prefix}${value}${suffix}`;
-};
-
-// ===== サブコンポーネント =====
-const StatCard: React.FC<StatCardProps> = ({ label, value, highlight, diff, diffSuffix = '' }) => (
-  <div className={`text-center p-3 rounded-lg ${highlight ? 'bg-hunter-gold/10 border border-hunter-gold/30' : 'bg-hunter-dark/30'}`}>
-    <div className="font-title text-white/40 text-[10px] tracking-[0.2em] mb-1">{label}</div>
-    <div className={`font-title text-xl font-bold ${highlight ? 'text-hunter-gold' : 'text-white'}`}>{value}</div>
-    {diff != null && diff !== 0 && (
-      <motion.div
-        initial={{ opacity: 0, scale: 0.8 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ delay: 1.2 }}
-        className={`font-title text-xs mt-1 ${diff > 0 ? 'text-success' : 'text-error'}`}
-      >
-        {formatDiff(diff, diffSuffix)}
-      </motion.div>
-    )}
-  </div>
-);
-
-const GoldParticles: React.FC = () => {
-  const particles = useMemo(() =>
-    Array.from({ length: 15 }, (_, i) => ({
-      id: i,
-      left: Math.random() * 100,
-      top: Math.random() * 100,
-      duration: 2 + Math.random() * 2,
-      delay: Math.random() * 2,
-    })), []
-  );
-
-  return (
-    <div className="absolute inset-0 pointer-events-none">
-      {particles.map(p => (
-        <motion.div
-          key={p.id}
-          className="absolute w-1 h-1 bg-hunter-gold"
-          style={{ left: `${p.left}%`, top: `${p.top}%` }}
-          animate={{ y: [0, -80], opacity: [0, 1, 0], scale: [0, 1, 0] }}
-          transition={{ duration: p.duration, repeat: Infinity, delay: p.delay }}
-        />
-      ))}
-    </div>
-  );
-};
-
-const NewRecordParticles: React.FC = () => {
-  const particles = useMemo(() =>
-    Array.from({ length: 30 }, (_, i) => ({
-      id: i,
-      left: Math.random() * 100,
-      yOffset: -200 - Math.random() * 300,
-      xOffset: (Math.random() - 0.5) * 200,
-      duration: 2 + Math.random(),
-      delay: Math.random() * 0.5,
-      rotation: 360 * (Math.random() > 0.5 ? 1 : -1),
-      color: ['#D4AF37', '#FFD700', '#FFA500', '#FF6B6B', '#4ECDC4'][Math.floor(Math.random() * 5)],
-      shape: i % 3,
-    })), []
-  );
-
-  const getClipPath = (shape: number) => {
-    if (shape === 0) return 'polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%)';
-    if (shape === 1) return 'polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%)';
-    return 'circle(50%)';
-  };
-
-  return (
-    <div className="absolute inset-0 pointer-events-none overflow-hidden">
-      {particles.map(p => (
-        <motion.div
-          key={p.id}
-          className="absolute"
-          style={{ left: `${p.left}%`, top: '50%' }}
-          initial={{ y: 0, opacity: 1, scale: 1 }}
-          animate={{
-            y: [0, p.yOffset],
-            x: [p.xOffset],
-            opacity: [1, 1, 0],
-            scale: [1, 0.5],
-            rotate: [0, p.rotation],
-          }}
-          transition={{ duration: p.duration, repeat: Infinity, delay: p.delay }}
-        >
-          <div className="w-3 h-3" style={{ background: p.color, clipPath: getClipPath(p.shape) }} />
-        </motion.div>
-      ))}
-    </div>
-  );
-};
-
-const NewRecordBanner: React.FC = () => (
-  <motion.div
-    initial={{ y: -100, opacity: 0 }}
-    animate={{ y: 0, opacity: 1 }}
-    exit={{ y: -100, opacity: 0 }}
-    transition={{ type: 'spring', bounce: 0.5 }}
-    className="absolute top-4 left-0 right-0 z-50 flex justify-center"
-  >
-    <motion.div
-      animate={{
-        scale: [1, 1.05, 1],
-        boxShadow: [
-          '0 0 20px rgba(212, 175, 55, 0.5)',
-          '0 0 40px rgba(212, 175, 55, 0.8)',
-          '0 0 20px rgba(212, 175, 55, 0.5)',
-        ],
-      }}
-      transition={{ duration: 1.5, repeat: Infinity }}
-      className="bg-gradient-to-r from-hunter-gold via-yellow-400 to-hunter-gold px-8 py-3 rounded-lg"
-    >
-      <span className="font-title text-2xl md:text-3xl font-bold text-hunter-dark tracking-wider">
-        NEW RECORD!
-      </span>
-    </motion.div>
-  </motion.div>
-);
-
-// ===== メインコンポーネント =====
 export const ResultScreen: React.FC = () => {
   const { session, navigateTo, resetSession, selectedChapter, selectedStage } = useGameStore();
   const { saveStageResult, updateStatistics, updateStreak, clearedStages, unlockChapter } = useProgressStore();
@@ -217,46 +27,17 @@ export const ResultScreen: React.FC = () => {
   const [previousResult, setPreviousResult] = useState<StageResult | null>(null);
   const [showNewRecord, setShowNewRecord] = useState(false);
   const [hasInitialized, setHasInitialized] = useState(false);
+  const [selectedButton, setSelectedButton] = useState(0);
 
   const stageId = selectedChapter && selectedStage ? `${selectedChapter}-${selectedStage}` : null;
 
-  // 結果計算
-  const result = useMemo(() => {
-    if (!session) return null;
-    const totalTime = session.endTime ? session.endTime - (session.startTime || 0) : 0;
-    const totalChars = session.correctCount + session.missCount;
-    const accuracy = totalChars > 0 ? (session.correctCount / totalChars) * 100 : 0;
-    const wpm = totalTime > 0 ? (session.correctCount / (totalTime / 60000)) : 0;
-
-    return {
-      score: session.score,
-      accuracy: Math.round(accuracy * 10) / 10,
-      wpm: Math.round(wpm),
-      totalTime: Math.round(totalTime / 1000),
-      maxCombo: session.maxCombo,
-      correctCount: session.correctCount,
-      missCount: session.missCount,
-      rank: calculateRank(accuracy, wpm),
-    };
-  }, [session]);
-
-  const isNewRecord = useMemo(() => {
-    if (!result) return false;
-    return !previousResult || result.score > previousResult.score;
-  }, [result, previousResult]);
-
-  const scoreDiff = useMemo((): ScoreDiff | null => {
-    if (!result || !previousResult) return null;
-    return {
-      score: result.score - previousResult.score,
-      wpm: result.wpm - previousResult.wpm,
-      accuracy: Math.round((result.accuracy - previousResult.accuracy) * 10) / 10,
-    };
-  }, [result, previousResult]);
-
-  const hasNextStage = useMemo(() => {
-    return selectedStage < (CHAPTER_STAGE_COUNTS[selectedChapter] || 0);
-  }, [selectedChapter, selectedStage]);
+  // 結果計算フックを使用
+  const { result, isNewRecord, scoreDiff, hasNextStage, formatDiff } = useResultCalculation({
+    session,
+    selectedChapter,
+    selectedStage,
+    previousResult,
+  });
 
   // 初期化
   useEffect(() => {
@@ -304,14 +85,29 @@ export const ResultScreen: React.FC = () => {
     });
 
     const totalStagesInChapter = CHAPTER_STAGE_COUNTS[selectedChapter] || 0;
-    const clearedCount = Object.keys(clearedStages).filter(id => id.startsWith(`${selectedChapter}-`)).length;
+    const clearedCount = Object.keys(clearedStages)
+      .filter(id => id.startsWith(`${selectedChapter}-`)).length;
     const willBeCleared = clearedCount + (clearedStages[stageId] ? 0 : 1);
 
     if (willBeCleared >= totalStagesInChapter) {
       const nextChapter = selectedChapter + 1;
       if (CHAPTER_STAGE_COUNTS[nextChapter]) unlockChapter(nextChapter);
     }
-  }, [result, stageId, hasInitialized, isNewRecord, updateStreak, updateStatistics, saveStageResult, selectedChapter, clearedStages, unlockChapter, playSuccessSound, playResultSound, playAchievementSound]);
+  }, [
+    result,
+    stageId,
+    hasInitialized,
+    isNewRecord,
+    updateStreak,
+    updateStatistics,
+    saveStageResult,
+    selectedChapter,
+    clearedStages,
+    unlockChapter,
+    playSuccessSound,
+    playResultSound,
+    playAchievementSound,
+  ]);
 
   const handleNextStage = useCallback(() => {
     resetSession();
@@ -328,9 +124,6 @@ export const ResultScreen: React.FC = () => {
     resetSession();
     navigateTo('typing');
   }, [resetSession, navigateTo]);
-
-  // ボタン選択状態 (0: NEXT/BACK, 1: RETRY)
-  const [selectedButton, setSelectedButton] = useState(0);
 
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
