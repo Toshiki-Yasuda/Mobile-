@@ -39,6 +39,22 @@ export const BossHPBar: React.FC<BossHPBarProps> = ({
     return 'text-red-400';
   };
 
+  // HPステータステキスト（色覚異常対応）
+  const getHPStatusText = () => {
+    if (hpPercentage > 50) return 'HEALTHY';
+    if (hpPercentage > 25) return 'CAUTION';
+    if (hpPercentage > 10) return 'DANGER';
+    return 'CRITICAL';
+  };
+
+  // HPステータスアイコン
+  const getHPStatusIcon = () => {
+    if (hpPercentage > 50) return '🟢';
+    if (hpPercentage > 25) return '🟡';
+    if (hpPercentage > 10) return '🟠';
+    return '🔴';
+  };
+
   return (
     <div className="space-y-3 w-full">
       {/* ボス名と数値 */}
@@ -59,8 +75,22 @@ export const BossHPBar: React.FC<BossHPBarProps> = ({
         </motion.div>
       </div>
 
+      {/* HPステータス表示（アクセシビリティ） */}
+      <div className="text-xs text-gray-300 flex items-center gap-1">
+        <span>{getHPStatusIcon()}</span>
+        <span>{getHPStatusText()} ({hpPercentage.toFixed(1)}%)</span>
+      </div>
+
       {/* HPバー背景 */}
-      <div className="w-full bg-gray-900 rounded-full h-10 overflow-hidden border-3 border-gray-700 shadow-inner">
+      <div
+        className="w-full bg-gray-900 rounded-full h-10 overflow-hidden border-3 border-gray-700 shadow-inner"
+        role="progressbar"
+        aria-label={`${bossName} Health Points`}
+        aria-valuenow={Math.ceil(currentHP)}
+        aria-valuemin={0}
+        aria-valuemax={Math.ceil(maxHP)}
+        aria-valuetext={`${Math.ceil(currentHP)} out of ${Math.ceil(maxHP)} HP, ${getHPStatusText()}`}
+      >
         {/* HPバー */}
         <motion.div
           className={`bg-gradient-to-r ${getHPColor()} h-full flex items-center justify-center shadow-lg`}

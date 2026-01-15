@@ -73,6 +73,11 @@ export const DEFAULT_SETTINGS = {
   // === パフォーマンス設定 ===
   particleQuality: 'auto' as const,  // 'auto' | 'high' | 'medium' | 'low' - autoは端末に応じて自動判定
   reduceAnimations: false,  // OS設定を無視してアニメーション削減を強制するか
+
+  // === アクセシビリティ設定 ===
+  enableScreenReader: false,  // スクリーンリーダーサポート
+  enableCaptions: false,       // 字幕/キャプション表示
+  enableHighContrast: false,   // 高コントラスト表示
 } as const;
 
 // ===== 初期統計 =====

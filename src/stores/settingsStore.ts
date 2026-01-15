@@ -36,6 +36,11 @@ interface SettingsStore {
   particleQuality: ParticleQuality;
   reduceAnimations: boolean;
 
+  // === アクセシビリティ設定 ===
+  enableScreenReader: boolean;
+  enableCaptions: boolean;
+  enableHighContrast: boolean;
+
   // === アクション ===
   setSoundEnabled: (enabled: boolean) => void;
   setBgmEnabled: (enabled: boolean) => void;
@@ -48,6 +53,9 @@ interface SettingsStore {
   setHapticIntensity: (intensity: number) => void;
   setParticleQuality: (quality: ParticleQuality) => void;
   setReduceAnimations: (reduce: boolean) => void;
+  setEnableScreenReader: (enabled: boolean) => void;
+  setEnableCaptions: (enabled: boolean) => void;
+  setEnableHighContrast: (enabled: boolean) => void;
   resetSettings: () => void;
 }
 
@@ -83,6 +91,12 @@ export const useSettingsStore = create<SettingsStore>()(
       setParticleQuality: (quality) => set({ particleQuality: quality }),
 
       setReduceAnimations: (reduce) => set({ reduceAnimations: reduce }),
+
+      setEnableScreenReader: (enabled) => set({ enableScreenReader: enabled }),
+
+      setEnableCaptions: (enabled) => set({ enableCaptions: enabled }),
+
+      setEnableHighContrast: (enabled) => set({ enableHighContrast: enabled }),
 
       resetSettings: () => set(DEFAULT_SETTINGS),
     }),

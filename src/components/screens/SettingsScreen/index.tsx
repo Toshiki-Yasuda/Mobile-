@@ -38,6 +38,9 @@ export const SettingsScreen: React.FC = () => {
     darkMode,
     particleQuality,
     reduceAnimations,
+    enableScreenReader,
+    enableCaptions,
+    enableHighContrast,
     setSoundEnabled,
     setBgmEnabled,
     setSoundVolume,
@@ -47,6 +50,9 @@ export const SettingsScreen: React.FC = () => {
     setDarkMode,
     setParticleQuality,
     setReduceAnimations,
+    setEnableScreenReader,
+    setEnableCaptions,
+    setEnableHighContrast,
     resetSettings,
   } = useSettingsStore();
   const { handleClick } = useButtonClick();
@@ -347,11 +353,92 @@ export const SettingsScreen: React.FC = () => {
             </div>
           </motion.section>
 
+          {/* アクセシビリティ設定セクション */}
+          <motion.section
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.35 }}
+            className="bg-hunter-dark-light/40 border border-hunter-gold/20 rounded-lg p-5"
+          >
+            <h2 className="font-title text-hunter-gold text-sm tracking-[0.2em] mb-4 uppercase">
+              Accessibility Settings
+            </h2>
+
+            <div className="space-y-4">
+              {/* スクリーンリーダーサポート */}
+              <div className="flex items-center justify-between">
+                <div>
+                  <span className="text-white text-sm">スクリーンリーダー対応</span>
+                  <p className="text-white/40 text-xs mt-0.5">ARIA属性を追加（画面読み上げソフト対応）</p>
+                </div>
+                <button
+                  onClick={() => setEnableScreenReader(!enableScreenReader)}
+                  aria-label={`Screen Reader Support ${enableScreenReader ? 'Enabled' : 'Disabled'}`}
+                  className={`w-14 h-7 rounded-full relative transition-colors ${
+                    enableScreenReader ? 'bg-hunter-gold' : 'bg-hunter-dark-light'
+                  }`}
+                >
+                  <motion.div
+                    className="w-5 h-5 bg-white rounded-full absolute top-1"
+                    animate={{ left: enableScreenReader ? '1.75rem' : '0.25rem' }}
+                    transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+                  />
+                </button>
+              </div>
+
+              <div className="h-px bg-hunter-gold/10" />
+
+              {/* 字幕/キャプション表示 */}
+              <div className="flex items-center justify-between">
+                <div>
+                  <span className="text-white text-sm">字幕/キャプション</span>
+                  <p className="text-white/40 text-xs mt-0.5">ゲーム内セリフと効果音の説明を表示</p>
+                </div>
+                <button
+                  onClick={() => setEnableCaptions(!enableCaptions)}
+                  aria-label={`Captions ${enableCaptions ? 'Enabled' : 'Disabled'}`}
+                  className={`w-14 h-7 rounded-full relative transition-colors ${
+                    enableCaptions ? 'bg-hunter-gold' : 'bg-hunter-dark-light'
+                  }`}
+                >
+                  <motion.div
+                    className="w-5 h-5 bg-white rounded-full absolute top-1"
+                    animate={{ left: enableCaptions ? '1.75rem' : '0.25rem' }}
+                    transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+                  />
+                </button>
+              </div>
+
+              <div className="h-px bg-hunter-gold/10" />
+
+              {/* 高コントラスト表示 */}
+              <div className="flex items-center justify-between">
+                <div>
+                  <span className="text-white text-sm">高コントラスト表示</span>
+                  <p className="text-white/40 text-xs mt-0.5">色の見やすさを改善（色覚異常対応）</p>
+                </div>
+                <button
+                  onClick={() => setEnableHighContrast(!enableHighContrast)}
+                  aria-label={`High Contrast ${enableHighContrast ? 'Enabled' : 'Disabled'}`}
+                  className={`w-14 h-7 rounded-full relative transition-colors ${
+                    enableHighContrast ? 'bg-hunter-gold' : 'bg-hunter-dark-light'
+                  }`}
+                >
+                  <motion.div
+                    className="w-5 h-5 bg-white rounded-full absolute top-1"
+                    animate={{ left: enableHighContrast ? '1.75rem' : '0.25rem' }}
+                    transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+                  />
+                </button>
+              </div>
+            </div>
+          </motion.section>
+
           {/* リセットボタン */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.4 }}
+            transition={{ delay: 0.45 }}
             className="flex justify-center pt-4"
           >
             <button
@@ -366,7 +453,7 @@ export const SettingsScreen: React.FC = () => {
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ delay: 0.5 }}
+            transition={{ delay: 0.55 }}
             className="text-center pt-6"
           >
             <p className="font-title text-hunter-gold/30 text-xs tracking-wider">

@@ -72,6 +72,20 @@ export const HPBar: React.FC<HPBarProps> = ({
     return 'from-green-500 to-emerald-500';
   };
 
+  // HPステータステキスト（色覚異常対応）
+  const getHPStatusText = () => {
+    if (isCritical) return '危険 (CRITICAL)';
+    if (percentage <= 50) return '注意 (CAUTION)';
+    return '安全 (SAFE)';
+  };
+
+  // HPステータスアイコン
+  const getHPStatusIcon = () => {
+    if (isCritical) return '🔴';
+    if (percentage <= 50) return '🟡';
+    return '🟢';
+  };
+
   return (
     <div className={`relative ${className}`}>
       {/* ラベル */}
@@ -82,8 +96,22 @@ export const HPBar: React.FC<HPBarProps> = ({
         </span>
       </div>
 
+      {/* HPステータス表示（アクセシビリティ） */}
+      <div className="text-xs text-gray-400 mb-1 flex items-center gap-1">
+        <span>{getHPStatusIcon()}</span>
+        <span>{getHPStatusText()}</span>
+      </div>
+
       {/* HPバー本体 */}
-      <div className="relative h-3 bg-hunter-dark-light rounded-full overflow-hidden border border-hunter-gold/20">
+      <div
+        className="relative h-3 bg-hunter-dark-light rounded-full overflow-hidden border border-hunter-gold/20"
+        role="progressbar"
+        aria-label="Health Points"
+        aria-valuenow={currentHP}
+        aria-valuemin={0}
+        aria-valuemax={maxHP}
+        aria-valuetext={`${currentHP} out of ${maxHP} HP, ${getHPStatusText()}`}
+      >
         {/* 背景グロー（危険時、低性能デバイスでは無効） */}
         {isCritical && !lowPowerDevice && (
           <motion.div
@@ -197,6 +225,8 @@ export const HPBar: React.FC<HPBarProps> = ({
             willChange: 'opacity',
             backfaceVisibility: 'hidden',
           }}
+          role="alert"
+          aria-live="assertive"
         >
           <span className="font-title text-xs text-red-500 tracking-wider">DANGER!</span>
         </motion.div>
