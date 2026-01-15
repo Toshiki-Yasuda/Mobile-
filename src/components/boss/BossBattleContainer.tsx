@@ -21,7 +21,11 @@ interface BossBattleContainerProps {
   }>;
   onBattleComplete: (result: {
     isVictory: boolean;
-    rank: string;
+    rank: 'S+' | 'S' | 'A+' | 'A' | 'B+' | 'B' | 'C' | 'D';
+    correctCount: number;
+    missCount: number;
+    maxCombo: number;
+    elapsedTime: number;
     rewards: BossReward[];
   }) => void;
   onExit: () => void;
@@ -145,6 +149,10 @@ export const BossBattleContainer: React.FC<BossBattleContainerProps> = ({
       onBattleComplete({
         isVictory: result.isVictory,
         rank: result.rank,
+        correctCount: result.correctCount,
+        missCount: result.missCount,
+        maxCombo: result.maxCombo,
+        elapsedTime: result.elapsedTime,
         rewards,
       });
     },

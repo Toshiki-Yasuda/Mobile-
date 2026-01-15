@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useGameStore } from './stores/gameStore';
 import { useProgressStore } from './stores/progressStore';
 import { PasswordScreen } from './components/screens/PasswordScreen';
@@ -15,15 +15,27 @@ import { StatisticsScreen } from './components/screens/StatisticsScreen';
 import { Loading } from './components/common/Loading';
 import { ErrorBoundary } from './components/common/ErrorBoundary';
 import { getWordsForStage } from './data/words';
+import { ALL_BOSS_CHARACTERS } from './constants/bossConfigs';
 
 /**
  * メインアプリケーションコンポーネント
  * 画面遷移の管理とグローバル状態の初期化を行う
  */
 function App() {
-  const { currentScreen, loading, error, clearError, selectedChapter } = useGameStore();
-  const { markBossDefeated } = useProgressStore();
+  const { currentScreen, loading, error, clearError, selectedChapter, navigateTo } = useGameStore();
+  const { markBossDefeated, updateStatistics, unlockChapter } = useProgressStore();
   const audioInitializedRef = useRef(false);
+
+  // ボス結果を一時保存
+  const [bossResult, setBossResult] = useState<{
+    isVictory: boolean;
+    rank: 'S+' | 'S' | 'A+' | 'A' | 'B+' | 'B' | 'C' | 'D';
+    correctCount: number;
+    missCount: number;
+    maxCombo: number;
+    elapsedTime: number;
+    rewards: any[];
+  } | null>(null);
 
   // AudioContextを初期化するためのクリックハンドラー（一度だけ）
   useEffect(() => {
@@ -96,13 +108,37 @@ function App() {
   const handleBossBattleComplete = (result: {
     isVictory: boolean;
     rank: 'S+' | 'S' | 'A+' | 'A' | 'B+' | 'B' | 'C' | 'D';
+    correctCount: number;
+    missCount: number;
+    maxCombo: number;
+    elapsedTime: number;
     rewards: any[];
   }) => {
+    // ボス結果を保存
+    setBossResult(result);
+
     if (result.isVictory) {
       // ボス撃破を記録
       const bossId = `boss_chapter${selectedChapter}`;
       markBossDefeated(bossId);
+
+      // 統計情報を更新
+      updateStatistics({
+        totalPlays: 1,
+        totalTypedChars: result.correctCount + result.missCount,
+        totalCorrect: result.correctCount,
+        totalMiss: result.missCount,
+        totalPlayTime: result.elapsedTime * 1000,
+      });
+
+      // 次章をアンロック（最後の章以外）
+      if (selectedChapter < 7) {
+        unlockChapter(selectedChapter + 1);
+      }
     }
+
+    // 結果画面に遷移
+    navigateTo('bossResult');
   };
 
   // 画面遷移
@@ -134,9 +170,34 @@ function App() {
           />
         );
       }
-      case 'bossResult':
-        // TODO: Implement BossResultScreen navigation
-        return <BossResultScreen isVictory={true} rank="A" bossName="Boss" correctCount={50} missCount={5} maxCombo={10} elapsedTime={120} rewards={[]} onRetry={() => {}} onContinue={() => {}} />;
+      case 'bossResult': {
+        if (!bossResult) {
+          return <div className="flex items-center justify-center h-screen">結果を読み込み中...</div>;
+        }
+        const boss = bossResult;
+        const bossCharacter = ALL_BOSS_CHARACTERS[selectedChapter];
+        const bossName = bossCharacter ? bossCharacter.name : `Chapter ${selectedChapter} Boss`;
+        return (
+          <BossResultScreen
+            isVictory={boss.isVictory}
+            rank={boss.rank}
+            bossName={bossName}
+            correctCount={boss.correctCount}
+            missCount={boss.missCount}
+            maxCombo={boss.maxCombo}
+            elapsedTime={boss.elapsedTime}
+            rewards={boss.rewards}
+            onRetry={() => {
+              setBossResult(null);
+              useGameStore.getState().startBossBattle(selectedChapter);
+            }}
+            onContinue={() => {
+              setBossResult(null);
+              navigateTo('stageSelect');
+            }}
+          />
+        );
+      }
       case 'settings':
         return <SettingsScreen />;
       case 'statistics':
