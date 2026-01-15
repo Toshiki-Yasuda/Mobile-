@@ -261,3 +261,157 @@ export const NEN_THRESHOLDS = {
   ZETSU: 10,
   TEN: 5,
 } as const;
+
+// ===== アニメーションタイミング統合定数 =====
+/**
+ * 全アニメーションのタイミングを一元管理
+ * 各イベントのシーケンシング用タイムスタンプ（ms）
+ */
+export const ANIMATION_TIMINGS = {
+  // ===== 入力フィードバック =====
+  /** 文字入力の反応時間 */
+  CHAR_INPUT_FEEDBACK: 150,
+
+  // ===== 単語完了フロー =====
+  /** 単語完了時の音声再生 */
+  WORD_COMPLETE_SOUND: 0,
+  /** 成功シェイク開始 */
+  WORD_COMPLETE_SHAKE: 0,
+  /** 爆発エフェクト開始 */
+  WORD_COMPLETE_EXPLOSION: 0,
+  /** 新しい単語の表示遅延 */
+  WORD_COMPLETE_NEXT_WORD: 300,
+
+  // ===== 画面エフェクト =====
+  /** 画面フラッシュ開始 */
+  SCREEN_FLASH_START: 0,
+
+  // ===== コンボエフェクト =====
+  /** コンボマイルストーン開始（5, 10, 20, 50） */
+  COMBO_MILESTONE_START: 0,
+  /** コンボエフェクト背景グロー */
+  COMBO_GLOW_START: 0,
+  /** コンボリップルエフェクト開始 */
+  COMBO_RIPPLE_START: 150,
+  /** コンボテキスト表示遅延 */
+  COMBO_TEXT_SHOW: 300,
+
+  // ===== 結果画面 =====
+  /** ランクカード表示開始 */
+  RESULT_RANK_CARD: 0,
+  /** 詳細パネルスライイン開始 */
+  RESULT_DETAILS_PANEL: 300,
+  /** ランクメッセージ表示 */
+  RESULT_RANK_MESSAGE: 500,
+  /** スコア表示開始 */
+  RESULT_SCORE_SHOW: 700,
+  /** 新記録バナー表示 */
+  RESULT_NEW_RECORD: 800,
+  /** スコア差分アニメーション開始 */
+  RESULT_SCORE_DIFF: 1000,
+
+  // ===== 音声タイミング =====
+  /** 成功時の音声（コンボ依存） */
+  SOUND_SUCCESS: 0,
+  /** コンボマイルストーン音声 */
+  SOUND_COMBO_MILESTONE: 300,
+  /** 結果画面の音声 */
+  RESULT_SOUND_MAIN: 300,
+  /** 結果画面のサブ音声 */
+  RESULT_SOUND_ACHIEVEMENT: 400,
+
+  // ===== ハプティック =====
+  /** 入力時の振動 */
+  HAPTIC_INPUT: 0,
+  /** 成功時の振動 */
+  HAPTIC_SUCCESS: 0,
+  /** コンボマイルストーン振動 */
+  HAPTIC_MILESTONE: 0,
+  /** ダメージ時の振動 */
+  HAPTIC_DAMAGE: 0,
+} as const;
+
+// ===== ハプティックフィードバック設定 =====
+/**
+ * 各種イベントに対応したハプティック振動パターン
+ * Navigator.vibrate() API 互換
+ */
+export interface HapticPattern {
+  /** 振動パターン（ms単位で [ON, OFF, ON, OFF, ...] ） */
+  pattern: number[];
+  /** ハプティック強度（0-1） */
+  intensity: number;
+}
+
+export const HAPTIC_PATTERNS = {
+  /** タップ時の軽い振動 */
+  tap: {
+    pattern: [30],
+    intensity: 0.3,
+  } as HapticPattern,
+
+  /** 入力成功時の振動 */
+  success: {
+    pattern: [50, 50, 50],
+    intensity: 0.6,
+  } as HapticPattern,
+
+  /** コンボマイルストーン振動（5コンボ） */
+  milestone5: {
+    pattern: [100, 100, 100],
+    intensity: 0.7,
+  } as HapticPattern,
+
+  /** コンボマイルストーン振動（10コンボ） */
+  milestone10: {
+    pattern: [100, 100, 100, 100, 100],
+    intensity: 0.8,
+  } as HapticPattern,
+
+  /** コンボマイルストーン振動（20コンボ） */
+  milestone20: {
+    pattern: [150, 100, 150, 100, 150],
+    intensity: 0.9,
+  } as HapticPattern,
+
+  /** コンボマイルストーン振動（50コンボ） */
+  milestone50: {
+    pattern: [200, 50, 100, 50, 200, 50, 100],
+    intensity: 1.0,
+  } as HapticPattern,
+
+  /** ミス時のダメージ振動 */
+  damage: {
+    pattern: [50, 100, 50, 100, 50],
+    intensity: 0.8,
+  } as HapticPattern,
+
+  /** クリティカル状態の警告振動 */
+  critical: {
+    pattern: [100, 50, 100, 50, 100, 50, 100],
+    intensity: 0.9,
+  } as HapticPattern,
+
+  /** UI選択時の振動 */
+  uiSelect: {
+    pattern: [25, 50, 25],
+    intensity: 0.4,
+  } as HapticPattern,
+
+  /** メニュー進行時の振動 */
+  menuMove: {
+    pattern: [15],
+    intensity: 0.2,
+  } as HapticPattern,
+} as const;
+
+/**
+ * コンボ数に応じたハプティックパターンを取得
+ */
+export const getComboHapticPattern = (combo: number): HapticPattern | null => {
+  if (combo === 50) return HAPTIC_PATTERNS.milestone50;
+  if (combo === 20) return HAPTIC_PATTERNS.milestone20;
+  if (combo === 10) return HAPTIC_PATTERNS.milestone10;
+  if (combo === 5) return HAPTIC_PATTERNS.milestone5;
+  return null;
+};
