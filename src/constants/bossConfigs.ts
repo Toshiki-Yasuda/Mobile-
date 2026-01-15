@@ -16,7 +16,7 @@ export const CHAPTER_1_BOSS: BossCharacter = {
   name: 'ハンゼ',
   japaneseTitle: '修行者',
   description: 'ハンター試験の試験官。試験者の精神力を試す者。',
-  imageUrl: '/images/bosses/hanze.png',
+  imageUrl: '/Mobile-/images/bosses/hanze.png',
   weakPoints: ['集中力', 'リズム感'],
   dialogueLines: [
     'ハンター試験の真の試練はここからだ',
@@ -47,7 +47,7 @@ export const CHAPTER_2_BOSS: BossCharacter = {
   name: 'ヒソカ',
   japaneseTitle: 'トランプマジシャン',
   description: 'エキセントリックな念能力者。遊び相手を探している。',
-  imageUrl: '/images/bosses/hisoka.png',
+  imageUrl: '/Mobile-/images/bosses/hisoka.png',
   weakPoints: ['予測', 'リズム感'],
   dialogueLines: [
     'いい緊張感だ',
@@ -78,7 +78,7 @@ export const CHAPTER_3_BOSS: BossCharacter = {
   name: 'クロロ',
   japaneseTitle: '幻影旅団団長',
   description: '幻影旅団の指導者。冷徹で戦略的。',
-  imageUrl: '/images/bosses/kuroro.png',
+  imageUrl: '/Mobile-/images/bosses/kuroro.png',
   weakPoints: ['速度', '予測不可'],
   dialogueLines: [
     '盗賊団の本領を見せよう',
@@ -109,7 +109,7 @@ export const CHAPTER_4_BOSS: BossCharacter = {
   name: 'ビスケ',
   japaneseTitle: '格闘技の達人',
   description: 'G・I島での修行者。強力な念能力者。',
-  imageUrl: '/images/bosses/bisuke.png',
+  imageUrl: '/Mobile-/images/bosses/bisuke.png',
   weakPoints: ['体力', '継続力'],
   dialogueLines: [
     'いい修行になるな',
@@ -140,7 +140,7 @@ export const CHAPTER_5_BOSS: BossCharacter = {
   name: '老ビスケ',
   japaneseTitle: '究極の修行者',
   description: '若き日のビスケの姿。最強の念能力者。',
-  imageUrl: '/images/bosses/bisuke_old.png',
+  imageUrl: '/Mobile-/images/bosses/bisuke_old.png',
   weakPoints: ['複数フェーズ対応', '速度変化'],
   dialogueLines: [
     '本当の修行が始まる',
@@ -171,7 +171,7 @@ export const CHAPTER_6_BOSS: BossCharacter = {
   name: 'メルエム',
   japaneseTitle: 'キメラアント王',
   description: 'キメラアントの完全な王。最強の存在。',
-  imageUrl: '/images/bosses/meruem.png',
+  imageUrl: '/Mobile-/images/bosses/meruem.png',
   weakPoints: ['複雑な思考', 'マルチフェーズ'],
   dialogueLines: [
     '王の力を感じよ',
@@ -202,7 +202,7 @@ export const CHAPTER_7_BOSS: BossCharacter = {
   name: 'ネテロ会長',
   japaneseTitle: '究極の試練',
   description: 'ハンター協会会長。全ての修行の集大成。',
-  imageUrl: '/images/bosses/netero.png',
+  imageUrl: '/Mobile-/images/bosses/netero.png',
   weakPoints: ['複数の制限', '相互作用'],
   dialogueLines: [
     'ハンターの道の果てを見せよう',

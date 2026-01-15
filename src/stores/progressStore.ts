@@ -222,6 +222,21 @@ export const useProgressStore = create<ProgressStore>()(
       name: STORAGE_KEYS.PROGRESS,
       version: STORAGE_VERSION.PROGRESS,
       storage: createJSONStorage(() => localStorage),
+      // Setをシリアライズ可能な形式に変換
+      partialize: (state) => ({
+        ...state,
+        defeatedBosses: Array.from(state.defeatedBosses),
+      }),
+      // 復元時にSetを再構築
+      merge: (persistedState, currentState) => {
+        const persisted = persistedState as Partial<ProgressStore> & { defeatedBosses?: string[] };
+        return {
+          ...currentState,
+          ...persisted,
+          // 配列からSetに復元
+          defeatedBosses: new Set(persisted.defeatedBosses || []),
+        };
+      },
       // マイグレーション
       migrate: (persistedState: unknown, version: number) => {
         if (version === 0) {
@@ -235,7 +250,7 @@ export const useProgressStore = create<ProgressStore>()(
             statistics: { ...DEFAULT_STATISTICS, ...state.statistics },
             keyStatistics: state.keyStatistics || {},
             dailyLogs: state.dailyLogs || [],
-            defeatedBosses: new Set(),
+            defeatedBosses: [],
           };
         }
         return persistedState as ProgressStore;
