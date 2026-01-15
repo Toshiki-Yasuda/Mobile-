@@ -1,9 +1,11 @@
 /**
  * ハプティックフィードバック管理ホック
  * Navigator.vibrate() API を使用してモバイルデバイスの振動を制御
+ * SettingsStore の設定値を反映
  */
 
 import { useCallback } from 'react';
+import { useSettingsStore } from '@/stores/settingsStore';
 import {
   HAPTIC_PATTERNS,
   getComboHapticPattern,
@@ -20,12 +22,23 @@ const isHapticSupported = (): boolean => {
 /**
  * ハプティック振動パターンを実行
  * @param pattern - 振動パターン ([ON, OFF, ON, OFF, ...])
+ * @param intensityMultiplier - 強度乗数（0-1）
  */
-const triggerHapticPattern = (pattern: number[]): boolean => {
+const triggerHapticPattern = (pattern: number[], intensityMultiplier: number = 1): boolean => {
   if (!isHapticSupported()) return false;
 
   try {
-    navigator.vibrate?.(pattern);
+    // 強度乗数を反映したパターンを生成（偶数インデックス = ON 時間）
+    const adjustedPattern = pattern.map((duration, index) => {
+      if (index % 2 === 0) {
+        // ON 時間を強度乗数で調整
+        return Math.round(duration * intensityMultiplier);
+      }
+      // OFF 時間はそのまま
+      return duration;
+    });
+
+    navigator.vibrate?.(adjustedPattern);
     return true;
   } catch (e) {
     console.warn('Haptic feedback failed:', e);
@@ -37,12 +50,16 @@ const triggerHapticPattern = (pattern: number[]): boolean => {
  * ハプティックフィードバックホック
  */
 export const useHaptics = () => {
+  const { hapticEnabled, hapticIntensity } = useSettingsStore();
+  const intensityMultiplier = hapticIntensity / 100;
+
   /**
    * カスタムハプティック振動を実行
    */
   const trigger = useCallback((pattern: HapticPattern) => {
-    triggerHapticPattern(pattern.pattern);
-  }, []);
+    if (!hapticEnabled) return;
+    triggerHapticPattern(pattern.pattern, intensityMultiplier);
+  }, [hapticEnabled, intensityMultiplier]);
 
   /**
    * 入力タップ時の振動

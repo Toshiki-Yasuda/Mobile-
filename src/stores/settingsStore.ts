@@ -24,6 +24,10 @@ interface SettingsStore {
   keyboardVisible: boolean;
   romajiGuideLevel: RomajiGuideLevel;
 
+  // === ハプティック設定 ===
+  hapticEnabled: boolean;
+  hapticIntensity: number; // 0-100
+
   // === アクション ===
   setSoundEnabled: (enabled: boolean) => void;
   setBgmEnabled: (enabled: boolean) => void;
@@ -31,6 +35,8 @@ interface SettingsStore {
   setBgmVolume: (volume: number) => void;
   setKeyboardVisible: (visible: boolean) => void;
   setRomajiGuideLevel: (level: RomajiGuideLevel) => void;
+  setHapticEnabled: (enabled: boolean) => void;
+  setHapticIntensity: (intensity: number) => void;
   resetSettings: () => void;
 }
 
@@ -55,6 +61,11 @@ export const useSettingsStore = create<SettingsStore>()(
       setKeyboardVisible: (visible) => set({ keyboardVisible: visible }),
 
       setRomajiGuideLevel: (level) => set({ romajiGuideLevel: level }),
+
+      setHapticEnabled: (enabled) => set({ hapticEnabled: enabled }),
+
+      setHapticIntensity: (intensity) =>
+        set({ hapticIntensity: Math.max(0, Math.min(100, intensity)) }),
 
       resetSettings: () => set(DEFAULT_SETTINGS),
     }),

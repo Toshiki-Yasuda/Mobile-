@@ -3,8 +3,9 @@
  * ホームポジションガイド付き（チャプターに応じて段階的にフェードアウト）
  */
 
-import React, { useMemo } from 'react';
+import React, { useMemo, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useHaptics } from '@/hooks/useHaptics';
 import {
   HOME_POSITION_KEYS,
   BUMP_KEYS,
@@ -46,12 +47,18 @@ export const VirtualKeyboard: React.FC<VirtualKeyboardProps> = ({
   const rows = KEYBOARD_LAYOUT;
   const rowIndents = ROW_INDENTS;
   const wideKeys = WIDE_KEYS;
+  const { tap } = useHaptics();
 
   // チャプターに応じた手の影の透明度を計算
   const handOpacity = useMemo(() => {
     if (chapter >= 5) return 0; // 5章以降は手の影を非表示
     return HAND_OPACITY_BY_CHAPTER[chapter] || 0.15;
   }, [chapter]);
+
+  // タッチ・クリック時のハプティック処理
+  const handleKeyTouchStart = useCallback(() => {
+    tap(); // ハプティック: キータップ時の振動
+  }, [tap]);
 
   // 手の影を表示するかどうか
   const showHandShadow = false; // 一時的に無効化
@@ -169,9 +176,11 @@ export const VirtualKeyboard: React.FC<VirtualKeyboardProps> = ({
             return (
               <motion.div
                 key={key}
-                className={`${getKeyClass(key, isActive)} ${keySizeClass} relative overflow-hidden`}
+                className={`${getKeyClass(key, isActive)} ${keySizeClass} relative overflow-hidden cursor-pointer`}
                 animate={isActive ? { scale: 1.05 } : { scale: 1 }}
                 transition={{ duration: 0.1 }}
+                onTouchStart={handleKeyTouchStart}
+                onMouseDown={handleKeyTouchStart}
               >
                 {/* 押したときの光るエフェクト（2秒かけてフェードアウト） */}
                 <AnimatePresence>

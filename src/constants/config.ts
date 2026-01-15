@@ -66,6 +66,8 @@ export const DEFAULT_SETTINGS = {
   bgmVolume: 70,
   keyboardVisible: true,
   romajiGuideLevel: 'full' as const,
+  hapticEnabled: true,  // ハプティックフィードバック有効
+  hapticIntensity: 100, // 振動強度（0-100）
 } as const;
 
 // ===== 初期統計 =====
