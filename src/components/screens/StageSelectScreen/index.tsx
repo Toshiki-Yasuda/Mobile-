@@ -79,14 +79,14 @@ const CHAPTERS = [
     ],
   },
   {
-    id: 7, kanji: '選挙編・暗黒大陸編', romaji: 'ELECTION ARC & DARK CONTINENT',
+    id: 7, kanji: '選挙・暗黒大陸編', romaji: 'ELECTION & DARK CONTINENT',
     stages: [
-      { number: 1, name: '選挙編キャラクター', description: 'パリストン、チードルなど' },
-      { number: 2, name: 'アルカ・ナニカ編', description: 'キルアの家族' },
-      { number: 3, name: '暗黒大陸の脅威', description: '五大厄災など' },
-      { number: 4, name: '王位継承戦キャラクター', description: 'ベンジャミン、カミーラなど' },
-      { number: 5, name: '幻影旅団追加メンバー', description: 'ボノレノフ、コルトピなど' },
-      { number: 6, name: 'ボスステージ', description: '総合チャレンジ' },
+      { number: 1, name: '選挙編キャラ', description: '十二支ん' },
+      { number: 2, name: 'アルカ・ナニカ編', description: 'キルアの妹' },
+      { number: 3, name: '暗黒大陸の脅威', description: '五大厄災' },
+      { number: 4, name: '王位継承戦', description: 'カキン帝国' },
+      { number: 5, name: '旅団追加メンバー', description: '新メンバー' },
+      { number: 6, name: '高度な念能力', description: '総合チャレンジ' },
     ],
   },
 ];

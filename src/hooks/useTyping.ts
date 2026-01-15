@@ -1,31 +1,24 @@
 /**
  * タイピングロジックを管理するカスタムフック
- *
+ * 
  * チャプター1-2: インスタントモード（1文字ずつ即時判定）
  * チャプター3以降: タイプライターモード（入力→Enter確定）
- *
- * 以下の4つの専門的フックを統合:
- * - useTypingInput: 入力検証ロジック
- * - useTypingScore: スコア計算と単語完了処理
- * - useTypingAnimation: 爆発やシェイク演出
- * - useTypingState: 入力状態とHP管理
  */
 
-import { useCallback, useEffect, useRef } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useGameStore } from '@/stores/gameStore';
 import { useProgressStore } from '@/stores/progressStore';
 import { useSound } from '@/hooks/useSound';
+import { useHaptics } from '@/hooks/useHaptics';
 import {
   createInitialState,
   processKeyInput,
   getCurrentValidKeys,
   getDisplayRomaji,
 } from '@/engine/romajiEngine';
-import { useTypingInput } from './useTypingInput';
-import { useTypingScore } from './useTypingScore';
-import { useTypingAnimation } from './useTypingAnimation';
-import { useTypingState } from './useTypingState';
-import { HP_CONFIG } from '@/constants/gameJuice';
+import type { TypingState } from '@/types/romaji';
+import { APP_CONFIG } from '@/constants/config';
+import { HP_CONFIG, ANIMATION_TIMINGS } from '@/constants/gameJuice';
 import type { Word } from '@/types/game';
 
 // タイプライターモードを使用するチャプター閾値
@@ -38,43 +31,72 @@ export function useTyping() {
     setTypingState,
     nextWord,
     endSession,
+    addScore,
+    incrementCombo,
+    recordMiss,
+    resetCombo,
     navigateTo,
   } = useGameStore();
 
   const { updateKeyStats } = useProgressStore();
-  const { playTypeSound, playMissSound } = useSound();
+  const { playTypeSound, playConfirmSound, playMissSound, playComboSound } = useSound();
+  const { tap, success, comboMilestone, damage, critical } = useHaptics();
 
-  // 専門的フックの利用
-  const { validateTypewriterInput } = useTypingInput();
-  const { handleWordComplete } = useTypingScore();
-  const { explosionTrigger, successShakeTrigger, lastExplosionWasPerfect, triggerExplosion } =
-    useTypingAnimation();
-  const {
-    userInput,
-    setUserInput,
-    currentHP,
-    damageHP,
-    recoverHP,
-    hadMissThisWord,
-    setHadMissThisWord,
-    resetWordState,
-    recentPressedKeys,
-    flashKey,
-    getInputStatus,
-  } = useTypingState();
+  // タイプライターモード用の入力テキスト
+  const [userInput, setUserInput] = useState('');
+  
+  // 爆発エフェクト用のトリガー（タイムスタンプ）
+  const [explosionTrigger, setExplosionTrigger] = useState(0);
 
+  // 正解時シェイク用のトリガー（タイムスタンプ）
+  const [successShakeTrigger, setSuccessShakeTrigger] = useState(0);
+
+  // HPシステム
+  const [currentHP, setCurrentHP] = useState(HP_CONFIG.maxHP);
+
+  // この単語でミスがあったかどうか
+  const [hadMissThisWord, setHadMissThisWord] = useState(false);
+  
+  // 直前の爆発がパーフェクトだったか
+  const [lastExplosionWasPerfect, setLastExplosionWasPerfect] = useState(false);
+  
+  // 最近押されたキーのリスト（光る演出用）
+  // { key: string, timestamp: number }[] の形式で、各キーがいつ押されたかを記録
+  const [recentPressedKeys, setRecentPressedKeys] = useState<{ key: string; timestamp: number }[]>([]);
+  
   // キー入力のタイムスタンプ
   const lastKeyTimeRef = useRef<number>(0);
   const wordStartTimeRef = useRef<number>(0);
 
   // 現在の単語を取得
   const currentWord = session?.words[session.currentWordIndex];
-
+  
   // タイピングモードを判定
   const isTypewriterMode = selectedChapter >= TYPEWRITER_MODE_THRESHOLD;
 
   // 正しいローマ字を取得（表示用）
   const correctRomaji = currentWord ? getDisplayRomaji(currentWord.hiragana) : '';
+
+  // タイプライターモード: 入力がひらがなと一致するか検証
+  // romajiEngineを使って1文字ずつ処理し、最後まで正しく処理できれば正解
+  const validateTypewriterInput = useCallback((input: string, hiragana: string): boolean => {
+    if (!input || !hiragana) return false;
+    
+    let state: TypingState = createInitialState(hiragana);
+    
+    for (const char of input.toLowerCase()) {
+      const result = processKeyInput(state, char);
+      
+      if (result.isMiss || !result.isValid) {
+        return false;
+      }
+      
+      state = result.newState;
+    }
+    
+    // 全ての文字が正しく入力され、単語が完了しているか
+    return state.isComplete;
+  }, []);
 
   // タイピング状態を初期化
   const initializeWord = useCallback(
@@ -84,7 +106,131 @@ export function useTyping() {
       setUserInput('');
       wordStartTimeRef.current = performance.now();
     },
-    [setTypingState, setUserInput]
+    [setTypingState]
+  );
+
+  // スコア計算
+  const calculateScore = (wordTime: number, combo: number): number => {
+    const { BASE_SCORE, COMBO_MULTIPLIER, SPEED_BONUS_MAX, SPEED_BONUS_THRESHOLD } =
+      APP_CONFIG;
+
+    let score = BASE_SCORE;
+    score *= 1 + combo * COMBO_MULTIPLIER;
+
+    if (wordTime < SPEED_BONUS_THRESHOLD) {
+      const speedBonus =
+        SPEED_BONUS_MAX * (1 - wordTime / SPEED_BONUS_THRESHOLD);
+      score += speedBonus;
+    }
+
+    return Math.round(score);
+  };
+
+  // 単語完了処理
+  const handleWordComplete = useCallback(() => {
+    const now = performance.now();
+    const currentCombo = session?.combo || 0;
+    playConfirmSound(currentCombo);
+
+    // ハプティック: 成功
+    success();
+
+    // 正解時シェイクを発動
+    setSuccessShakeTrigger(Date.now());
+
+    const wordTime = now - wordStartTimeRef.current;
+    const score = calculateScore(wordTime, session?.combo || 0);
+    addScore(score);
+    incrementCombo();
+
+    // コンボ音（5コンボ以上で鳴らす）
+    const newCombo = (session?.combo || 0) + 1;
+    if (newCombo >= 5 && newCombo % 5 === 0) {
+      playComboSound(newCombo);
+      comboMilestone(newCombo); // ハプティック: コンボマイルストーン
+    }
+
+    // HP回復
+    let healAmount = HP_CONFIG.correctRecovery;
+    // 5コンボごとにボーナス回復
+    if (newCombo >= 5 && newCombo % 5 === 0) {
+      healAmount += HP_CONFIG.comboRecoveryBonus;
+    }
+    setCurrentHP(prev => Math.min(HP_CONFIG.maxHP, prev + healAmount));
+
+    const nextIndex = (session?.currentWordIndex || 0) + 1;
+    if (nextIndex >= (session?.words.length || 0)) {
+      endSession();
+      navigateTo('result');
+    } else {
+      nextWord();
+      const nextWordData = session?.words[nextIndex];
+      if (nextWordData) {
+        setTimeout(() => initializeWord(nextWordData), 300);
+      }
+    }
+  }, [session, addScore, incrementCombo, nextWord, endSession, navigateTo, initializeWord, playConfirmSound, playComboSound]);
+
+  // インスタントモード: キー入力を処理
+  const handleInstantKeyInput = useCallback(
+    (key: string) => {
+      if (!session?.typingState || session.typingState.isComplete) {
+        return;
+      }
+
+      const now = performance.now();
+      const latency = lastKeyTimeRef.current
+        ? now - lastKeyTimeRef.current
+        : 0;
+      lastKeyTimeRef.current = now;
+
+      // ハプティック: 入力タップ
+      tap();
+
+      const result = processKeyInput(session.typingState, key);
+
+      updateKeyStats(key.toLowerCase(), result.isValid, latency);
+
+      if (result.isMiss) {
+        recordMiss();
+        playMissSound();
+        damage(); // ハプティック: ダメージ
+        // HPダメージ
+        const newHP = Math.max(0, currentHP - HP_CONFIG.missDamage);
+        setCurrentHP(newHP);
+
+        // クリティカル警告ハプティック
+        if (newHP <= HP_CONFIG.criticalThreshold && newHP > 0) {
+          critical();
+        }
+        return;
+      }
+
+      if (result.isValid) {
+        success(); // ハプティック: 入力成功
+        setTypingState(result.newState);
+
+        if (result.isWordComplete) {
+          handleWordComplete();
+        } else {
+          playTypeSound(session?.combo || 0);
+        }
+      }
+    },
+    [
+      session,
+      currentHP,
+      setTypingState,
+      recordMiss,
+      updateKeyStats,
+      playTypeSound,
+      playMissSound,
+      handleWordComplete,
+      tap,
+      success,
+      damage,
+      critical,
+    ]
   );
 
   // タイプライターモード: キー入力を処理
@@ -93,7 +239,9 @@ export function useTyping() {
       if (!currentWord) return;
 
       const now = performance.now();
-      const latency = lastKeyTimeRef.current ? now - lastKeyTimeRef.current : 0;
+      const latency = lastKeyTimeRef.current
+        ? now - lastKeyTimeRef.current
+        : 0;
       lastKeyTimeRef.current = now;
 
       // 文字を追加
@@ -102,11 +250,11 @@ export function useTyping() {
 
       // 入力音を鳴らす（コンボ連動）
       playTypeSound(session?.combo || 0);
-
+      
       // キー統計を更新（この時点では正誤は確定しない）
       updateKeyStats(key.toLowerCase(), true, latency);
     },
-    [currentWord, userInput, playTypeSound, updateKeyStats, setUserInput, session?.combo]
+    [currentWord, userInput, playTypeSound, updateKeyStats]
   );
 
   // タイプライターモード: バックスペース処理
@@ -114,12 +262,12 @@ export function useTyping() {
     if (userInput.length > 0) {
       setUserInput(userInput.slice(0, -1));
     }
-  }, [userInput, setUserInput]);
+  }, [userInput]);
 
   // タイプライターモード: Enter確定時の爆発音
   const playEnterExplosion = useCallback(() => {
     const audio = new Audio('/Mobile-/opening.mp3');
-    audio.volume = 0.3;
+    audio.volume = 0.3; // 30%の音量
     audio.play().catch(() => {});
   }, []);
 
@@ -131,118 +279,54 @@ export function useTyping() {
     const isCorrect = validateTypewriterInput(userInput, currentWord.hiragana);
 
     if (isCorrect) {
-      // 正解 - 爆発演出とスコア処理
+      // 正解 - 爆発音と演出を鳴らして次へ
       playEnterExplosion();
-      triggerExplosion(!hadMissThisWord);
-
-      // 単語完了処理（スコア加算、HP回復、次の単語へ）
-      handleWordComplete(
-        () => recoverHP(HP_CONFIG.correctRecovery),
-        () => navigateTo('result'),
-        () => {
-          nextWord();
-          const nextIndex = (session?.currentWordIndex || 0) + 1;
-          const nextWordData = session?.words[nextIndex];
-          if (nextWordData) {
-            setTimeout(() => initializeWord(nextWordData), 300);
-          }
-        }
-      );
-
+      success(); // ハプティック: 成功
+      setLastExplosionWasPerfect(!hadMissThisWord);
+      setExplosionTrigger(Date.now());
+      handleWordComplete();
       // 次の単語用にミスフラグをリセット
       setHadMissThisWord(false);
-      resetWordState();
     } else {
       // 不正解 - ミスを記録して入力をクリア
+      recordMiss();
       playMissSound();
+      damage(); // ハプティック: ダメージ
       setUserInput('');
       setHadMissThisWord(true);
-      damageHP(HP_CONFIG.missDamage);
+      // HPダメージ
+      const newHP = Math.max(0, currentHP - HP_CONFIG.missDamage);
+      setCurrentHP(newHP);
+
+      // クリティカル警告ハプティック
+      if (newHP <= HP_CONFIG.criticalThreshold && newHP > 0) {
+        critical();
+      }
     }
-  }, [
-    currentWord,
-    userInput,
-    validateTypewriterInput,
-    playEnterExplosion,
-    triggerExplosion,
-    hadMissThisWord,
-    handleWordComplete,
-    recoverHP,
-    navigateTo,
-    nextWord,
-    session,
-    initializeWord,
-    setHadMissThisWord,
-    resetWordState,
-    playMissSound,
-    setUserInput,
-    damageHP,
-  ]);
+  }, [currentWord, userInput, currentHP, validateTypewriterInput, handleWordComplete, recordMiss, playMissSound, playEnterExplosion, success, damage, critical]);
 
-  // インスタントモード: キー入力を処理
-  const handleInstantKeyInput = useCallback(
-    (key: string) => {
-      if (!session?.typingState || session.typingState.isComplete) {
-        return;
-      }
-
-      const now = performance.now();
-      const latency = lastKeyTimeRef.current ? now - lastKeyTimeRef.current : 0;
-      lastKeyTimeRef.current = now;
-
-      const result = processKeyInput(session.typingState, key);
-
-      updateKeyStats(key.toLowerCase(), result.isValid, latency);
-
-      if (result.isMiss) {
-        playMissSound();
-        damageHP(HP_CONFIG.missDamage);
-        return;
-      }
-
-      if (result.isValid) {
-        setTypingState(result.newState);
-
-        if (result.isWordComplete) {
-          triggerExplosion(true);
-          handleWordComplete(
-            () => recoverHP(HP_CONFIG.correctRecovery),
-            () => navigateTo('result'),
-            () => {
-              nextWord();
-              const nextIndex = (session?.currentWordIndex || 0) + 1;
-              const nextWordData = session?.words[nextIndex];
-              if (nextWordData) {
-                setTimeout(() => initializeWord(nextWordData), 300);
-              }
-            }
-          );
-        } else {
-          playTypeSound(session?.combo || 0);
-        }
-      }
-    },
-    [
-      session,
-      setTypingState,
-      updateKeyStats,
-      playMissSound,
-      damageHP,
-      playTypeSound,
-      triggerExplosion,
-      handleWordComplete,
-      recoverHP,
-      navigateTo,
-      nextWord,
-      initializeWord,
-    ]
-  );
+  // 押されたキーを光らせる（2秒かけてフェードアウト）
+  const flashKey = useCallback((key: string) => {
+    const now = Date.now();
+    const keyLower = key.toLowerCase();
+    
+    // 同じキーが既にあれば削除してから追加（タイムスタンプを更新）
+    setRecentPressedKeys(prev => {
+      const filtered = prev.filter(k => k.key !== keyLower);
+      return [...filtered, { key: keyLower, timestamp: now }];
+    });
+    
+    // 2秒後にこのキーを削除
+    setTimeout(() => {
+      setRecentPressedKeys(prev => prev.filter(k => k.timestamp !== now || k.key !== keyLower));
+    }, 2000);
+  }, []);
 
   // キーボードイベントリスナー
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.metaKey || e.ctrlKey || e.altKey) return;
-
+      
       if (e.key === 'Escape') {
         navigateTo('stageSelect');
         return;
@@ -255,7 +339,7 @@ export function useTyping() {
           handleBackspace();
           return;
         }
-
+        
         if (e.key === 'Enter') {
           e.preventDefault();
           handleEnterConfirm();
@@ -264,14 +348,14 @@ export function useTyping() {
 
         if (e.key.length === 1) {
           e.preventDefault();
-          flashKey(e.key);
+          flashKey(e.key); // キーを光らせる
           handleTypewriterKeyInput(e.key);
         }
       } else {
         // インスタントモード
         if (e.key.length === 1) {
           e.preventDefault();
-          flashKey(e.key);
+          flashKey(e.key); // キーを光らせる
           handleInstantKeyInput(e.key);
         }
       }
@@ -298,6 +382,32 @@ export function useTyping() {
     }
   }, [currentWord, session?.typingState, initializeWord]);
 
+  // 入力の正誤状態を計算（タイプライターモード用）
+  // romajiEngineを使って1文字ずつ検証
+  const getInputStatus = useCallback(() => {
+    if (!isTypewriterMode || !currentWord) {
+      return { chars: [], isPartiallyCorrect: true };
+    }
+
+    const chars: { char: string; isCorrect: boolean }[] = [];
+    let state: TypingState = createInitialState(currentWord.hiragana);
+    let isPartiallyCorrect = true;
+
+    for (const char of userInput) {
+      const result = processKeyInput(state, char.toLowerCase());
+      
+      if (result.isMiss || !result.isValid) {
+        chars.push({ char, isCorrect: false });
+        isPartiallyCorrect = false;
+      } else {
+        chars.push({ char, isCorrect: true });
+        state = result.newState;
+      }
+    }
+
+    return { chars, isPartiallyCorrect };
+  }, [isTypewriterMode, currentWord, userInput]);
+
   return {
     currentWord,
     typingState: session?.typingState,
@@ -309,12 +419,14 @@ export function useTyping() {
     progress: session
       ? ((session.currentWordIndex + 1) / session.words.length) * 100
       : 0,
-    validKeys: session?.typingState ? getCurrentValidKeys(session.typingState) : [],
+    validKeys: session?.typingState
+      ? getCurrentValidKeys(session.typingState)
+      : [],
     displayRomaji: correctRomaji,
     // タイプライターモード用
     isTypewriterMode,
     userInput,
-    inputStatus: getInputStatus(userInput, currentWord),
+    inputStatus: getInputStatus(),
     explosionTrigger,
     isPerfect: lastExplosionWasPerfect,
     // キーボード演出用

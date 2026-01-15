@@ -9,7 +9,6 @@ import { useGameStore } from '@/stores/gameStore';
 import { useProgressStore } from '@/stores/progressStore';
 import { useButtonClick, useMenuSelect } from '@/utils/soundUtils';
 import { BackgroundEffect } from '@/components/common/BackgroundEffect';
-import { preloadLateChapters } from '@/data/words';
 
 const CHAPTERS = [
   { id: 1, kanji: 'ハンター試験編', romaji: 'HUNTER EXAM', description: '念の基礎・ホームポジション', stages: 6 },
@@ -18,7 +17,7 @@ const CHAPTERS = [
   { id: 4, kanji: 'ヨークシン編', romaji: 'YORKNEW CITY', description: 'オークションと対決', stages: 6 },
   { id: 5, kanji: 'G・I編', romaji: 'GREED ISLAND', description: 'ゲームの冒険', stages: 6 },
   { id: 6, kanji: 'キメラアント編', romaji: 'CHIMERA ANT', description: '最終決戦', stages: 6 },
-  { id: 7, kanji: '選挙編・暗黒大陸編', romaji: 'ELECTION ARC & DARK CONTINENT', description: '王位継承戦と未知の大陸', stages: 6 },
+  { id: 7, kanji: '選挙・暗黒大陸編', romaji: 'ELECTION & DARK CONTINENT', description: '新章への旅立ち', stages: 6 },
 ];
 
 export const LevelSelectScreen: React.FC = () => {
@@ -42,13 +41,6 @@ export const LevelSelectScreen: React.FC = () => {
       navigateTo('stageSelect');
     }
   }, [isChapterUnlocked, selectChapter, navigateTo]);
-
-  // chapter5-7の事前ロード
-  useEffect(() => {
-    preloadLateChapters().catch(err => {
-      console.error('Failed to preload late chapters:', err);
-    });
-  }, []);
 
   // キーボード操作
   useEffect(() => {

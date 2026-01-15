@@ -6,6 +6,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { getComboMilestone, type ComboMilestoneConfig } from '@/constants/gameJuice';
+import { useHaptics } from '@/hooks/useHaptics';
 
 interface ComboEffectProps {
   combo: number;
@@ -14,12 +15,16 @@ interface ComboEffectProps {
 export const ComboEffect: React.FC<ComboEffectProps> = ({ combo }) => {
   const [activeMilestone, setActiveMilestone] = useState<ComboMilestoneConfig | null>(null);
   const prevComboRef = useRef(combo);
+  const { comboMilestone } = useHaptics();
 
   useEffect(() => {
     const milestone = getComboMilestone(combo, prevComboRef.current);
 
     if (milestone) {
       setActiveMilestone(milestone);
+
+      // ハプティック: コンボマイルストーン達成時の振動
+      comboMilestone(combo);
 
       // 演出終了後にクリア
       const timer = setTimeout(() => {
@@ -30,7 +35,7 @@ export const ComboEffect: React.FC<ComboEffectProps> = ({ combo }) => {
     }
 
     prevComboRef.current = combo;
-  }, [combo]);
+  }, [combo, comboMilestone]);
 
   return (
     <AnimatePresence>
