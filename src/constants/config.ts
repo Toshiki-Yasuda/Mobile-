@@ -69,6 +69,10 @@ export const DEFAULT_SETTINGS = {
   darkMode: true,    // ダークモードをデフォルトに
   hapticEnabled: true,  // ハプティックフィードバック有効
   hapticIntensity: 100, // 振動強度（0-100）
+
+  // === パフォーマンス設定 ===
+  particleQuality: 'auto' as const,  // 'auto' | 'high' | 'medium' | 'low' - autoは端末に応じて自動判定
+  reduceAnimations: false,  // OS設定を無視してアニメーション削減を強制するか
 } as const;
 
 // ===== 初期統計 =====

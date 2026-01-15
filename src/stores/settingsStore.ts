@@ -12,6 +12,9 @@ import { DEFAULT_SETTINGS } from '@/constants/config';
 // ===== ローマ字ガイドレベル =====
 type RomajiGuideLevel = 'full' | 'partial' | 'none';
 
+// ===== パーティクル品質 =====
+type ParticleQuality = 'auto' | 'high' | 'medium' | 'low';
+
 // ===== ストア型定義 =====
 interface SettingsStore {
   // === 音声設定 ===
@@ -29,6 +32,10 @@ interface SettingsStore {
   hapticEnabled: boolean;
   hapticIntensity: number; // 0-100
 
+  // === パフォーマンス設定 ===
+  particleQuality: ParticleQuality;
+  reduceAnimations: boolean;
+
   // === アクション ===
   setSoundEnabled: (enabled: boolean) => void;
   setBgmEnabled: (enabled: boolean) => void;
@@ -39,6 +46,8 @@ interface SettingsStore {
   setDarkMode: (darkMode: boolean) => void;
   setHapticEnabled: (enabled: boolean) => void;
   setHapticIntensity: (intensity: number) => void;
+  setParticleQuality: (quality: ParticleQuality) => void;
+  setReduceAnimations: (reduce: boolean) => void;
   resetSettings: () => void;
 }
 
@@ -70,6 +79,10 @@ export const useSettingsStore = create<SettingsStore>()(
 
       setHapticIntensity: (intensity) =>
         set({ hapticIntensity: Math.max(0, Math.min(100, intensity)) }),
+
+      setParticleQuality: (quality) => set({ particleQuality: quality }),
+
+      setReduceAnimations: (reduce) => set({ reduceAnimations: reduce }),
 
       resetSettings: () => set(DEFAULT_SETTINGS),
     }),
