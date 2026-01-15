@@ -281,3 +281,50 @@
   );
   pointer-events: none;
 }
+
+/* ===== 高コントラストモード ===== */
+.high-contrast-mode {
+  --color-text: #ffffff;
+  --color-bg: #000000;
+  --color-accent: #ffff00;
+  --color-danger: #ff0000;
+  --color-success: #00ff00;
+  --color-warning: #ffaa00;
+}
+
+/* 高コントラストモード：テキスト強調 */
+.high-contrast-mode body {
+  @apply text-white;
+  background-color: #000000;
+}
+
+/* 高コントラストモード：アクセント色 */
+.high-contrast-mode .text-hunter-gold {
+  @apply text-yellow-300;
+}
+
+.high-contrast-mode .bg-hunter-gold {
+  @apply bg-yellow-300;
+}
+
+/* 高コントラストモード：危険色 */
+.high-contrast-mode .text-red-500 {
+  @apply text-red-400;
+}
+
+.high-contrast-mode .bg-red-500,
+.high-contrast-mode .border-red-500 {
+  @apply bg-red-600 border-red-600;
+}
+
+/* 高コントラストモード：成功色 */
+.high-contrast-mode .text-green-500,
+.high-contrast-mode .text-green-400 {
+  @apply text-green-300;
+}
+
+/* 高コントラストモード：警告色 */
+.high-contrast-mode .text-yellow-500,
+.high-contrast-mode .text-yellow-400 {
+  @apply text-yellow-200;
+}

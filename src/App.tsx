@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useGameStore } from './stores/gameStore';
 import { useProgressStore } from './stores/progressStore';
+import { useSettingsStore } from './stores/settingsStore';
 import { useTheme } from './hooks/useTheme';
 import { PasswordScreen } from './components/screens/PasswordScreen';
 import { TitleScreen } from './components/screens/TitleScreen';
@@ -28,6 +29,7 @@ function App() {
 
   const { currentScreen, loading, error, clearError, selectedChapter, navigateTo } = useGameStore();
   const { markBossDefeated, updateStatistics, unlockChapter } = useProgressStore();
+  const { enableHighContrast } = useSettingsStore();
   const audioInitializedRef = useRef(false);
 
   // ボス結果を一時保存
@@ -221,7 +223,7 @@ function App() {
 
   return (
     <ErrorBoundary>
-      <div className="min-h-screen bg-background">
+      <div className={`min-h-screen bg-background ${enableHighContrast ? 'high-contrast-mode' : ''}`}>
         {/* エラー通知 */}
         {error.hasError && (
           <div className="fixed top-4 right-4 z-50 animate-slide-down">
