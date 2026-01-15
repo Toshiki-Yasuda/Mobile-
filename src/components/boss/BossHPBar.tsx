@@ -48,10 +48,11 @@ export const BossHPBar: React.FC<BossHPBarProps> = ({
         </h2>
         <motion.div
           className={`text-sm font-bold drop-shadow-lg ${getHPTextColor()}`}
-          animate={{ scale: hpPercentage < 20 ? [1, 1.1, 1] : 1 }}
+          animate={{ scale: isLowHP ? [1, 1.1, 1] : 1 }}
           transition={{
             duration: 0.8,
-            repeat: hpPercentage < 20 ? Infinity : 0,
+            ease: 'easeInOut',
+            repeat: isLowHP ? Infinity : 0,
           }}
         >
           {Math.ceil(currentHP)} / {Math.ceil(maxHP)}
