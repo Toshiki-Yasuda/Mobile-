@@ -3,8 +3,9 @@
  * 戦闘結果、ランク、報酬を表示
  */
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { motion } from 'framer-motion';
+import { useSound } from '@/hooks/useSound';
 import type { BossReward } from '@/types/boss';
 
 interface BossResultScreenProps {
@@ -64,6 +65,29 @@ export const BossResultScreen: React.FC<BossResultScreenProps> = ({
   onRetry,
   onContinue,
 }) => {
+  const { playResultSound, playAchievementSound } = useSound();
+
+  // 結果表示時のサウンド再生
+  useEffect(() => {
+    // ランク表示タイミングでランク音を再生（700msデレイ）
+    const resultTimer = setTimeout(() => {
+      playResultSound(rank);
+    }, 700);
+
+    // 新記録達成時に別音を再生（1000msデレイ）
+    const achievementTimer = setTimeout(() => {
+      // 勝利でS+またはS時に達成音を再生
+      if (isVictory && (rank === 'S+' || rank === 'S')) {
+        playAchievementSound(rank);
+      }
+    }, 1000);
+
+    return () => {
+      clearTimeout(resultTimer);
+      clearTimeout(achievementTimer);
+    };
+  }, [rank, isVictory, playResultSound, playAchievementSound]);
+
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: {
