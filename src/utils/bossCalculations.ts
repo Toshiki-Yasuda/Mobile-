@@ -259,6 +259,64 @@ export const getBossRankDescription = (rank: BossRank): string => {
 };
 
 /**
+ * 章別の攻撃パターンを取得
+ * @param chapter チャプター番号
+ * @param phase ボスのフェーズ
+ * @returns 攻撃パターン（'normal' | 'aggressive' | 'combined'）
+ */
+export const getBossAttackPattern = (chapter: number, phase: number): string => {
+  switch (chapter) {
+    case 1:
+      // Chapter 1: 通常攻撃のみ
+      return 'normal';
+    case 2:
+      // Chapter 2: フェーズが進むと攻撃速度UP
+      return phase >= 2 ? 'aggressive' : 'normal';
+    case 3:
+      // Chapter 3: 複合パターン（速度 + 多段攻撃）
+      return phase >= 3 ? 'combined' : 'aggressive';
+    case 4:
+      // Chapter 4: 時間経過で段階的に強化
+      return phase >= 2 ? 'aggressive' : 'normal';
+    case 5:
+      // Chapter 5: 常に複合攻撃
+      return 'combined';
+    case 6:
+      // Chapter 6: 最初から複合、最後は最強
+      return phase >= 3 ? 'intense' : 'combined';
+    case 7:
+      // Chapter 7: 適応攻撃（全パターン混在）
+      return 'adaptive';
+    default:
+      return 'normal';
+  }
+};
+
+/**
+ * 攻撃パターンに基づいた攻撃間隔を計算
+ * @param pattern 攻撃パターン
+ * @param baseInterval 基本間隔（ms）
+ * @returns 実際の攻撃間隔（ms）
+ */
+export const getAttackIntervalByPattern = (pattern: string, baseInterval: number): number => {
+  switch (pattern) {
+    case 'normal':
+      return baseInterval;
+    case 'aggressive':
+      return Math.max(5000, baseInterval * 0.7);
+    case 'combined':
+      return Math.max(4000, baseInterval * 0.6);
+    case 'intense':
+      return Math.max(3000, baseInterval * 0.5);
+    case 'adaptive':
+      // ランダムな間隔
+      return Math.max(3000, baseInterval * (0.4 + Math.random() * 0.3));
+    default:
+      return baseInterval;
+  }
+};
+
+/**
  * ボスの攻撃予告メッセージを生成
  */
 export const generateBossWarningMessage = (bossName: string, attackType: string): string => {

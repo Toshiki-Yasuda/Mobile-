@@ -16,6 +16,8 @@ import {
   generateBossWarningMessage,
   isCriticalHit,
   getBossAttackInterval,
+  getBossAttackPattern,
+  getAttackIntervalByPattern,
 } from '@/utils/bossCalculations';
 import { ALL_BOSS_DIFFICULTIES } from '@/constants/bossConfigs';
 import type { BossBattleState, BossReward } from '@/types/boss';
@@ -116,7 +118,10 @@ export const BossScreen: React.FC<BossScreenProps> = ({ chapterId, onBattleCompl
     const difficulty = ALL_BOSS_DIFFICULTIES[chapterId];
     if (difficulty) {
       const currentPhase = calculateBossPhase(battle.bossHP, battle.bossMaxHP, 4);
-      const interval = getBossAttackInterval(currentPhase, 'normal');
+      // 章別の攻撃パターンを取得
+      const attackPattern = getBossAttackPattern(chapterId, currentPhase);
+      // パターンに基づいた攻撃間隔を計算
+      const interval = getAttackIntervalByPattern(attackPattern, 10000);
 
       if (attackTimerRef.current) {
         clearTimeout(attackTimerRef.current);
