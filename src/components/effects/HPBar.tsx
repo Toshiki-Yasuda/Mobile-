@@ -7,7 +7,7 @@ import React, { useEffect, useState, useRef, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { HP_CONFIG } from '@/constants/gameJuice';
 import { useHaptics } from '@/hooks/useHaptics';
-import { isLowPowerDevice } from '@/utils/deviceUtils';
+import { isLowPowerDevice, prefersReducedMotion } from '@/utils/deviceUtils';
 
 interface HPBarProps {
   currentHP: number;
@@ -25,12 +25,13 @@ export const HPBar: React.FC<HPBarProps> = ({
   const prevHPRef = useRef(currentHP);
   const { damage, critical } = useHaptics();
   const lowPowerDevice = useMemo(() => isLowPowerDevice(), []);
+  const shouldReduceMotion = useMemo(() => prefersReducedMotion(), []);
 
-  // パフォーマンス最適化：低性能デバイスではパルスアニメーションを無効化
+  // パフォーマンス最適化：低性能デバイスまたはmotion-reduceでパルスアニメーションを無効化
   const pulseAnimation = useMemo(() => ({
-    duration: lowPowerDevice ? 0 : 1.2,  // 低性能デバイスでは無効
-    repeat: lowPowerDevice ? 0 : Infinity,
-  }), [lowPowerDevice]);
+    duration: lowPowerDevice || shouldReduceMotion ? 0 : 1.2,
+    repeat: lowPowerDevice || shouldReduceMotion ? 0 : Infinity,
+  }), [lowPowerDevice, shouldReduceMotion]);
 
   // ダメージ/回復エフェクト
   const [showDamage, setShowDamage] = useState(false);

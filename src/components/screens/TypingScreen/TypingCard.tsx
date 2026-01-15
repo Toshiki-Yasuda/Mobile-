@@ -9,7 +9,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { APP_CONFIG } from '@/constants/config';
 import { EFFECT_DURATIONS, EXPLOSION_CONFIG, getDestructionType } from '@/constants/gameJuice';
 import { easings } from '@/utils/animations';
-import { isLowPowerDevice } from '@/utils/deviceUtils';
+import { isLowPowerDevice, prefersReducedMotion } from '@/utils/deviceUtils';
 import { CardDestruction } from '@/components/effects';
 import type { Word } from '@/types/game';
 import type { TypingState } from '@/types/romaji';
@@ -17,6 +17,18 @@ import type { TypingState } from '@/types/romaji';
 // 低性能デバイス向けのインデックス配列を生成する関数
 const getExplosionIndices = () => {
   const lowPower = isLowPowerDevice();
+  const reduceMotion = prefersReducedMotion();
+
+  // motion-reduceの場合は爆発エフェクトを完全に無効化
+  if (reduceMotion) {
+    return {
+      rayIndices: [],
+      particleIndices: [],
+      lowPower: true,
+      reduceMotion: true,
+    };
+  }
+
   // 低性能デバイスでは光線を8個→4個、パーティクルを12個→6個に削減
   const rayCount = lowPower ? Math.ceil(EXPLOSION_CONFIG.RAY_COUNT / 2) : EXPLOSION_CONFIG.RAY_COUNT;
   const particleCount = lowPower ? Math.ceil(EXPLOSION_CONFIG.PARTICLE_COUNT / 2) : EXPLOSION_CONFIG.PARTICLE_COUNT;
@@ -25,6 +37,7 @@ const getExplosionIndices = () => {
     rayIndices: Array.from({ length: rayCount }, (_, i) => i),
     particleIndices: Array.from({ length: particleCount }, (_, i) => i),
     lowPower,
+    reduceMotion: false,
   };
 };
 
@@ -66,7 +79,7 @@ export const TypingCard: React.FC<TypingCardProps> = ({
   const [showExplosion, setShowExplosion] = useState(false);
 
   // 低性能デバイス判定とインデックス取得
-  const { rayIndices, particleIndices, lowPower } = useMemo(() => getExplosionIndices(), []);
+  const { rayIndices, particleIndices, lowPower, reduceMotion } = useMemo(() => getExplosionIndices(), []);
 
   // パーティクルのランダム値をキャッシュ（マウント時に固定）
   const particleConfigs = useMemo(() => {
@@ -193,9 +206,9 @@ export const TypingCard: React.FC<TypingCardProps> = ({
         isActive={showExplosion}
       />
 
-      {/* 爆発エフェクト */}
+      {/* 爆発エフェクト（motion-reduceでは無効） */}
       <AnimatePresence>
-        {showExplosion && (
+        {showExplosion && !reduceMotion && (
           <>
             {/* 中央からの光の爆発 */}
             <motion.div

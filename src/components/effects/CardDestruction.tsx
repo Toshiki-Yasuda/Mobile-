@@ -9,7 +9,7 @@
 import React, { useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { DESTRUCTION_CONFIGS, DestructionType } from '@/constants/gameJuice';
-import { isLowPowerDevice, getParticleLimit } from '@/utils/deviceUtils';
+import { isLowPowerDevice, getParticleLimit, prefersReducedMotion } from '@/utils/deviceUtils';
 
 interface CardDestructionProps {
   type: DestructionType;
@@ -20,10 +20,11 @@ interface CardDestructionProps {
 const ShatterEffect: React.FC<{ isActive: boolean }> = ({ isActive }) => {
   const config = DESTRUCTION_CONFIGS.shatter;
   const lowPowerDevice = useMemo(() => isLowPowerDevice(), []);
+  const shouldReduceMotion = useMemo(() => prefersReducedMotion(), []);
 
   const fragments = useMemo(() => {
-    // 低性能デバイスではフラグメント数を削減（6 → 3）
-    const fragmentCount = lowPowerDevice ? Math.ceil(config.fragments / 2) : config.fragments;
+    // motion-reduceまたは低性能デバイスではフラグメント数を削減（6 → 0または3）
+    const fragmentCount = shouldReduceMotion ? 0 : (lowPowerDevice ? Math.ceil(config.fragments / 2) : config.fragments);
     return Array.from({ length: fragmentCount }, (_, i) => {
       const angle = (i / config.fragments) * Math.PI * 2;
       const distance = config.spread * (0.5 + Math.random() * 0.5);
@@ -91,8 +92,10 @@ const ShatterEffect: React.FC<{ isActive: boolean }> = ({ isActive }) => {
 // 斬撃演出
 const SliceEffect: React.FC<{ isActive: boolean }> = ({ isActive }) => {
   const config = DESTRUCTION_CONFIGS.slice;
+  const shouldReduceMotion = useMemo(() => prefersReducedMotion(), []);
 
   if (!isActive) return null;
+  if (shouldReduceMotion) return null;  // motion-reduceでは斬撃演出を無効化
 
   return (
     <>
@@ -184,10 +187,11 @@ const ExplodeEffect: React.FC<{ isActive: boolean }> = ({ isActive }) => {
   const config = DESTRUCTION_CONFIGS.explode;
   const lowPowerDevice = useMemo(() => isLowPowerDevice(), []);
   const particleLimit = useMemo(() => getParticleLimit(), []);
+  const shouldReduceMotion = useMemo(() => prefersReducedMotion(), []);
 
   const particles = useMemo(() => {
-    // 低性能デバイスではパーティクル数を制限（10 → 5）
-    const particleCount = lowPowerDevice ? Math.min(config.particles / 2, particleLimit) : config.particles;
+    // motion-reduceまたは低性能デバイスではパーティクル数を制限（10 → 0または5）
+    const particleCount = shouldReduceMotion ? 0 : (lowPowerDevice ? Math.min(config.particles / 2, particleLimit) : config.particles);
     return Array.from({ length: Math.ceil(particleCount) }, (_, i) => {
       const angle = (i / config.particles) * Math.PI * 2;
       const distance = config.spread * (0.6 + Math.random() * 0.4);

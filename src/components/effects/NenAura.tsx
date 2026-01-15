@@ -6,7 +6,7 @@
 import React, { useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { createNenAuraPulse } from '@/utils/animations';
-import { isLowPowerDevice, getParticleLimit } from '@/utils/deviceUtils';
+import { isLowPowerDevice, getParticleLimit, prefersReducedMotion } from '@/utils/deviceUtils';
 import {
   NEN_THRESHOLDS,
   NEN_AURA_COLORS,
@@ -22,6 +22,7 @@ export const NenAura: React.FC<NenAuraProps> = ({ combo, className = '' }) => {
   const pulseConfig = createNenAuraPulse(combo);
   const lowPowerDevice = useMemo(() => isLowPowerDevice(), []);
   const particleLimit = useMemo(() => getParticleLimit(), []);
+  const shouldReduceMotion = useMemo(() => prefersReducedMotion(), []);
 
   // パーティクルのランダム値をキャッシュ（マウント時に固定）
   const particleConfigs = useMemo(() => {
@@ -72,8 +73,8 @@ export const NenAura: React.FC<NenAuraProps> = ({ combo, className = '' }) => {
         }}
       />
 
-      {/* パーティクル効果（コンボ閾値以上、低性能デバイスでは無効） */}
-      {combo >= NEN_AURA_CONFIG.PARTICLE_THRESHOLD && !lowPowerDevice && particleConfigs.length > 0 && (
+      {/* パーティクル効果（コンボ閾値以上、低性能デバイスでは無効、motion-reduceでも無効） */}
+      {combo >= NEN_AURA_CONFIG.PARTICLE_THRESHOLD && !lowPowerDevice && !shouldReduceMotion && particleConfigs.length > 0 && (
         <div className="absolute inset-0 overflow-hidden">
           {particleConfigs
             .slice(0, Math.min(
