@@ -177,7 +177,7 @@ export const BossBattleContainer: React.FC<BossBattleContainerProps> = ({
 
       // ストアに結果を保存
       const bossId = `boss_chapter${chapterId}`;
-      useBossStore().endBossBattle({
+      store.endBossBattle({
         bossId,
         chapterId,
         rank: result.rank,
@@ -202,16 +202,16 @@ export const BossBattleContainer: React.FC<BossBattleContainerProps> = ({
         rewards,
       });
     },
-    [chapterId, currentBattle?.playerHP, onBattleComplete]
+    [chapterId, currentBattle?.playerHP, onBattleComplete, store]
   );
 
   /**
    * バトル終了時の処理
    */
   const handleBattleExit = useCallback(() => {
-    useBossStore().clearBattle();
+    store.clearBattle();
     onExit();
-  }, [onExit]);
+  }, [store, onExit]);
 
   // 単語データがない場合
   if (!words || words.length === 0) {

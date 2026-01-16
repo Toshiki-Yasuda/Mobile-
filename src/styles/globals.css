@@ -10,6 +10,13 @@
     -moz-osx-font-smoothing: grayscale;
   }
 
+  /* Reactアプリロード後はindex.htmlの初期ローダースタイルをリセット */
+  #root {
+    display: block;
+    width: 100%;
+    min-height: 100vh;
+  }
+
   /* ダークモード（デフォルト） */
   body {
     @apply bg-hunter-dark text-white;
