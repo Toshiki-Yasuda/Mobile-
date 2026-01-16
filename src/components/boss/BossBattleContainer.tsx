@@ -11,6 +11,7 @@ import { useBossBattle } from '@/hooks/useBossBattle';
 import { BossScreen } from '@/components/screens/BossScreen';
 import { generateBossRewards } from '@/constants/bossConfigs';
 import { useSound } from '@/hooks/useSound';
+import { ScreenFlash, ComboEffect, ScreenShake } from '@/components/effects';
 import {
   createInitialState,
   processKeyInput,
@@ -53,6 +54,9 @@ export const BossBattleContainer: React.FC<BossBattleContainerProps> = ({
     type: 'none',
     message: '',
   });
+  // エフェクト用トリガー
+  const [successTrigger, setSuccessTrigger] = useState(0);
+  const [missTrigger, setMissTrigger] = useState(0);
 
   // 初期化
   useEffect(() => {
@@ -84,6 +88,9 @@ export const BossBattleContainer: React.FC<BossBattleContainerProps> = ({
     battle.handleCorrectAnswer(currentWord.difficulty);
     playConfirmSound(currentBattle?.comboCount || 0);
 
+    // エフェクトトリガー更新（爽快感演出）
+    setSuccessTrigger(prev => prev + 1);
+
     // フィードバック表示
     setFeedback({ type: 'correct', message: '正解！' });
 
@@ -103,6 +110,9 @@ export const BossBattleContainer: React.FC<BossBattleContainerProps> = ({
     // カウンターダメージ
     battle.handleWrongAnswer();
     playMissSound();
+
+    // エフェクトトリガー更新（ミス演出）
+    setMissTrigger(prev => prev + 1);
 
     // フィードバック表示
     setFeedback({ type: 'wrong', message: 'ミス！' });
@@ -240,15 +250,32 @@ export const BossBattleContainer: React.FC<BossBattleContainerProps> = ({
 
   return (
     <div className="relative w-full h-screen bg-black overflow-hidden">
-      {/* ボス画面 */}
-      <div className="absolute inset-0">
-        <BossScreen
-          chapterId={chapterId}
-          onBattleComplete={handleBattleComplete}
-          onExit={handleBattleExit}
-          hidePlayerHP={battle.isBattleActive() && typingState !== null && currentWord !== null}
-        />
-      </div>
+      {/* 画面フラッシュエフェクト（最上位レイヤー） */}
+      <ScreenFlash
+        successTrigger={successTrigger}
+        missTrigger={missTrigger}
+        combo={currentBattle?.comboCount || 0}
+      />
+
+      {/* コンボマイルストーン演出 */}
+      <ComboEffect combo={currentBattle?.comboCount || 0} />
+
+      {/* メインコンテンツ（シェイクエフェクトでラップ） */}
+      <ScreenShake
+        trigger={missTrigger}
+        intensity="light"
+        successTrigger={successTrigger}
+        combo={currentBattle?.comboCount || 0}
+      >
+        {/* ボス画面 */}
+        <div className="absolute inset-0">
+          <BossScreen
+            chapterId={chapterId}
+            onBattleComplete={handleBattleComplete}
+            onExit={handleBattleExit}
+            hidePlayerHP={battle.isBattleActive() && typingState !== null && currentWord !== null}
+          />
+        </div>
 
       {/* タイピング入力エリア（オーバーレイ） */}
       <AnimatePresence>
@@ -339,6 +366,7 @@ export const BossBattleContainer: React.FC<BossBattleContainerProps> = ({
           </motion.div>
         )}
       </AnimatePresence>
+      </ScreenShake>
     </div>
   );
 };
