@@ -3,7 +3,7 @@
  * クールデザイン
  */
 
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
 import { useGameStore } from '@/stores/gameStore';
 import { useProgressStore } from '@/stores/progressStore';
@@ -20,11 +20,26 @@ const CHAPTERS = [
   { id: 7, name: 'NEW ERA', subtitle: '新章' },
 ];
 
+// 各チャプターのステージ数
+const STAGES_PER_CHAPTER = 6;
+
 export const AdminScreen: React.FC = () => {
   const { navigateTo } = useGameStore();
-  const { isChapterUnlocked, unlockChapter, lockChapter, resetAllProgress } = useProgressStore();
+  const {
+    isChapterUnlocked,
+    unlockChapter,
+    lockChapter,
+    resetAllProgress,
+    isStageCleared,
+    clearStage,
+    unclearStage,
+    isBossDefeated,
+    markBossDefeated,
+    unmarkBossDefeated,
+  } = useProgressStore();
   const { handleClick } = useButtonClick();
   const adminAudioRef = useRef<HTMLAudioElement | null>(null);
+  const [selectedChapter, setSelectedChapter] = useState<number | null>(null);
 
   useEffect(() => {
     bgmManager.pause();
@@ -57,6 +72,24 @@ export const AdminScreen: React.FC = () => {
 
   const handleUnlockAll = () => CHAPTERS.forEach((c) => unlockChapter(c.id));
   const handleReset = () => { if (confirm('Reset all progress?')) resetAllProgress(); };
+
+  // 選択したチャプターの全ステージをクリア
+  const handleClearAllStages = (chapterId: number) => {
+    for (let i = 1; i <= STAGES_PER_CHAPTER; i++) {
+      clearStage(`${chapterId}-${i}`);
+    }
+    // ボスも撃破扱いに
+    markBossDefeated(`boss_chapter${chapterId}`);
+  };
+
+  // 選択したチャプターの全ステージをリセット
+  const handleResetAllStages = (chapterId: number) => {
+    for (let i = 1; i <= STAGES_PER_CHAPTER; i++) {
+      unclearStage(`${chapterId}-${i}`);
+    }
+    // ボス撃破も取り消し
+    unmarkBossDefeated(`boss_chapter${chapterId}`);
+  };
 
   return (
     <div className="min-h-screen bg-hunter-dark relative overflow-hidden">
@@ -138,6 +171,106 @@ export const AdminScreen: React.FC = () => {
               </div>
             </motion.div>
 
+            {/* ステージ管理 */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2 }}
+              className="bg-hunter-dark-light/30 rounded-lg border border-purple-500/20 p-6"
+            >
+              <h2 className="font-title text-lg font-bold text-white tracking-wider mb-4">
+                STAGE UNLOCK STATUS
+              </h2>
+
+              {/* チャプター選択 */}
+              <div className="flex flex-wrap gap-2 mb-4">
+                {CHAPTERS.map((chapter) => (
+                  <button
+                    key={chapter.id}
+                    onClick={() => setSelectedChapter(selectedChapter === chapter.id ? null : chapter.id)}
+                    className={`px-3 py-1 rounded text-sm font-title tracking-wider transition-all ${
+                      selectedChapter === chapter.id
+                        ? 'bg-purple-500 text-white'
+                        : 'bg-hunter-dark/50 text-white/60 hover:text-white hover:bg-hunter-dark-light'
+                    }`}
+                  >
+                    CH{chapter.id}
+                  </button>
+                ))}
+              </div>
+
+              {/* 選択したチャプターのステージ */}
+              {selectedChapter && (
+                <div className="space-y-3">
+                  <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
+                    {Array.from({ length: STAGES_PER_CHAPTER }, (_, i) => i + 1).map((stageNum) => {
+                      const stageId = `${selectedChapter}-${stageNum}`;
+                      const cleared = isStageCleared(stageId);
+                      const isBoss = stageNum === 6;
+                      const bossDefeated = isBoss && isBossDefeated(`boss_chapter${selectedChapter}`);
+
+                      return (
+                        <button
+                          key={stageNum}
+                          onClick={() => {
+                            if (isBoss) {
+                              if (bossDefeated) {
+                                unmarkBossDefeated(`boss_chapter${selectedChapter}`);
+                                unclearStage(stageId);
+                              } else {
+                                markBossDefeated(`boss_chapter${selectedChapter}`);
+                                clearStage(stageId);
+                              }
+                            } else {
+                              cleared ? unclearStage(stageId) : clearStage(stageId);
+                            }
+                          }}
+                          className={`p-2 rounded text-center transition-all ${
+                            isBoss
+                              ? bossDefeated
+                                ? 'bg-purple-500/30 border border-purple-400 text-purple-300'
+                                : 'bg-hunter-dark/50 border border-purple-500/30 text-purple-400/60'
+                              : cleared
+                              ? 'bg-success/20 border border-success/50 text-success'
+                              : 'bg-hunter-dark/50 border border-white/10 text-white/40'
+                          }`}
+                        >
+                          <div className="text-xs font-title">
+                            {isBoss ? '👹' : `S${stageNum}`}
+                          </div>
+                          <div className="text-[10px]">
+                            {isBoss ? (bossDefeated ? '✓' : '—') : (cleared ? '✓' : '—')}
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
+
+                  {/* チャプター一括操作 */}
+                  <div className="flex gap-2 mt-3">
+                    <button
+                      onClick={() => handleClearAllStages(selectedChapter)}
+                      className="flex-1 py-2 px-3 bg-success/10 hover:bg-success/20 text-success text-xs font-title tracking-wider rounded border border-success/30"
+                    >
+                      CLEAR ALL
+                    </button>
+                    <button
+                      onClick={() => handleResetAllStages(selectedChapter)}
+                      className="flex-1 py-2 px-3 bg-error/10 hover:bg-error/20 text-error text-xs font-title tracking-wider rounded border border-error/30"
+                    >
+                      RESET ALL
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {!selectedChapter && (
+                <p className="text-white/30 text-sm text-center py-4">
+                  チャプターを選択してステージを管理
+                </p>
+              )}
+            </motion.div>
+
             {/* アクションボタン */}
             <div className="flex flex-col sm:flex-row gap-4">
               <motion.button
@@ -149,7 +282,7 @@ export const AdminScreen: React.FC = () => {
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
               >
-                UNLOCK ALL
+                UNLOCK ALL CHAPTERS
               </motion.button>
 
               <motion.button
@@ -161,7 +294,7 @@ export const AdminScreen: React.FC = () => {
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
               >
-                RESET ALL
+                RESET ALL PROGRESS
               </motion.button>
             </div>
 

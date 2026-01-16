@@ -25,14 +25,19 @@ interface ProgressStore {
 
   // === アクション ===
   unlockChapter: (chapter: number) => void;
+  lockChapter: (chapter: number) => void;
   saveStageResult: (stageId: string, result: StageResult) => void;
+  clearStage: (stageId: string) => void;  // ステージをクリア済みにする（デバッグ用）
+  unclearStage: (stageId: string) => void;  // ステージのクリアを取り消す
   markBossDefeated: (bossId: string) => void;
+  unmarkBossDefeated: (bossId: string) => void;  // ボス撃破を取り消す
   addAchievement: (achievementId: string) => void;
   updateStatistics: (updates: Partial<Statistics>) => void;
   updateKeyStats: (key: string, isCorrect: boolean, latency: number) => void;
   updateStreak: () => void;
   addDailyLog: (log: Omit<DailyLog, 'date'>) => void;
   resetProgress: () => void;
+  resetAllProgress: () => void;
 
   // === ゲッター ===
   isStageCleared: (stageId: string) => boolean;
@@ -67,6 +72,13 @@ export const useProgressStore = create<ProgressStore>()(
             : [...state.unlockedChapters, chapter].sort((a, b) => a - b),
         })),
 
+      lockChapter: (chapter) =>
+        set((state) => ({
+          unlockedChapters: chapter === 1
+            ? state.unlockedChapters  // チャプター1はロックできない
+            : state.unlockedChapters.filter((c) => c !== chapter),
+        })),
+
       saveStageResult: (stageId, result) =>
         set((state) => {
           const existing = state.clearedStages[stageId];
@@ -84,10 +96,40 @@ export const useProgressStore = create<ProgressStore>()(
           return state;
         }),
 
+      // ステージをクリア済みにする（デバッグ用ダミー結果）
+      clearStage: (stageId) =>
+        set((state) => ({
+          clearedStages: {
+            ...state.clearedStages,
+            [stageId]: {
+              score: 1000,
+              accuracy: 100,
+              maxCombo: 10,
+              clearTime: 60000,
+              rank: 'S' as Rank,
+              clearedAt: new Date().toISOString(),
+            },
+          },
+        })),
+
+      // ステージのクリアを取り消す
+      unclearStage: (stageId) =>
+        set((state) => {
+          const { [stageId]: _, ...rest } = state.clearedStages;
+          return { clearedStages: rest };
+        }),
+
       markBossDefeated: (bossId) =>
         set((state) => ({
           defeatedBosses: new Set([...state.defeatedBosses, bossId]),
         })),
+
+      unmarkBossDefeated: (bossId) =>
+        set((state) => {
+          const newSet = new Set(state.defeatedBosses);
+          newSet.delete(bossId);
+          return { defeatedBosses: newSet };
+        }),
 
       addAchievement: (achievementId) =>
         set((state) => ({
@@ -192,6 +234,19 @@ export const useProgressStore = create<ProgressStore>()(
         }),
 
       resetProgress: () =>
+        set({
+          unlockedChapters: [1],
+          clearedStages: {},
+          totalScore: 0,
+          achievements: [],
+          statistics: DEFAULT_STATISTICS,
+          keyStatistics: {},
+          dailyLogs: [],
+          defeatedBosses: new Set(),
+        }),
+
+      // resetAllProgressはresetProgressのエイリアス
+      resetAllProgress: () =>
         set({
           unlockedChapters: [1],
           clearedStages: {},
