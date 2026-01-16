@@ -61,7 +61,7 @@ export const BossCharacter: React.FC<BossCharacterProps> = ({
 
   return (
     <motion.div
-      className="relative w-64 h-80 flex items-center justify-center"
+      className="relative w-80 h-[400px] lg:w-96 lg:h-[480px] flex items-center justify-center"
       variants={attackVariants}
       animate={getAnimationState()}
       style={{ scale }}
@@ -137,15 +137,15 @@ export const BossCharacter: React.FC<BossCharacterProps> = ({
 
       {/* ボス名プレート */}
       <motion.div
-        className="absolute -bottom-20 left-0 right-0 text-center"
+        className="absolute -bottom-24 left-0 right-0 text-center"
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.2 }}
       >
-        <h2 className="font-title text-2xl font-bold text-white drop-shadow-lg">
+        <h2 className="font-title text-3xl lg:text-4xl font-bold text-white drop-shadow-lg">
           {boss.name}
         </h2>
-        <p className="text-sm text-hunter-gold">{boss.japaneseTitle}</p>
+        <p className="text-base lg:text-lg text-hunter-gold">{boss.japaneseTitle}</p>
       </motion.div>
     </motion.div>
   );

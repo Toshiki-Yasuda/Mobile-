@@ -281,19 +281,19 @@ export const BossBattleContainer: React.FC<BossBattleContainerProps> = ({
               {/* 出題単語 */}
               <motion.div
                 key={currentWord.id}
-                className="text-center mb-4"
+                className="text-center mb-6"
                 initial={{ scale: 0.8, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
                 transition={{ type: 'spring' }}
               >
-                <p className="text-gray-400 text-sm mb-2">難易度: {'★'.repeat(currentWord.difficulty)}</p>
-                <p className="text-white text-3xl font-bold font-title">{currentWord.display}</p>
-                <p className="text-purple-300 text-lg mt-2">{currentWord.hiragana}</p>
+                <p className="text-gray-400 text-base mb-2">難易度: {'★'.repeat(currentWord.difficulty)}</p>
+                <p className="text-white text-5xl lg:text-6xl font-bold font-title">{currentWord.display}</p>
+                <p className="text-purple-300 text-xl lg:text-2xl mt-3">{currentWord.hiragana}</p>
               </motion.div>
 
               {/* ローマ字表示（入力済み + 残り） */}
-              <div className="text-center mb-4">
-                <div className="text-2xl font-mono tracking-wider">
+              <div className="text-center mb-6">
+                <div className="text-3xl lg:text-4xl font-mono tracking-wider">
                   {/* 入力済みのローマ字 */}
                   <span className="text-green-400">{typingState.confirmedRomaji}</span>
                   {/* 残りのローマ字（現在のトークン以降） */}
@@ -305,11 +305,10 @@ export const BossBattleContainer: React.FC<BossBattleContainerProps> = ({
                 </div>
               </div>
 
-
               {/* 次のキーヒント */}
               <div className="text-center mb-4">
-                <span className="text-gray-500 text-sm">次のキー: </span>
-                <span className="text-yellow-400 font-bold text-lg">
+                <span className="text-gray-500 text-base">次のキー: </span>
+                <span className="text-yellow-400 font-bold text-xl lg:text-2xl">
                   {getCurrentValidKeys(typingState).join(' / ')}
                 </span>
               </div>
