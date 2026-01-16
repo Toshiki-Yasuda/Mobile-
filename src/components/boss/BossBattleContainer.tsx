@@ -4,7 +4,7 @@
  * romajiEngineを使用してローマ字入力を正しく処理
  */
 
-import React, { useEffect, useState, useCallback, useRef } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useBossStore } from '@/stores/bossStore';
 import { useBossBattle } from '@/hooks/useBossBattle';
@@ -53,7 +53,6 @@ export const BossBattleContainer: React.FC<BossBattleContainerProps> = ({
     type: 'none',
     message: '',
   });
-  const inputRef = useRef<HTMLInputElement>(null);
 
   // 初期化
   useEffect(() => {
@@ -74,12 +73,6 @@ export const BossBattleContainer: React.FC<BossBattleContainerProps> = ({
     }
   }, [currentWord, wordIndex]);
 
-  // 入力フィールドにフォーカス
-  useEffect(() => {
-    if (inputRef.current && battle.isBattleActive()) {
-      inputRef.current.focus();
-    }
-  }, [typingState, battle]);
 
   /**
    * 正解処理（単語完了時）
@@ -120,9 +113,10 @@ export const BossBattleContainer: React.FC<BossBattleContainerProps> = ({
 
   /**
    * キーボード入力処理（romajiEngineを使用）
+   * windowレベルでイベントをキャッチ
    */
-  const handleKeyDown = useCallback(
-    (e: React.KeyboardEvent<HTMLInputElement>) => {
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
       if (!typingState || typingState.isComplete || !battle.isBattleActive() || !currentWord) {
         return;
       }
@@ -155,9 +149,11 @@ export const BossBattleContainer: React.FC<BossBattleContainerProps> = ({
           handleWordComplete();
         }
       }
-    },
-    [typingState, battle, handleMiss, handleWordComplete, playTypeSound, currentBattle?.comboCount, currentWord]
-  );
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [typingState, battle, handleMiss, handleWordComplete, playTypeSound, currentBattle?.comboCount, currentWord]);
 
   /**
    * バトル完了処理
@@ -250,6 +246,7 @@ export const BossBattleContainer: React.FC<BossBattleContainerProps> = ({
           chapterId={chapterId}
           onBattleComplete={handleBattleComplete}
           onExit={handleBattleExit}
+          hidePlayerHP={battle.isBattleActive() && typingState !== null && currentWord !== null}
         />
       </div>
 
@@ -263,6 +260,24 @@ export const BossBattleContainer: React.FC<BossBattleContainerProps> = ({
             exit={{ opacity: 0, y: 100 }}
           >
             <div className="max-w-2xl mx-auto">
+              {/* プレイヤーHP表示 */}
+              <div className="mb-4">
+                <div className="bg-black/70 border-2 border-blue-500 rounded-lg p-3">
+                  <div className="flex justify-between items-center mb-2">
+                    <span className="text-blue-400 font-bold text-sm">あなたのHP</span>
+                    <span className="text-white text-sm">{Math.max(0, currentBattle?.playerHP || 0)} / {currentBattle?.playerMaxHP || 100}</span>
+                  </div>
+                  <div className="w-full bg-gray-700 rounded-full h-4 overflow-hidden border border-blue-400">
+                    <motion.div
+                      className="h-full bg-gradient-to-r from-blue-500 to-cyan-400"
+                      initial={{ width: '100%' }}
+                      animate={{ width: `${((currentBattle?.playerHP || 0) / (currentBattle?.playerMaxHP || 100)) * 100}%` }}
+                      transition={{ duration: 0.3 }}
+                    />
+                  </div>
+                </div>
+              </div>
+
               {/* 出題単語 */}
               <motion.div
                 key={currentWord.id}
@@ -290,16 +305,6 @@ export const BossBattleContainer: React.FC<BossBattleContainerProps> = ({
                 </div>
               </div>
 
-              {/* 隠し入力フィールド（キーボードイベント用） */}
-              <input
-                ref={inputRef}
-                type="text"
-                value=""
-                onChange={() => {}}
-                onKeyDown={handleKeyDown}
-                className="absolute opacity-0 w-0 h-0"
-                autoFocus
-              />
 
               {/* 次のキーヒント */}
               <div className="text-center mb-4">

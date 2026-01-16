@@ -36,9 +36,10 @@ interface BossScreenProps {
     rewards: BossReward[];
   }) => void;
   onExit: () => void;
+  hidePlayerHP?: boolean;
 }
 
-export const BossScreen: React.FC<BossScreenProps> = ({ chapterId, onBattleComplete, onExit }) => {
+export const BossScreen: React.FC<BossScreenProps> = ({ chapterId, onBattleComplete, onExit, hidePlayerHP = false }) => {
   const store = useBossStore();
   const battle = store.currentBattle;
   const { enableCaptions } = useSettingsStore();
@@ -318,28 +319,30 @@ export const BossScreen: React.FC<BossScreenProps> = ({ chapterId, onBattleCompl
         />
       </motion.div>
 
-      {/* プレイヤーHP表示 */}
-      <motion.div
-        className="absolute bottom-32 left-1/2 -translate-x-1/2 w-3/4 max-w-lg z-10"
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.3 }}
-      >
-        <div className="bg-black/70 border-2 border-blue-500 rounded-lg p-3">
-          <div className="flex justify-between items-center mb-2">
-            <span className="text-blue-400 font-bold">あなたのHP</span>
-            <span className="text-white">{Math.max(0, battle.playerHP)} / {battle.playerMaxHP}</span>
+      {/* プレイヤーHP表示（タイピングオーバーレイがアクティブな時は非表示） */}
+      {!hidePlayerHP && (
+        <motion.div
+          className="absolute bottom-32 left-1/2 -translate-x-1/2 w-3/4 max-w-lg z-10"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3 }}
+        >
+          <div className="bg-black/70 border-2 border-blue-500 rounded-lg p-3">
+            <div className="flex justify-between items-center mb-2">
+              <span className="text-blue-400 font-bold">あなたのHP</span>
+              <span className="text-white">{Math.max(0, battle.playerHP)} / {battle.playerMaxHP}</span>
+            </div>
+            <div className="w-full bg-gray-700 rounded-full h-6 overflow-hidden border border-blue-400">
+              <motion.div
+                className="h-full bg-gradient-to-r from-blue-500 to-cyan-400"
+                initial={{ width: '100%' }}
+                animate={{ width: `${playerHpPercentage}%` }}
+                transition={{ duration: 0.3 }}
+              />
+            </div>
           </div>
-          <div className="w-full bg-gray-700 rounded-full h-6 overflow-hidden border border-blue-400">
-            <motion.div
-              className="h-full bg-gradient-to-r from-blue-500 to-cyan-400"
-              initial={{ width: '100%' }}
-              animate={{ width: `${playerHpPercentage}%` }}
-              transition={{ duration: 0.3 }}
-            />
-          </div>
-        </div>
-      </motion.div>
+        </motion.div>
+      )}
 
       {/* 戦闘統計 */}
       <motion.div
