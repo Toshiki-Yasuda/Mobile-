@@ -16,9 +16,7 @@
     "test:ui": "vitest --ui"
   },
   "dependencies": {
-    "clsx": "^2.0.0",
     "framer-motion": "^10.16.16",
-    "howler": "^2.2.4",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "zustand": "^4.4.7"
@@ -26,7 +24,6 @@
   "devDependencies": {
     "@testing-library/jest-dom": "^6.1.6",
     "@testing-library/react": "^14.1.2",
-    "@types/howler": "^2.2.11",
     "@types/react": "^18.2.45",
     "@types/react-dom": "^18.2.18",
     "@typescript-eslint/eslint-plugin": "^6.15.0",
