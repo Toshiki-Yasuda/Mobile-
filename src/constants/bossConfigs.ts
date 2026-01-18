@@ -341,6 +341,11 @@ export const calculateBossRank = (
   timeLimit: number | null,
   missCount: number
 ): 'S+' | 'S' | 'A+' | 'A' | 'B+' | 'B' | 'C' | 'D' => {
+  // D: 敗北（HP 0以下）- 最優先で判定
+  if (playerFinalHP <= 0) {
+    return 'D';
+  }
+
   const hpRatio = playerFinalHP / maxHP;
 
   // S+: 2分以内に無傷クリア
@@ -369,11 +374,11 @@ export const calculateBossRank = (
   }
 
   // B: 標準的なクリア
-  if (hpRatio > 0) {
+  if (hpRatio >= 0.05) {
     return 'B';
   }
 
-  // C: かろうじてクリア
+  // C: かろうじてクリア（HP 1〜5%）
   return 'C';
 };
 

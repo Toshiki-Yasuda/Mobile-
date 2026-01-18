@@ -76,6 +76,11 @@ export const calculateBossRank = (
   timeLimit: number | null,
   missCount: number
 ): BossRank => {
+  // D: 敗北（HP 0以下）- 最優先で判定
+  if (playerHP <= 0) {
+    return 'D';
+  }
+
   const hpRatio = playerHP / maxHP;
 
   // S+: 2分以内に無傷クリア（時間制限がある場合）
@@ -104,11 +109,11 @@ export const calculateBossRank = (
   }
 
   // B: 標準的なクリア
-  if (hpRatio > 0) {
+  if (hpRatio >= 0.05) {
     return 'B';
   }
 
-  // C: かろうじてクリア
+  // C: かろうじてクリア（HP 1〜5%）
   return 'C';
 };
 
@@ -273,8 +278,8 @@ export const getBossAttackPattern = (chapter: number, phase: number): string => 
       // Chapter 2: フェーズが進むと攻撃速度UP
       return phase >= 2 ? 'aggressive' : 'normal';
     case 3:
-      // Chapter 3: 複合パターン（速度 + 多段攻撃）
-      return phase >= 3 ? 'combined' : 'aggressive';
+      // Chapter 3: 段階的に強化（normal → aggressive → combined）
+      return phase >= 3 ? 'combined' : phase >= 2 ? 'aggressive' : 'normal';
     case 4:
       // Chapter 4: フェーズ3で複合攻撃に強化
       return phase >= 3 ? 'combined' : phase >= 2 ? 'aggressive' : 'normal';
