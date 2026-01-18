@@ -287,21 +287,35 @@ export const BossBattleContainer: React.FC<BossBattleContainerProps> = ({
             exit={{ opacity: 0, y: 100 }}
           >
             <div className="max-w-2xl mx-auto">
-              {/* プレイヤーHP表示 */}
-              <div className="mb-4">
-                <div className="bg-black/70 border-2 border-blue-500 rounded-lg p-3">
-                  <div className="flex justify-between items-center mb-2">
-                    <span className="text-blue-400 font-bold text-sm">あなたのHP</span>
-                    <span className="text-white text-sm">{Math.max(0, currentBattle?.playerHP || 0)} / {currentBattle?.playerMaxHP || 100}</span>
-                  </div>
-                  <div className="w-full bg-gray-700 rounded-full h-4 overflow-hidden border border-blue-400">
-                    <motion.div
-                      className="h-full bg-gradient-to-r from-blue-500 to-cyan-400"
-                      initial={{ width: '100%' }}
-                      animate={{ width: `${((currentBattle?.playerHP || 0) / (currentBattle?.playerMaxHP || 100)) * 100}%` }}
-                      transition={{ duration: 0.3 }}
-                    />
-                  </div>
+              {/* プレイヤーHP表示（ボスHPバーと統一デザイン） */}
+              <div className="mb-4 space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="font-title text-lg font-bold text-white drop-shadow-lg">あなた</span>
+                  <span className={`text-sm font-bold drop-shadow-lg ${
+                    ((currentBattle?.playerHP || 0) / (currentBattle?.playerMaxHP || 100)) * 100 > 50 ? 'text-blue-400' :
+                    ((currentBattle?.playerHP || 0) / (currentBattle?.playerMaxHP || 100)) * 100 > 25 ? 'text-yellow-400' :
+                    ((currentBattle?.playerHP || 0) / (currentBattle?.playerMaxHP || 100)) * 100 > 10 ? 'text-orange-400' : 'text-red-400'
+                  }`}>
+                    {Math.max(0, currentBattle?.playerHP || 0)} / {currentBattle?.playerMaxHP || 100}
+                  </span>
+                </div>
+                <div className="w-full bg-gray-900 rounded-full h-8 overflow-hidden border-2 border-gray-700 shadow-inner">
+                  <motion.div
+                    className={`h-full flex items-center justify-center shadow-lg bg-gradient-to-r ${
+                      ((currentBattle?.playerHP || 0) / (currentBattle?.playerMaxHP || 100)) * 100 > 50 ? 'from-blue-600 to-cyan-500' :
+                      ((currentBattle?.playerHP || 0) / (currentBattle?.playerMaxHP || 100)) * 100 > 25 ? 'from-yellow-600 to-yellow-500' :
+                      ((currentBattle?.playerHP || 0) / (currentBattle?.playerMaxHP || 100)) * 100 > 10 ? 'from-orange-600 to-orange-500' : 'from-red-700 to-red-600'
+                    }`}
+                    initial={{ width: '100%' }}
+                    animate={{ width: `${((currentBattle?.playerHP || 0) / (currentBattle?.playerMaxHP || 100)) * 100}%` }}
+                    transition={{ duration: 0.3 }}
+                  >
+                    {((currentBattle?.playerHP || 0) / (currentBattle?.playerMaxHP || 100)) * 100 > 10 && (
+                      <span className="text-white text-sm font-bold drop-shadow-lg">
+                        {(((currentBattle?.playerHP || 0) / (currentBattle?.playerMaxHP || 100)) * 100).toFixed(0)}%
+                      </span>
+                    )}
+                  </motion.div>
                 </div>
               </div>
 

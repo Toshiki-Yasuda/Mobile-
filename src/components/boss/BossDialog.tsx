@@ -68,7 +68,7 @@ export const BossDialog: React.FC<BossDialogProps> = ({
       {isVisible && currentMessage && (
         <motion.div
           key={currentMessage}
-          className="fixed bottom-24 left-1/2 -translate-x-1/2 z-50"
+          className="fixed bottom-24 left-1/2 -translate-x-1/2 z-50 min-w-[300px] w-max"
           initial={{ opacity: 0, y: 20, scale: 0.9 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
           exit={{ opacity: 0, y: -20, scale: 0.9 }}
@@ -83,7 +83,7 @@ export const BossDialog: React.FC<BossDialogProps> = ({
             className={`${getBackgroundColor()} ${getTextColor()} px-8 py-4 rounded-lg border-3 ${getBorderColor()} max-w-2xl shadow-2xl`}
           >
             {/* セリフ */}
-            <p className="text-center text-lg font-title drop-shadow-lg leading-relaxed">
+            <p className="text-center text-lg font-title drop-shadow-lg leading-relaxed whitespace-nowrap">
               {currentMessage}
             </p>
 

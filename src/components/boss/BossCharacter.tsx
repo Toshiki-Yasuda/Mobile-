@@ -61,7 +61,7 @@ export const BossCharacter: React.FC<BossCharacterProps> = ({
 
   return (
     <motion.div
-      className="relative w-80 h-[400px] lg:w-96 lg:h-[480px] flex items-center justify-center"
+      className="relative w-64 h-[320px] lg:w-80 lg:h-[400px] flex items-center justify-center"
       variants={attackVariants}
       animate={getAnimationState()}
       style={{ scale }}

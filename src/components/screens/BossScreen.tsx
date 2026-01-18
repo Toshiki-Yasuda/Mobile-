@@ -281,7 +281,7 @@ export const BossScreen: React.FC<BossScreenProps> = ({ chapterId, onBattleCompl
 
       {/* 敵HP表示（上部中央） */}
       <motion.div
-        className="absolute top-4 inset-x-0 mx-auto w-3/4 max-w-lg z-30"
+        className="absolute top-2 inset-x-0 mx-auto w-3/4 max-w-md z-30 px-4"
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.3 }}
@@ -297,7 +297,7 @@ export const BossScreen: React.FC<BossScreenProps> = ({ chapterId, onBattleCompl
 
       {/* 敵キャラクター（中央） */}
       <motion.div
-        className="absolute top-32 inset-x-0 flex justify-center z-20"
+        className="absolute top-20 inset-x-0 flex justify-center z-20"
         initial={{ scale: 0.8, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         transition={{ duration: 0.5 }}
@@ -319,26 +319,44 @@ export const BossScreen: React.FC<BossScreenProps> = ({ chapterId, onBattleCompl
         />
       </motion.div>
 
-      {/* プレイヤーHP表示（タイピングオーバーレイがアクティブな時は非表示） */}
+      {/* プレイヤーHP表示（ボスHPバーと統一デザイン） */}
       {!hidePlayerHP && (
         <motion.div
-          className="absolute bottom-32 left-1/2 -translate-x-1/2 w-3/4 max-w-lg z-10"
+          className="absolute bottom-4 inset-x-0 mx-auto w-3/4 max-w-lg z-10"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3 }}
         >
-          <div className="bg-black/70 border-2 border-blue-500 rounded-lg p-3">
-            <div className="flex justify-between items-center mb-2">
-              <span className="text-blue-400 font-bold">あなたのHP</span>
-              <span className="text-white">{Math.max(0, battle.playerHP)} / {battle.playerMaxHP}</span>
+          <div className="space-y-2">
+            {/* ラベルと数値 */}
+            <div className="flex items-center justify-between">
+              <span className="font-title text-lg font-bold text-white drop-shadow-lg">あなた</span>
+              <span className={`text-sm font-bold drop-shadow-lg ${
+                playerHpPercentage > 50 ? 'text-blue-400' :
+                playerHpPercentage > 25 ? 'text-yellow-400' :
+                playerHpPercentage > 10 ? 'text-orange-400' : 'text-red-400'
+              }`}>
+                {Math.max(0, battle.playerHP)} / {battle.playerMaxHP}
+              </span>
             </div>
-            <div className="w-full bg-gray-700 rounded-full h-6 overflow-hidden border border-blue-400">
+            {/* HPバー（ボスと同じスタイル） */}
+            <div className="w-full bg-gray-900 rounded-full h-8 overflow-hidden border-2 border-gray-700 shadow-inner">
               <motion.div
-                className="h-full bg-gradient-to-r from-blue-500 to-cyan-400"
+                className={`h-full flex items-center justify-center shadow-lg bg-gradient-to-r ${
+                  playerHpPercentage > 50 ? 'from-blue-600 to-cyan-500' :
+                  playerHpPercentage > 25 ? 'from-yellow-600 to-yellow-500' :
+                  playerHpPercentage > 10 ? 'from-orange-600 to-orange-500' : 'from-red-700 to-red-600'
+                }`}
                 initial={{ width: '100%' }}
                 animate={{ width: `${playerHpPercentage}%` }}
                 transition={{ duration: 0.3 }}
-              />
+              >
+                {playerHpPercentage > 10 && (
+                  <span className="text-white text-sm font-bold drop-shadow-lg">
+                    {playerHpPercentage.toFixed(0)}%
+                  </span>
+                )}
+              </motion.div>
             </div>
           </div>
         </motion.div>

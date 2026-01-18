@@ -7,22 +7,22 @@ import type { BossCharacter, BossDifficulty, AttackPattern, BossReward } from '@
 
 /**
  * ============================================
- * Chapter 1: ハンゼ - 修行者
+ * Chapter 1: ヒソカ - 奇術師
  * ============================================
  */
 export const CHAPTER_1_BOSS: BossCharacter = {
   id: 'boss_chapter1',
   chapterId: 1,
-  name: 'ハンゼ',
-  japaneseTitle: '修行者',
-  description: 'ハンター試験の試験官。試験者の精神力を試す者。',
+  name: 'ヒソカ',
+  japaneseTitle: '奇術師',
+  description: '危険な奇術師。戦いを楽しむ狂戦士。',
   imageUrl: '/Mobile-/images/bosses/hanze.png',
-  weakPoints: ['集中力', 'リズム感'],
+  weakPoints: ['予測不能', 'リズム感'],
   dialogueLines: [
-    'ハンター試験の真の試練はここからだ',
-    '集中できていないようだな',
-    '見事な集中力だ',
-    '諦めてはいけない',
+    '♠ さあ、遊ぼうか ♣',
+    '♥ まだまだだね ♦',
+    '♠ いい緊張感だ ♣',
+    '♥ なかなかやるじゃないか ♦',
   ],
 };
 
