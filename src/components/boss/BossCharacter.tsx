@@ -135,18 +135,6 @@ export const BossCharacter: React.FC<BossCharacterProps> = ({
         )}
       </motion.div>
 
-      {/* ボス名プレート */}
-      <motion.div
-        className="absolute -bottom-24 left-0 right-0 text-center"
-        initial={{ opacity: 0, y: -10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, delay: 0.2 }}
-      >
-        <h2 className="font-title text-3xl lg:text-4xl font-bold text-white drop-shadow-lg">
-          {boss.name}
-        </h2>
-        <p className="text-base lg:text-lg text-hunter-gold">{boss.japaneseTitle}</p>
-      </motion.div>
     </motion.div>
   );
 };

@@ -279,24 +279,9 @@ export const BossScreen: React.FC<BossScreenProps> = ({ chapterId, onBattleCompl
         onEffectComplete={() => setShowingEffect({ type: 'none' })}
       />
 
-      {/* 敵キャラクター */}
+      {/* 敵HP表示（上部中央） */}
       <motion.div
-        className="absolute top-16 left-1/2 -translate-x-1/2 z-20"
-        initial={{ scale: 0.8, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        transition={{ duration: 0.5 }}
-      >
-        <BossCharacter
-          boss={battle.currentBoss}
-          isAttacking={showingEffect.type === 'attack'}
-          isDamaged={showingEffect.type === 'damage'}
-          phase={calculateBossPhase(battle.bossHP, battle.bossMaxHP, 4)}
-        />
-      </motion.div>
-
-      {/* 敵HP表示 */}
-      <motion.div
-        className="absolute top-32 left-1/2 -translate-x-1/2 w-3/4 max-w-lg z-10"
+        className="absolute top-4 inset-x-0 mx-auto w-3/4 max-w-lg z-30"
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.3 }}
@@ -307,6 +292,21 @@ export const BossScreen: React.FC<BossScreenProps> = ({ chapterId, onBattleCompl
           bossName={battle.currentBoss.name}
           isAttacking={showingEffect.type === 'attack'}
           specialStates={battle.specialStates}
+        />
+      </motion.div>
+
+      {/* 敵キャラクター（中央） */}
+      <motion.div
+        className="absolute top-32 inset-x-0 flex justify-center z-20"
+        initial={{ scale: 0.8, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        transition={{ duration: 0.5 }}
+      >
+        <BossCharacter
+          boss={battle.currentBoss}
+          isAttacking={showingEffect.type === 'attack'}
+          isDamaged={showingEffect.type === 'damage'}
+          phase={calculateBossPhase(battle.bossHP, battle.bossMaxHP, 4)}
         />
       </motion.div>
 
@@ -346,7 +346,7 @@ export const BossScreen: React.FC<BossScreenProps> = ({ chapterId, onBattleCompl
 
       {/* 戦闘統計 */}
       <motion.div
-        className="absolute top-1/2 right-4 text-white text-sm font-mono bg-black/70 border border-gray-500 rounded p-3 space-y-1 z-10"
+        className="absolute top-1/2 right-2 -translate-y-1/2 text-white text-xs font-mono bg-black/80 border border-gray-600 rounded p-2 space-y-1 z-10"
         initial={{ opacity: 0, x: 20 }}
         animate={{ opacity: 1, x: 0 }}
         transition={{ delay: 0.5 }}
