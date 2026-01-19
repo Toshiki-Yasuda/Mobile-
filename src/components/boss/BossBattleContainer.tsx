@@ -11,6 +11,7 @@ import { useBossBattle } from '@/hooks/useBossBattle';
 import { BossScreen } from '@/components/screens/BossScreen';
 import { generateBossRewards } from '@/constants/bossConfigs';
 import { useSound } from '@/hooks/useSound';
+import { bgmManager } from '@/utils/bgmManager';
 import { ScreenFlash, ComboEffect, ScreenShake } from '@/components/effects';
 import {
   createInitialState,
@@ -64,6 +65,14 @@ export const BossBattleContainer: React.FC<BossBattleContainerProps> = ({
       store.initiateBossBattle(chapterId);
     }
   }, [chapterId, store, currentBattle]);
+
+  // ボス戦開始時にBGMを小さくする
+  useEffect(() => {
+    bgmManager.lowerVolume(0.40);
+    return () => {
+      bgmManager.restoreVolume();
+    };
+  }, []);
 
   // 現在の単語を取得（wordsが空の場合はnull）
   const currentWord = words && words.length > 0 ? words[wordIndex % words.length] : null;
