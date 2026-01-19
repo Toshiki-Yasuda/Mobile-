@@ -44,7 +44,7 @@ export const CHAPTER_1_DIFFICULTY: BossDifficulty = {
 export const CHAPTER_2_BOSS: BossCharacter = {
   id: 'boss_chapter2',
   chapterId: 2,
-  name: 'ギド・サダソ・リールベルト',
+  name: 'サダソ・リールベルト・ギド',
   japaneseTitle: '天空闘技場の刺客',
   description: '天空闘技場でゴンとキルアを狙う3人組の念能力者。',
   imageUrl: '/Mobile-/images/bosses/chapter2_boss.png',
