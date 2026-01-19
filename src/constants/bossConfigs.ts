@@ -38,22 +38,22 @@ export const CHAPTER_1_DIFFICULTY: BossDifficulty = {
 
 /**
  * ============================================
- * Chapter 2: ヒソカ - トランプマジシャン
+ * Chapter 2: ギド・サダソ・リールベルト - 天空闘技場の刺客
  * ============================================
  */
 export const CHAPTER_2_BOSS: BossCharacter = {
   id: 'boss_chapter2',
   chapterId: 2,
-  name: 'ヒソカ',
-  japaneseTitle: 'トランプマジシャン',
-  description: 'エキセントリックな念能力者。遊び相手を探している。',
-  imageUrl: '/Mobile-/images/bosses/hisoka.png',
-  weakPoints: ['予測', 'リズム感'],
+  name: 'ギド・サダソ・リールベルト',
+  japaneseTitle: '天空闘技場の刺客',
+  description: '天空闘技場でゴンとキルアを狙う3人組の念能力者。',
+  imageUrl: '/Mobile-/images/bosses/chapter2_boss.png',
+  weakPoints: ['連携', 'スピード'],
   dialogueLines: [
-    'いい緊張感だ',
-    'もっと遊びたいんだが',
-    '退屈させるな',
-    'なかなかやるじゃないか',
+    'お前たちを倒せば200階に行ける',
+    '舐めるな小僧！',
+    '俺たちの連携を見せてやる',
+    'この勝負、もらった！',
   ],
 };
 
