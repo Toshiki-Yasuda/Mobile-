@@ -61,14 +61,14 @@ export const BossCharacter: React.FC<BossCharacterProps> = ({
 
   return (
     <motion.div
-      className="relative w-64 h-[320px] lg:w-80 lg:h-[400px] flex items-center justify-center"
+      className="relative flex items-center justify-center"
       variants={attackVariants}
       animate={getAnimationState()}
       style={{ scale }}
     >
       {/* ボスキャラクター画像 */}
       <motion.div
-        className="relative w-full h-full"
+        className="relative"
         initial={{ opacity: 0, scale: 0.8 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.5 }}
@@ -76,7 +76,7 @@ export const BossCharacter: React.FC<BossCharacterProps> = ({
         <img
           src={boss.imageUrl}
           alt={boss.name}
-          className="w-full h-full object-cover rounded-lg shadow-2xl border-4 border-hunter-gold"
+          className="w-[400px] lg:w-[480px] h-auto rounded-lg shadow-2xl border-4 border-hunter-gold"
           onError={(e) => {
             // フォールバック画像
             (e.target as HTMLImageElement).src =
