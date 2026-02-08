@@ -27,17 +27,51 @@ export const BossEffects: React.FC<BossEffectsProps> = ({
         <>
           {/* ダメージ表示 */}
           {effectType === 'damage' && damageAmount && (
-            <motion.div
-              key="damage"
-              className="fixed top-1/3 left-1/2 -translate-x-1/2 text-5xl font-bold text-red-500 pointer-events-none drop-shadow-lg"
-              initial={{ opacity: 1, y: 0, scale: 1 }}
-              animate={{ opacity: 0, y: -100, scale: 0.8 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 1.5, ease: 'easeOut' }}
-              onAnimationComplete={onEffectComplete}
-            >
-              -{damageAmount}
-            </motion.div>
+            <>
+              <motion.div
+                key="damage"
+                className="fixed top-1/3 left-1/2 -translate-x-1/2 text-6xl font-bold text-red-500 pointer-events-none drop-shadow-lg"
+                initial={{ opacity: 1, y: 0, scale: 1.5 }}
+                animate={{
+                  opacity: 0,
+                  y: [0, -30, -80],
+                  scale: [1.5, 1.2, 0.8]
+                }}
+                exit={{ opacity: 0 }}
+                transition={{
+                  duration: 1.5,
+                  ease: 'easeOut',
+                  times: [0, 0.3, 1]
+                }}
+                onAnimationComplete={onEffectComplete}
+              >
+                -{damageAmount}
+              </motion.div>
+
+              {/* ヒットパーティクル */}
+              {[...Array(10)].map((_, i) => {
+                const angle = (i / 10) * Math.PI * 2;
+                const distance = 60 + Math.random() * 40;
+                return (
+                  <motion.div
+                    key={`particle-${i}`}
+                    className="fixed top-1/3 left-1/2 w-2 h-2 rounded-full bg-yellow-400 pointer-events-none"
+                    initial={{ x: 0, y: 0, scale: 1, opacity: 1 }}
+                    animate={{
+                      x: Math.cos(angle) * distance,
+                      y: Math.sin(angle) * distance - 50,
+                      scale: 0,
+                      opacity: 0,
+                    }}
+                    transition={{
+                      duration: 0.6,
+                      ease: 'easeOut',
+                      delay: Math.random() * 0.1
+                    }}
+                  />
+                );
+              })}
+            </>
           )}
 
           {/* 回復表示 */}
@@ -75,14 +109,22 @@ export const BossEffects: React.FC<BossEffectsProps> = ({
 
               {/* クリティカルテキスト */}
               <motion.div
-                className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"
+                className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center gap-4"
                 initial={{ scale: 0.5, opacity: 0 }}
                 animate={{ scale: [1, 1.2, 1], opacity: [0, 1, 0] }}
                 transition={{ duration: 0.8, ease: 'easeInOut', times: [0, 0.3, 1] }}
               >
-                <p className="text-6xl font-title font-bold text-white drop-shadow-2xl text-center">
+                <p
+                  className="text-7xl font-title font-bold text-white drop-shadow-2xl text-center"
+                  style={{ textShadow: '0 0 30px rgba(234,179,8,0.8)' }}
+                >
                   CRITICAL
                 </p>
+                {damageAmount && (
+                  <p className="text-5xl font-bold text-yellow-300 drop-shadow-lg">
+                    -{damageAmount}
+                  </p>
+                )}
               </motion.div>
             </motion.div>
           )}

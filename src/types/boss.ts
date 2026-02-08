@@ -15,6 +15,9 @@ export interface BossCharacter {
   imageUrl: string;                  // "/images/bosses/hanze.png"
   weakPoints: string[];              // 弱点パターン
   dialogueLines: string[];           // 戦闘中のセリフ
+  introLine: string;                 // 登場時のセリフ
+  phaseMessages: string[];           // フェーズ遷移セリフ（Phase2,3,4用）
+  defeatLine: string;                // 撃破時のセリフ
 }
 
 /**

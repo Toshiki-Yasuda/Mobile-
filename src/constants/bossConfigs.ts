@@ -24,6 +24,13 @@ export const CHAPTER_1_BOSS: BossCharacter = {
     '♠ いい緊張感だ ♣',
     '♥ なかなかやるじゃないか ♦',
   ],
+  introLine: '♠ さぁ...殺し合おうか ♣',
+  phaseMessages: [
+    '♥ ようやく本気を出す気になったよ ♦',
+    '♠ さすがだ...でもまだ足りない ♣',
+    '♥ これが最後の一手だ ♦',
+  ],
+  defeatLine: '♠ 楽しかったよ...また遊ぼう ♣',
 };
 
 export const CHAPTER_1_DIFFICULTY: BossDifficulty = {
@@ -55,6 +62,13 @@ export const CHAPTER_2_BOSS: BossCharacter = {
     '俺たちの連携を見せてやる',
     'この勝負、もらった！',
   ],
+  introLine: 'お前たちを始末してやる！',
+  phaseMessages: [
+    '連携を強化するぞ！',
+    'もう手加減はしない！',
+    '最終手段だ...覚悟しろ！',
+  ],
+  defeatLine: 'バカな...こんな小僧に...',
 };
 
 export const CHAPTER_2_DIFFICULTY: BossDifficulty = {
@@ -86,6 +100,13 @@ export const CHAPTER_3_BOSS: BossCharacter = {
     '速度が落ちているようだ',
     'まだやるのか',
   ],
+  introLine: '盗賊の美学を見せてやろう',
+  phaseMessages: [
+    '盗賊の秘技（スキルハンター）を発動する',
+    '面白い...本気で相手をしよう',
+    'これが最終形態だ...覚悟しろ',
+  ],
+  defeatLine: 'お前は...強いな',
 };
 
 export const CHAPTER_3_DIFFICULTY: BossDifficulty = {
@@ -117,6 +138,13 @@ export const CHAPTER_4_BOSS: BossCharacter = {
     '体力が続くか',
     '認めてやろう',
   ],
+  introLine: '修行の時間よ！ついてきなさい！',
+  phaseMessages: [
+    'やるじゃない...本気を出すわよ',
+    'これが真の力よ！',
+    '最終試練...耐えてみなさい！',
+  ],
+  defeatLine: '合格よ！よくやったわ！',
 };
 
 export const CHAPTER_4_DIFFICULTY: BossDifficulty = {
@@ -148,6 +176,13 @@ export const CHAPTER_5_BOSS: BossCharacter = {
     '形態を変える',
     '究極の力を見せる',
   ],
+  introLine: '真の修行を教えてやる',
+  phaseMessages: [
+    '形態を変えるぞ...ついてこい',
+    '究極の念を見せてやろう',
+    '限界突破...これが本当の力だ！',
+  ],
+  defeatLine: '認めてやろう...お前は強い',
 };
 
 export const CHAPTER_5_DIFFICULTY: BossDifficulty = {
@@ -179,6 +214,13 @@ export const CHAPTER_6_BOSS: BossCharacter = {
     '興味深い',
     '究極を超える力',
   ],
+  introLine: '王の前にひざまずけ',
+  phaseMessages: [
+    '興味深い...少しだけ本気を出そう',
+    '人間ごときが...ここまでやるとはな',
+    '究極の力を見せてやろう...これが王だ',
+  ],
+  defeatLine: 'まさか...人間に敗れるとは...',
 };
 
 export const CHAPTER_6_DIFFICULTY: BossDifficulty = {
@@ -210,6 +252,13 @@ export const CHAPTER_7_BOSS: BossCharacter = {
     '制約と誓いの究極',
     'よくやったな',
   ],
+  introLine: '百式観音の力を見せよう',
+  phaseMessages: [
+    '感謝の正拳突き...一万回の祈りを込めて',
+    '零の手...これが最後の切り札だ',
+    '究極の試練...全てを出し尽くせ',
+  ],
+  defeatLine: 'よくぞここまで...お見事だ',
 };
 
 export const CHAPTER_7_DIFFICULTY: BossDifficulty = {

@@ -8,7 +8,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useBossStore } from '@/stores/bossStore';
 import { useSettingsStore } from '@/stores/settingsStore';
 import { useSound } from '@/hooks/useSound';
-import { BossCharacter, BossHPBar, BossEffects, BossDialog } from '@/components/boss';
+import { BossCharacter, BossHPBar, BossEffects, BossDialog, AttackWarning } from '@/components/boss';
 import {
   calculateBossDamage,
   calculatePlayerDamage,
@@ -37,9 +37,10 @@ interface BossScreenProps {
   }) => void;
   onExit: () => void;
   hidePlayerHP?: boolean;
+  attacksPaused?: boolean;
 }
 
-export const BossScreen: React.FC<BossScreenProps> = ({ chapterId, onBattleComplete, onExit, hidePlayerHP = false }) => {
+export const BossScreen: React.FC<BossScreenProps> = ({ chapterId, onBattleComplete, onExit, hidePlayerHP = false, attacksPaused = false }) => {
   const store = useBossStore();
   const battle = store.currentBattle;
   const { enableCaptions } = useSettingsStore();
@@ -60,6 +61,12 @@ export const BossScreen: React.FC<BossScreenProps> = ({ chapterId, onBattleCompl
   // 敵攻撃タイマー用
   const attackTimerRef = useRef<NodeJS.Timeout | null>(null);
   const gameLoopRef = useRef<NodeJS.Timeout | null>(null);
+
+  // 攻撃警告用
+  const [attackWarning, setAttackWarning] = useState(false);
+  const [attackCountdown, setAttackCountdown] = useState(3);
+  const warningTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const countdownIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   // 敵HP更新時のエフェクト表示
   useEffect(() => {
@@ -113,6 +120,13 @@ export const BossScreen: React.FC<BossScreenProps> = ({ chapterId, onBattleCompl
   const executeEnemyAttack = useCallback(() => {
     if (!battle || !gameActive) return;
 
+    // 警告状態をクリア
+    setAttackWarning(false);
+    if (countdownIntervalRef.current) {
+      clearInterval(countdownIntervalRef.current);
+      countdownIntervalRef.current = null;
+    }
+
     const baseDamage = 10;
     const isCritical = isCriticalHit(0.15);
     const damage = calculatePlayerDamage(baseDamage, chapterId, isCritical);
@@ -129,22 +143,38 @@ export const BossScreen: React.FC<BossScreenProps> = ({ chapterId, onBattleCompl
     ];
     setBossMessage(attackMessages[Math.floor(Math.random() * attackMessages.length)]);
 
-    // 次の敵攻撃をスケジュール
+    // 次の敵攻撃をスケジュール（警告付き）
     const difficulty = ALL_BOSS_DIFFICULTIES[chapterId];
     if (difficulty) {
       const currentPhase = calculateBossPhase(battle.bossHP, battle.bossMaxHP, 4);
-      // 章別の攻撃パターンを取得
       const attackPattern = getBossAttackPattern(chapterId, currentPhase);
-      // パターンに基づいた攻撃間隔を計算
       const interval = getAttackIntervalByPattern(attackPattern, 10000);
 
-      if (attackTimerRef.current) {
-        clearTimeout(attackTimerRef.current);
-      }
+      if (attackTimerRef.current) clearTimeout(attackTimerRef.current);
+      if (warningTimerRef.current) clearTimeout(warningTimerRef.current);
 
+      // 攻撃本体をスケジュール
       attackTimerRef.current = setTimeout(() => {
         executeEnemyAttack();
       }, interval);
+
+      // 3秒前に警告開始（攻撃間隔が4秒以上の場合のみ）
+      if (interval > 4000) {
+        warningTimerRef.current = setTimeout(() => {
+          setAttackWarning(true);
+          setAttackCountdown(3);
+          let count = 3;
+          countdownIntervalRef.current = setInterval(() => {
+            count--;
+            if (count > 0) {
+              setAttackCountdown(count);
+            } else {
+              if (countdownIntervalRef.current) clearInterval(countdownIntervalRef.current);
+              countdownIntervalRef.current = null;
+            }
+          }, 1000);
+        }, interval - 3000);
+      }
     }
   }, [battle, chapterId, gameActive, store, handlePlayerTakeDamage]);
 
@@ -220,34 +250,70 @@ export const BossScreen: React.FC<BossScreenProps> = ({ chapterId, onBattleCompl
 
   // 初回敵攻撃スケジュール＆ゲーム開始音
   useEffect(() => {
-    if (!battle || !gameActive) return;
+    if (!battle || !gameActive || attacksPaused) return;
 
     const difficulty = ALL_BOSS_DIFFICULTIES[chapterId];
     if (!difficulty) return;
 
-    // ゲーム開始時のサウンド（最初の1回だけ）
-    if (!gameStartedRef.current) {
+    const isFirstStart = !gameStartedRef.current;
+    if (isFirstStart) {
       playStartSound();
       gameStartedRef.current = true;
     }
 
-    // 最初の攻撃まで10秒待機
-    if (attackTimerRef.current) clearTimeout(attackTimerRef.current);
+    // 初回は10秒、フェーズ遷移後の再開は5秒
+    const initialDelay = isFirstStart ? 10000 : 5000;
 
+    if (attackTimerRef.current) clearTimeout(attackTimerRef.current);
+    if (warningTimerRef.current) clearTimeout(warningTimerRef.current);
+
+    // 攻撃本体をスケジュール
     attackTimerRef.current = setTimeout(() => {
       executeEnemyAttack();
-    }, 10000);
+    }, initialDelay);
+
+    // 3秒前に警告開始
+    if (initialDelay > 4000) {
+      warningTimerRef.current = setTimeout(() => {
+        setAttackWarning(true);
+        setAttackCountdown(3);
+        let count = 3;
+        countdownIntervalRef.current = setInterval(() => {
+          count--;
+          if (count > 0) {
+            setAttackCountdown(count);
+          } else {
+            if (countdownIntervalRef.current) clearInterval(countdownIntervalRef.current);
+            countdownIntervalRef.current = null;
+          }
+        }, 1000);
+      }, initialDelay - 3000);
+    }
 
     return () => {
       if (attackTimerRef.current) clearTimeout(attackTimerRef.current);
+      if (warningTimerRef.current) clearTimeout(warningTimerRef.current);
+      if (countdownIntervalRef.current) clearInterval(countdownIntervalRef.current);
     };
-  }, [battle, gameActive, chapterId, executeEnemyAttack, playStartSound]);
+  }, [battle, gameActive, chapterId, executeEnemyAttack, playStartSound, attacksPaused]);
+
+  // attacksPaused時にタイマークリア
+  useEffect(() => {
+    if (attacksPaused) {
+      if (attackTimerRef.current) { clearTimeout(attackTimerRef.current); attackTimerRef.current = null; }
+      if (warningTimerRef.current) { clearTimeout(warningTimerRef.current); warningTimerRef.current = null; }
+      if (countdownIntervalRef.current) { clearInterval(countdownIntervalRef.current); countdownIntervalRef.current = null; }
+      setAttackWarning(false);
+    }
+  }, [attacksPaused]);
 
   // クリーンアップ
   useEffect(() => {
     return () => {
       if (attackTimerRef.current) clearTimeout(attackTimerRef.current);
       if (gameLoopRef.current) clearTimeout(gameLoopRef.current);
+      if (warningTimerRef.current) clearTimeout(warningTimerRef.current);
+      if (countdownIntervalRef.current) clearInterval(countdownIntervalRef.current);
     };
   }, []);
 
@@ -413,34 +479,8 @@ export const BossScreen: React.FC<BossScreenProps> = ({ chapterId, onBattleCompl
         </motion.div>
       )}
 
-      {/* ゲーム終了オーバーレイ */}
-      <AnimatePresence>
-        {!gameActive && (
-          <motion.div
-            className="absolute inset-0 bg-black/80 flex flex-col items-center justify-center z-50"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-          >
-            <motion.div
-              className="text-center"
-              initial={{ scale: 0.5, y: 20 }}
-              animate={{ scale: 1, y: 0 }}
-              transition={{ delay: 0.2 }}
-            >
-              <p className="text-4xl font-bold text-white mb-4">{bossMessage || 'バトル終了'}</p>
-              <motion.button
-                onClick={onExit}
-                className="mt-6 px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-lg"
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-              >
-                続行
-              </motion.button>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      {/* 攻撃警告 */}
+      <AttackWarning isWarning={attackWarning} countdown={attackCountdown} />
     </div>
   );
 };

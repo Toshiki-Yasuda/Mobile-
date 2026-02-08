@@ -73,10 +73,31 @@ export const BossCharacter: React.FC<BossCharacterProps> = ({
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.5 }}
       >
+        {/* フェーズ別オーラ（ボス画像の背後に配置） */}
+        {phase >= 2 && (
+          <motion.div
+            className={`absolute inset-0 rounded-lg ${
+              phase === 2 ? 'bg-gradient-to-t from-purple-600/30 to-transparent' :
+              phase === 3 ? 'bg-gradient-to-t from-red-600/40 to-transparent' :
+              'bg-gradient-to-t from-yellow-500/50 to-transparent'
+            }`}
+            animate={{ opacity: [0.5, 1, 0.5] }}
+            transition={{
+              duration: phase === 2 ? 2 : phase === 3 ? 1.5 : 1,
+              repeat: Infinity,
+              ease: 'easeInOut'
+            }}
+          />
+        )}
+
         <img
           src={boss.imageUrl}
           alt={boss.name}
-          className="w-[400px] lg:w-[480px] h-auto rounded-lg shadow-2xl border-4 border-hunter-gold"
+          className={`w-[400px] lg:w-[480px] h-auto rounded-lg shadow-2xl border-4 ${
+            phase >= 4 ? 'border-yellow-400' :
+            phase === 3 ? 'border-red-500' :
+            'border-hunter-gold'
+          }`}
           onError={(e) => {
             // フォールバック画像
             (e.target as HTMLImageElement).src =
