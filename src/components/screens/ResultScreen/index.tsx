@@ -117,9 +117,15 @@ export const ResultScreen: React.FC = () => {
 
   const handleNextStage = useCallback(() => {
     resetSession();
-    if (hasNextStage) {
+    // 次がボスステージ（ステージ6）ならボス戦へ
+    const nextStage = selectedStage + 1;
+    const totalStages = CHAPTER_STAGE_COUNTS[selectedChapter] || 0;
+    if (hasNextStage && nextStage === totalStages) {
+      const { startBossBattle } = useGameStore.getState();
+      startBossBattle(selectedChapter);
+    } else if (hasNextStage) {
       const { selectStage, navigateTo: nav } = useGameStore.getState();
-      selectStage(selectedChapter, selectedStage + 1);
+      selectStage(selectedChapter, nextStage);
       nav('typing');
     } else {
       navigateTo('stageSelect');
