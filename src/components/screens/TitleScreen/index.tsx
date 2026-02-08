@@ -14,8 +14,8 @@ import { bgmManager } from '@/utils/bgmManager';
 // メニュー項目定義
 const MENU_ITEMS = [
   { label: 'START TRAINING', screen: 'levelSelect' as const, isMain: true },
-  { label: 'TIME ATTACK', screen: 'timeAttack' as const },
-  { label: 'FREE PRACTICE', screen: 'freePlay' as const },
+  { label: 'TIME ATTACK', screen: 'timeAttack' as const, comingSoon: true },
+  { label: 'FREE PRACTICE', screen: 'freePlay' as const, comingSoon: true },
   { label: 'STATISTICS', screen: 'statistics' as const },
   { label: 'SETTINGS', screen: 'settings' as const },
   { label: 'ADMIN', screen: 'admin' as const },
@@ -541,7 +541,14 @@ export const TitleScreen: React.FC = () => {
                         : 'bg-hunter-dark-light/30 hover:bg-hunter-dark-light/60 border border-hunter-gold/20 hover:border-hunter-gold/40 text-white/70 hover:text-white'
                     }`}
                   >
-                    <span>{item.label}</span>
+                    <span className="flex items-center gap-2">
+                      {item.label}
+                      {item.comingSoon && (
+                        <span className="text-[10px] bg-hunter-gold/20 text-hunter-gold px-2 py-0.5 rounded-full border border-hunter-gold/40">
+                          準備中
+                        </span>
+                      )}
+                    </span>
                     <span className="text-xs opacity-50">{menuIndex + 1}</span>
                   </motion.button>
                 );

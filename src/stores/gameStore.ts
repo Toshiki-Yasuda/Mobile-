@@ -102,11 +102,18 @@ export const useGameStore = create<GameStore>()(
       },
 
       // === 画面遷移 ===
-      navigateTo: (screen) =>
+      navigateTo: (screen) => {
         set((state) => ({
           previousScreen: state.currentScreen,
           currentScreen: screen,
-        })),
+        }));
+        // ブラウザ履歴に追加（戻るボタン対応）
+        try {
+          history.pushState({ screen }, '');
+        } catch {
+          // SSR環境など history が使えない場合は無視
+        }
+      },
 
       goBack: () =>
         set((state) => ({

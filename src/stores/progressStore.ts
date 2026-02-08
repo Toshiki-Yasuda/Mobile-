@@ -44,6 +44,7 @@ interface ProgressStore {
   getStageResult: (stageId: string) => StageResult | undefined;
   isChapterUnlocked: (chapter: number) => boolean;
   isBossDefeated: (bossId: string) => boolean;
+  cleanupOldData: () => void;
   getAccuracyForKey: (key: string) => number;
 }
 
@@ -266,6 +267,19 @@ export const useProgressStore = create<ProgressStore>()(
       isChapterUnlocked: (chapter) => get().unlockedChapters.includes(chapter),
 
       isBossDefeated: (bossId) => get().defeatedBosses.has(bossId),
+
+      // 古いデータのクリーンアップ
+      cleanupOldData: () => {
+        const state = get();
+        // dailyLogs: 30日超のエントリを削除
+        const thirtyDaysAgo = new Date();
+        thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+        const cutoff = thirtyDaysAgo.toISOString().split('T')[0];
+        const filteredLogs = state.dailyLogs.filter(log => log.date >= cutoff);
+        if (filteredLogs.length !== state.dailyLogs.length) {
+          set({ dailyLogs: filteredLogs });
+        }
+      },
 
       getAccuracyForKey: (key) => {
         const stats = get().keyStatistics[key];

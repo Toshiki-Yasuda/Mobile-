@@ -43,36 +43,6 @@ export const TypingScreen: React.FC = () => {
     maxHP,
   } = useTyping();
 
-  // AudioContextを初期化するためのクリックハンドラー
-  useEffect(() => {
-    const handleClick = async () => {
-      try {
-        const AudioContext = window.AudioContext || (window as any).webkitAudioContext;
-        const ctx = new AudioContext();
-        if (ctx.state === 'suspended') {
-          await ctx.resume();
-        }
-        const oscillator = ctx.createOscillator();
-        const gainNode = ctx.createGain();
-        oscillator.connect(gainNode);
-        gainNode.connect(ctx.destination);
-        oscillator.frequency.setValueAtTime(440, ctx.currentTime);
-        gainNode.gain.setValueAtTime(0.01, ctx.currentTime);
-        oscillator.start();
-        oscillator.stop(ctx.currentTime + 0.01);
-        ctx.close();
-      } catch (error) {
-        console.warn('AudioContext initialization failed:', error);
-      }
-    };
-
-    const container = containerRef.current;
-    if (container) {
-      container.addEventListener('click', handleClick, { once: true });
-      return () => container.removeEventListener('click', handleClick);
-    }
-  }, []);
-
   // タイピング画面ではBGM音量を下げる（GAME BGMのまま継続）
   useEffect(() => {
     bgmManager.lowerVolume(0.30);

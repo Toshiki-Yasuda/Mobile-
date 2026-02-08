@@ -1,19 +1,17 @@
 /**
  * タイピング入力処理フック
- * タイプライターモード検証とユーザー入力管理
+ * ローマ字エンジンのラッパー: 検証・初期化・状態表示
  */
 
-import { useCallback, useState } from 'react';
+import { useCallback } from 'react';
 import {
   createInitialState,
   processKeyInput,
 } from '@/engine/romajiEngine';
 import type { TypingState } from '@/types/romaji';
+import type { Word } from '@/types/game';
 
 export function useTypingInput() {
-  // タイプライターモード用の入力テキスト
-  const [userInput, setUserInput] = useState('');
-
   // タイプライターモード: 入力がひらがなと一致するか検証
   const validateTypewriterInput = useCallback(
     (input: string, hiragana: string): boolean => {
@@ -36,9 +34,42 @@ export function useTypingInput() {
     []
   );
 
+  // 単語のタイピング状態を初期化
+  const createWordState = useCallback((word: Word): TypingState => {
+    return createInitialState(word.hiragana);
+  }, []);
+
+  // 入力の正誤状態を計算（タイプライターモード用）
+  const getInputStatus = useCallback(
+    (userInput: string, currentWord: Word | undefined) => {
+      if (!currentWord) {
+        return { chars: [] as { char: string; isCorrect: boolean }[], isPartiallyCorrect: true };
+      }
+
+      const chars: { char: string; isCorrect: boolean }[] = [];
+      let state: TypingState = createInitialState(currentWord.hiragana);
+      let isPartiallyCorrect = true;
+
+      for (const char of userInput) {
+        const result = processKeyInput(state, char.toLowerCase());
+
+        if (result.isMiss || !result.isValid) {
+          chars.push({ char, isCorrect: false });
+          isPartiallyCorrect = false;
+        } else {
+          chars.push({ char, isCorrect: true });
+          state = result.newState;
+        }
+      }
+
+      return { chars, isPartiallyCorrect };
+    },
+    []
+  );
+
   return {
-    userInput,
-    setUserInput,
     validateTypewriterInput,
+    createWordState,
+    getInputStatus,
   };
 }

@@ -1,15 +1,9 @@
 /**
  * タイピング状態管理フック
- * ユーザー入力、HP、キー演出状態を管理
+ * HP、ユーザー入力、キー演出状態を管理
  */
 
 import { useState, useCallback } from 'react';
-import {
-  createInitialState,
-  processKeyInput,
-} from '@/engine/romajiEngine';
-import type { TypingState } from '@/types/romaji';
-import type { Word } from '@/types/game';
 import { HP_CONFIG } from '@/constants/gameJuice';
 
 export function useTypingState() {
@@ -27,19 +21,19 @@ export function useTypingState() {
     { key: string; timestamp: number }[]
   >([]);
 
-  // HPを増やす
+  // HPを回復
   const recoverHP = useCallback((amount: number) => {
     setCurrentHP(prev => Math.min(HP_CONFIG.maxHP, prev + amount));
   }, []);
 
-  // HPを減らす
-  const damageHP = useCallback((amount: number) => {
-    setCurrentHP(prev => Math.max(0, prev - amount));
-  }, []);
-
-  // HPを直接設定
-  const setHP = useCallback((amount: number) => {
-    setCurrentHP(Math.max(0, Math.min(HP_CONFIG.maxHP, amount)));
+  // HPを減らし、新しいHP値を返す
+  const damageHP = useCallback((amount: number): number => {
+    let newHP = 0;
+    setCurrentHP(prev => {
+      newHP = Math.max(0, prev - amount);
+      return newHP;
+    });
+    return newHP;
   }, []);
 
   // 単語状態をリセット
@@ -53,13 +47,11 @@ export function useTypingState() {
     const now = Date.now();
     const keyLower = key.toLowerCase();
 
-    // 同じキーが既にあれば削除してから追加（タイムスタンプを更新）
     setRecentPressedKeys(prev => {
       const filtered = prev.filter(k => k.key !== keyLower);
       return [...filtered, { key: keyLower, timestamp: now }];
     });
 
-    // 2秒後にこのキーを削除
     setTimeout(() => {
       setRecentPressedKeys(prev =>
         prev.filter(k => k.timestamp !== now || k.key !== keyLower)
@@ -67,43 +59,17 @@ export function useTypingState() {
     }, 2000);
   }, []);
 
-  // 入力の正誤状態を計算（タイプライターモード用）
-  const getInputStatus = useCallback((userInput: string, currentWord: Word | undefined) => {
-    if (!currentWord) {
-      return { chars: [], isPartiallyCorrect: true };
-    }
-
-    const chars: { char: string; isCorrect: boolean }[] = [];
-    let state: TypingState = createInitialState(currentWord.hiragana);
-    let isPartiallyCorrect = true;
-
-    for (const char of userInput) {
-      const result = processKeyInput(state, char.toLowerCase());
-
-      if (result.isMiss || !result.isValid) {
-        chars.push({ char, isCorrect: false });
-        isPartiallyCorrect = false;
-      } else {
-        chars.push({ char, isCorrect: true });
-        state = result.newState;
-      }
-    }
-
-    return { chars, isPartiallyCorrect };
-  }, []);
-
   return {
     userInput,
     setUserInput,
     currentHP,
+    maxHP: HP_CONFIG.maxHP,
     recoverHP,
     damageHP,
-    setHP,
     hadMissThisWord,
     setHadMissThisWord,
     resetWordState,
     recentPressedKeys,
     flashKey,
-    getInputStatus,
   };
 }

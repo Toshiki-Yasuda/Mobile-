@@ -1,4 +1,5 @@
-import { useEffect, useRef, useState } from 'react';
+import { lazy, Suspense, useEffect, useRef, useState } from 'react';
+import { motion } from 'framer-motion';
 import { useGameStore } from './stores/gameStore';
 import { useProgressStore } from './stores/progressStore';
 import { useSettingsStore } from './stores/settingsStore';
@@ -11,13 +12,17 @@ import { TypingScreen } from './components/screens/TypingScreen';
 import { ResultScreen } from './components/screens/ResultScreen';
 import { BossBattleContainer } from './components/boss/BossBattleContainer';
 import { BossResultScreen } from './components/screens/BossResultScreen';
-import { AdminScreen } from './components/screens/AdminScreen';
-import { SettingsScreen } from './components/screens/SettingsScreen';
-import { StatisticsScreen } from './components/screens/StatisticsScreen';
 import { Loading } from './components/common/Loading';
 import { ErrorBoundary } from './components/common/ErrorBoundary';
 import { getWordsForStage } from './data/words';
 import { ALL_BOSS_CHARACTERS } from './constants/bossConfigs';
+import { initializeAudioContext } from './utils/audioInitializer';
+import type { BossReward } from './types/boss';
+
+// 遅延読み込み（低頻度画面）
+const AdminScreen = lazy(() => import('./components/screens/AdminScreen').then(m => ({ default: m.AdminScreen })));
+const SettingsScreen = lazy(() => import('./components/screens/SettingsScreen').then(m => ({ default: m.SettingsScreen })));
+const StatisticsScreen = lazy(() => import('./components/screens/StatisticsScreen').then(m => ({ default: m.StatisticsScreen })));
 
 /**
  * メインアプリケーションコンポーネント
@@ -28,7 +33,7 @@ function App() {
   useTheme();
 
   const { currentScreen, loading, error, clearError, selectedChapter, navigateTo } = useGameStore();
-  const { markBossDefeated, updateStatistics, unlockChapter } = useProgressStore();
+  const { markBossDefeated, updateStatistics, unlockChapter, cleanupOldData } = useProgressStore();
   const { enableHighContrast } = useSettingsStore();
   const audioInitializedRef = useRef(false);
 
@@ -40,42 +45,16 @@ function App() {
     missCount: number;
     maxCombo: number;
     elapsedTime: number;
-    rewards: any[];
+    rewards: BossReward[];
   } | null>(null);
 
   // AudioContextを初期化するためのクリックハンドラー（一度だけ）
   useEffect(() => {
-    const initializeAudio = async () => {
+    const handleUserInteraction = async () => {
       if (audioInitializedRef.current) return;
-      
-      try {
-        const AudioContext = window.AudioContext || (window as any).webkitAudioContext;
-        const ctx = new AudioContext();
-        if (ctx.state === 'suspended') {
-          await ctx.resume();
-        }
-        // 無音の短い音を再生してAudioContextを有効化
-        const oscillator = ctx.createOscillator();
-        const gainNode = ctx.createGain();
-        oscillator.connect(gainNode);
-        gainNode.connect(ctx.destination);
-        oscillator.frequency.setValueAtTime(440, ctx.currentTime);
-        gainNode.gain.setValueAtTime(0.001, ctx.currentTime);
-        oscillator.start();
-        oscillator.stop(ctx.currentTime + 0.01);
-        ctx.close();
-        audioInitializedRef.current = true;
-      } catch (error) {
-        console.warn('AudioContext initialization failed:', error);
-      }
-    };
 
-    const handleUserInteraction = () => {
-      initializeAudio();
-      // 一度初期化したらリスナーを削除
-      document.removeEventListener('click', handleUserInteraction);
-      document.removeEventListener('keydown', handleUserInteraction);
-      document.removeEventListener('touchstart', handleUserInteraction);
+      await initializeAudioContext();
+      audioInitializedRef.current = true;
     };
 
     // ユーザーインタラクションを待つ
@@ -88,6 +67,33 @@ function App() {
       document.removeEventListener('keydown', handleUserInteraction);
       document.removeEventListener('touchstart', handleUserInteraction);
     };
+  }, []);
+
+  // 起動時にlocalStorageの古いデータをクリーンアップ
+  useEffect(() => {
+    cleanupOldData();
+  }, [cleanupOldData]);
+
+  // ブラウザの戻るボタン対応
+  useEffect(() => {
+    const handlePopState = (e: PopStateEvent) => {
+      const screen = e.state?.screen;
+      // タイピング中やボス戦中は戻れないようにガード
+      const currentScreen = useGameStore.getState().currentScreen;
+      if (currentScreen === 'typing' || currentScreen === 'bossStage') {
+        // 戻るボタンを無効化（履歴を元に戻す）
+        history.pushState({ screen: currentScreen }, '');
+        return;
+      }
+      if (screen) {
+        useGameStore.setState({ currentScreen: screen, previousScreen: currentScreen });
+      } else {
+        useGameStore.setState({ currentScreen: 'title', previousScreen: currentScreen });
+      }
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
   }, []);
 
   // エラー発生時の自動クリア（5秒後）
@@ -118,7 +124,7 @@ function App() {
     missCount: number;
     maxCombo: number;
     elapsedTime: number;
-    rewards: any[];
+    rewards: BossReward[];
   }) => {
     // ボス結果を保存
     setBossResult(result);
@@ -205,17 +211,48 @@ function App() {
         );
       }
       case 'settings':
-        return <SettingsScreen />;
+        return <Suspense fallback={<Loading message="設定を読み込み中..." />}><SettingsScreen /></Suspense>;
       case 'statistics':
-        return <StatisticsScreen />;
+        return <Suspense fallback={<Loading message="統計を読み込み中..." />}><StatisticsScreen /></Suspense>;
       case 'timeAttack':
-        // TODO: TimeAttackScreen
-        return <TypingScreen />;
       case 'freePlay':
-        // TODO: FreePlayScreen
-        return <TypingScreen />;
+        return (
+          <div className="min-h-screen bg-gradient-to-br from-hunter-dark via-[#0a0a12] to-hunter-dark flex items-center justify-center p-6">
+            <div className="text-center max-w-md">
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6 }}
+                className="bg-hunter-dark-light/50 border-2 border-hunter-gold/30 rounded-lg p-8 backdrop-blur-sm"
+              >
+                <motion.div
+                  initial={{ scale: 0.8 }}
+                  animate={{ scale: 1 }}
+                  transition={{ duration: 0.5, delay: 0.2 }}
+                  className="text-6xl mb-6"
+                >
+                  🚧
+                </motion.div>
+                <h2 className="font-title text-3xl text-hunter-gold mb-4 tracking-wider">
+                  COMING SOON
+                </h2>
+                <p className="text-white/70 mb-8 leading-relaxed">
+                  {currentScreen === 'timeAttack' ? 'タイムアタックモード' : 'フリープレイモード'}は準備中です
+                </p>
+                <motion.button
+                  onClick={() => navigateTo('title')}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  className="bg-hunter-green hover:bg-hunter-green-light text-white font-title py-3 px-8 rounded-lg transition-colors border border-hunter-green-light/30 uppercase tracking-wider"
+                >
+                  ← タイトルに戻る
+                </motion.button>
+              </motion.div>
+            </div>
+          </div>
+        );
       case 'admin':
-        return <AdminScreen />;
+        return <Suspense fallback={<Loading message="管理画面を読み込み中..." />}><AdminScreen /></Suspense>;
       default:
         return <TitleScreen />;
     }

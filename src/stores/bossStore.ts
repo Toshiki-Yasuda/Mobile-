@@ -14,7 +14,6 @@ interface BossStoreState {
 
   // 戦闘記録
   battleHistory: BossBattleResult[];
-  defeatedBosses: Set<string>;
   bossStatistics: Record<string, BossStatistics>;
 
   // メソッド
@@ -28,7 +27,7 @@ interface BossStoreState {
   removeSpecialState: (state: string) => void;
   endBossBattle: (result: BossBattleResult) => void;
   getBattleHistory: (chapterId: number) => BossBattleResult[];
-  isBossDefeated: (chapterId: number) => boolean;
+
   getBossStatistics: (chapterId: number) => BossStatistics | undefined;
   clearBattle: () => void;
 }
@@ -38,7 +37,6 @@ export const useBossStore = create<BossStoreState>()(
     (set, get) => ({
       currentBattle: null,
       battleHistory: [],
-      defeatedBosses: new Set(),
       bossStatistics: {},
 
       initiateBossBattle: (chapterId: number) => {
@@ -171,9 +169,6 @@ export const useBossStore = create<BossStoreState>()(
       endBossBattle: (result: BossBattleResult) => {
         set((state) => ({
           battleHistory: [...state.battleHistory, result],
-          defeatedBosses: result.isVictory
-            ? new Set([...state.defeatedBosses, result.bossId])
-            : state.defeatedBosses,
           currentBattle: null,
           bossStatistics: {
             ...state.bossStatistics,
@@ -190,12 +185,6 @@ export const useBossStore = create<BossStoreState>()(
         return state.battleHistory.filter((b) => b.chapterId === chapterId);
       },
 
-      isBossDefeated: (chapterId: number) => {
-        const state = get();
-        const bossId = `boss_chapter${chapterId}`;
-        return state.defeatedBosses.has(bossId);
-      },
-
       getBossStatistics: (chapterId: number) => {
         const state = get();
         const bossId = `boss_chapter${chapterId}`;
@@ -210,13 +199,11 @@ export const useBossStore = create<BossStoreState>()(
       name: 'boss-store',
       partialize: (state) => ({
         battleHistory: state.battleHistory,
-        defeatedBosses: Array.from(state.defeatedBosses),
         bossStatistics: state.bossStatistics,
       }),
       merge: (persistedState, currentState) => ({
         ...currentState,
-        ...(persistedState as any),
-        defeatedBosses: new Set((persistedState as any).defeatedBosses || []),
+        ...(persistedState as Partial<BossStoreState>),
       }),
     }
   )

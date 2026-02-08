@@ -9,6 +9,18 @@ import type { StageResult } from '@/types/progress';
 import { CHAPTER_STAGE_COUNTS, type ResultData, type ScoreDiff } from './resultConstants';
 
 /**
+ * タイピングセッションの型（gameStore.tsのTypingSessionと同じ）
+ */
+interface TypingSession {
+  score: number;
+  correctCount: number;
+  missCount: number;
+  maxCombo: number;
+  startTime: number | null;
+  endTime: number | null;
+}
+
+/**
  * 精度とWPMに基づいてランクを計算
  */
 export const calculateRank = (accuracy: number, wpm: number): Rank => {
@@ -27,7 +39,7 @@ export const formatDiff = (value: number, suffix = ''): string => {
 };
 
 export interface UseResultCalculationProps {
-  session: any; // ゲームセッション
+  session: TypingSession | null;
   selectedChapter: number;
   selectedStage: number;
   previousResult: StageResult | null;

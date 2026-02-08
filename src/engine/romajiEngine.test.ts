@@ -600,3 +600,809 @@ describe('エッジケース', () => {
     expect(result.isWordComplete).toBe(true);
   });
 });
+
+// ===== 促音+拗音の組み合わせテスト =====
+describe('processKeyInput - 促音+拗音の組み合わせ', () => {
+  it('「きょっきょく」を kyokkyoku で入力できる', () => {
+    let state = createInitialState('きょっきょく');
+
+    // きょ
+    let result = processKeyInput(state, 'k');
+    result = processKeyInput(result.newState, 'y');
+    result = processKeyInput(result.newState, 'o');
+    expect(result.isTokenComplete).toBe(true);
+
+    // っきょ → kkyo
+    result = processKeyInput(result.newState, 'k');
+    expect(result.newState.sokuonMode).not.toBeNull();
+    result = processKeyInput(result.newState, 'k');
+    expect(result.isTokenComplete).toBe(true);
+
+    result = processKeyInput(result.newState, 'y');
+    result = processKeyInput(result.newState, 'o');
+    expect(result.isTokenComplete).toBe(true);
+
+    // く
+    result = processKeyInput(result.newState, 'k');
+    result = processKeyInput(result.newState, 'u');
+    expect(result.isWordComplete).toBe(true);
+  });
+
+  it('「しゅっぱつ」を syuppatu で入力できる', () => {
+    let state = createInitialState('しゅっぱつ');
+
+    // しゅ
+    let result = processKeyInput(state, 's');
+    result = processKeyInput(result.newState, 'y');
+    result = processKeyInput(result.newState, 'u');
+    expect(result.isTokenComplete).toBe(true);
+
+    // っぱ → ppa
+    result = processKeyInput(result.newState, 'p');
+    expect(result.newState.sokuonMode).not.toBeNull();
+    result = processKeyInput(result.newState, 'p');
+    expect(result.isTokenComplete).toBe(true);
+
+    result = processKeyInput(result.newState, 'a');
+    expect(result.isTokenComplete).toBe(true);
+
+    // つ
+    result = processKeyInput(result.newState, 't');
+    result = processKeyInput(result.newState, 'u');
+    expect(result.isWordComplete).toBe(true);
+  });
+
+  it('「しゅっぱつ」を shuppatsu で入力できる', () => {
+    let state = createInitialState('しゅっぱつ');
+
+    // しゅ を shu で
+    let result = processKeyInput(state, 's');
+    result = processKeyInput(result.newState, 'h');
+    result = processKeyInput(result.newState, 'u');
+    expect(result.isTokenComplete).toBe(true);
+
+    // っぱ → ppa
+    result = processKeyInput(result.newState, 'p');
+    result = processKeyInput(result.newState, 'p');
+    expect(result.isTokenComplete).toBe(true);
+
+    result = processKeyInput(result.newState, 'a');
+    expect(result.isTokenComplete).toBe(true);
+
+    // つ を tsu で
+    result = processKeyInput(result.newState, 't');
+    result = processKeyInput(result.newState, 's');
+    result = processKeyInput(result.newState, 'u');
+    expect(result.isWordComplete).toBe(true);
+  });
+
+  it('「にゃっかん」を nyakkan で入力できる', () => {
+    let state = createInitialState('にゃっかん');
+
+    // にゃ
+    let result = processKeyInput(state, 'n');
+    result = processKeyInput(result.newState, 'y');
+    result = processKeyInput(result.newState, 'a');
+    expect(result.isTokenComplete).toBe(true);
+
+    // っか → kka
+    result = processKeyInput(result.newState, 'k');
+    result = processKeyInput(result.newState, 'k');
+    expect(result.isTokenComplete).toBe(true);
+
+    result = processKeyInput(result.newState, 'a');
+    expect(result.isTokenComplete).toBe(true);
+
+    // ん
+    result = processKeyInput(result.newState, 'n');
+    result = processKeyInput(result.newState, 'n');
+    expect(result.isWordComplete).toBe(true);
+  });
+
+  it('「ちゃっかり」を tyakkari で入力できる', () => {
+    let state = createInitialState('ちゃっかり');
+
+    // ちゃ
+    let result = processKeyInput(state, 't');
+    result = processKeyInput(result.newState, 'y');
+    result = processKeyInput(result.newState, 'a');
+    expect(result.isTokenComplete).toBe(true);
+
+    // っか → kka
+    result = processKeyInput(result.newState, 'k');
+    result = processKeyInput(result.newState, 'k');
+    expect(result.isTokenComplete).toBe(true);
+
+    result = processKeyInput(result.newState, 'a');
+    expect(result.isTokenComplete).toBe(true);
+
+    // り
+    result = processKeyInput(result.newState, 'r');
+    result = processKeyInput(result.newState, 'i');
+    expect(result.isWordComplete).toBe(true);
+  });
+
+  it('「ちゃっかり」を chakkari で入力できる', () => {
+    let state = createInitialState('ちゃっかり');
+
+    // ちゃ を cha で
+    let result = processKeyInput(state, 'c');
+    result = processKeyInput(result.newState, 'h');
+    result = processKeyInput(result.newState, 'a');
+    expect(result.isTokenComplete).toBe(true);
+
+    // っか → kka
+    result = processKeyInput(result.newState, 'k');
+    result = processKeyInput(result.newState, 'k');
+    expect(result.isTokenComplete).toBe(true);
+
+    result = processKeyInput(result.newState, 'a');
+    expect(result.isTokenComplete).toBe(true);
+
+    // り
+    result = processKeyInput(result.newState, 'r');
+    result = processKeyInput(result.newState, 'i');
+    expect(result.isWordComplete).toBe(true);
+  });
+});
+
+// ===== 「ん」の詳細判定テスト =====
+describe('processKeyInput - 「ん」の詳細判定', () => {
+  it('「んな」は nna が必要', () => {
+    let state = createInitialState('んな');
+
+    // n 単体では確定しない
+    let result = processKeyInput(state, 'n');
+    expect(result.isTokenComplete).toBe(false);
+
+    // nn で確定
+    result = processKeyInput(result.newState, 'n');
+    expect(result.isTokenComplete).toBe(true);
+
+    // な の入力
+    result = processKeyInput(result.newState, 'n');
+    result = processKeyInput(result.newState, 'a');
+    expect(result.isWordComplete).toBe(true);
+  });
+
+  it('「んに」は nni が必要', () => {
+    let state = createInitialState('んに');
+
+    let result = processKeyInput(state, 'n');
+    expect(result.isTokenComplete).toBe(false);
+
+    result = processKeyInput(result.newState, 'n');
+    expect(result.isTokenComplete).toBe(true);
+
+    // に の入力
+    result = processKeyInput(result.newState, 'n');
+    result = processKeyInput(result.newState, 'i');
+    expect(result.isWordComplete).toBe(true);
+  });
+
+  it('「んや」は nnya が必要', () => {
+    let state = createInitialState('んや');
+
+    let result = processKeyInput(state, 'n');
+    expect(result.isTokenComplete).toBe(false);
+
+    result = processKeyInput(result.newState, 'n');
+    expect(result.isTokenComplete).toBe(true);
+
+    result = processKeyInput(result.newState, 'y');
+    result = processKeyInput(result.newState, 'a');
+    expect(result.isWordComplete).toBe(true);
+  });
+
+  it('「んた」は nta でOK', () => {
+    let state = createInitialState('んた');
+
+    let result = processKeyInput(state, 'n');
+
+    result = processKeyInput(result.newState, 't');
+    result = processKeyInput(result.newState, 'a');
+    expect(result.isWordComplete).toBe(true);
+  });
+
+  it('「んま」は nma でOK', () => {
+    let state = createInitialState('んま');
+
+    let result = processKeyInput(state, 'n');
+
+    result = processKeyInput(result.newState, 'm');
+    result = processKeyInput(result.newState, 'a');
+    expect(result.isWordComplete).toBe(true);
+  });
+
+  it('「ん」を xn で入力できる', () => {
+    let state = createInitialState('ん');
+
+    let result = processKeyInput(state, 'x');
+    result = processKeyInput(result.newState, 'n');
+    expect(result.isWordComplete).toBe(true);
+  });
+
+  it('「んあ」を xn + a で入力できる', () => {
+    let state = createInitialState('んあ');
+
+    let result = processKeyInput(state, 'x');
+    result = processKeyInput(result.newState, 'n');
+    expect(result.isTokenComplete).toBe(true);
+
+    result = processKeyInput(result.newState, 'a');
+    expect(result.isWordComplete).toBe(true);
+  });
+});
+
+// ===== エッジケース拡張テスト =====
+describe('エッジケース拡張', () => {
+  it('あ行すべてを入力できる', () => {
+    let state = createInitialState('あいうえお');
+
+    let result = processKeyInput(state, 'a');
+    expect(result.isTokenComplete).toBe(true);
+
+    result = processKeyInput(result.newState, 'i');
+    expect(result.isTokenComplete).toBe(true);
+
+    result = processKeyInput(result.newState, 'u');
+    expect(result.isTokenComplete).toBe(true);
+
+    result = processKeyInput(result.newState, 'e');
+    expect(result.isTokenComplete).toBe(true);
+
+    result = processKeyInput(result.newState, 'o');
+    expect(result.isWordComplete).toBe(true);
+  });
+
+  it('か行すべてを入力できる', () => {
+    let state = createInitialState('かきくけこ');
+
+    let result = processKeyInput(state, 'k');
+    result = processKeyInput(result.newState, 'a');
+    expect(result.isTokenComplete).toBe(true);
+
+    result = processKeyInput(result.newState, 'k');
+    result = processKeyInput(result.newState, 'i');
+    expect(result.isTokenComplete).toBe(true);
+
+    result = processKeyInput(result.newState, 'k');
+    result = processKeyInput(result.newState, 'u');
+    expect(result.isTokenComplete).toBe(true);
+
+    result = processKeyInput(result.newState, 'k');
+    result = processKeyInput(result.newState, 'e');
+    expect(result.isTokenComplete).toBe(true);
+
+    result = processKeyInput(result.newState, 'k');
+    result = processKeyInput(result.newState, 'o');
+    expect(result.isWordComplete).toBe(true);
+  });
+
+  it('さ行すべてを入力できる', () => {
+    let state = createInitialState('さしすせそ');
+
+    let result = processKeyInput(state, 's');
+    result = processKeyInput(result.newState, 'a');
+    expect(result.isTokenComplete).toBe(true);
+
+    result = processKeyInput(result.newState, 's');
+    result = processKeyInput(result.newState, 'i');
+    expect(result.isTokenComplete).toBe(true);
+
+    result = processKeyInput(result.newState, 's');
+    result = processKeyInput(result.newState, 'u');
+    expect(result.isTokenComplete).toBe(true);
+
+    result = processKeyInput(result.newState, 's');
+    result = processKeyInput(result.newState, 'e');
+    expect(result.isTokenComplete).toBe(true);
+
+    result = processKeyInput(result.newState, 's');
+    result = processKeyInput(result.newState, 'o');
+    expect(result.isWordComplete).toBe(true);
+  });
+
+  it('た行すべてを入力できる', () => {
+    let state = createInitialState('たちつてと');
+
+    let result = processKeyInput(state, 't');
+    result = processKeyInput(result.newState, 'a');
+    expect(result.isTokenComplete).toBe(true);
+
+    result = processKeyInput(result.newState, 't');
+    result = processKeyInput(result.newState, 'i');
+    expect(result.isTokenComplete).toBe(true);
+
+    result = processKeyInput(result.newState, 't');
+    result = processKeyInput(result.newState, 'u');
+    expect(result.isTokenComplete).toBe(true);
+
+    result = processKeyInput(result.newState, 't');
+    result = processKeyInput(result.newState, 'e');
+    expect(result.isTokenComplete).toBe(true);
+
+    result = processKeyInput(result.newState, 't');
+    result = processKeyInput(result.newState, 'o');
+    expect(result.isWordComplete).toBe(true);
+  });
+
+  it('な行すべてを入力できる', () => {
+    let state = createInitialState('なにぬねの');
+
+    let result = processKeyInput(state, 'n');
+    result = processKeyInput(result.newState, 'a');
+    expect(result.isTokenComplete).toBe(true);
+
+    result = processKeyInput(result.newState, 'n');
+    result = processKeyInput(result.newState, 'i');
+    expect(result.isTokenComplete).toBe(true);
+
+    result = processKeyInput(result.newState, 'n');
+    result = processKeyInput(result.newState, 'u');
+    expect(result.isTokenComplete).toBe(true);
+
+    result = processKeyInput(result.newState, 'n');
+    result = processKeyInput(result.newState, 'e');
+    expect(result.isTokenComplete).toBe(true);
+
+    result = processKeyInput(result.newState, 'n');
+    result = processKeyInput(result.newState, 'o');
+    expect(result.isWordComplete).toBe(true);
+  });
+
+  it('は行すべてを入力できる', () => {
+    let state = createInitialState('はひふへほ');
+
+    let result = processKeyInput(state, 'h');
+    result = processKeyInput(result.newState, 'a');
+    expect(result.isTokenComplete).toBe(true);
+
+    result = processKeyInput(result.newState, 'h');
+    result = processKeyInput(result.newState, 'i');
+    expect(result.isTokenComplete).toBe(true);
+
+    result = processKeyInput(result.newState, 'h');
+    result = processKeyInput(result.newState, 'u');
+    expect(result.isTokenComplete).toBe(true);
+
+    result = processKeyInput(result.newState, 'h');
+    result = processKeyInput(result.newState, 'e');
+    expect(result.isTokenComplete).toBe(true);
+
+    result = processKeyInput(result.newState, 'h');
+    result = processKeyInput(result.newState, 'o');
+    expect(result.isWordComplete).toBe(true);
+  });
+
+  it('ま行すべてを入力できる', () => {
+    let state = createInitialState('まみむめも');
+
+    let result = processKeyInput(state, 'm');
+    result = processKeyInput(result.newState, 'a');
+    expect(result.isTokenComplete).toBe(true);
+
+    result = processKeyInput(result.newState, 'm');
+    result = processKeyInput(result.newState, 'i');
+    expect(result.isTokenComplete).toBe(true);
+
+    result = processKeyInput(result.newState, 'm');
+    result = processKeyInput(result.newState, 'u');
+    expect(result.isTokenComplete).toBe(true);
+
+    result = processKeyInput(result.newState, 'm');
+    result = processKeyInput(result.newState, 'e');
+    expect(result.isTokenComplete).toBe(true);
+
+    result = processKeyInput(result.newState, 'm');
+    result = processKeyInput(result.newState, 'o');
+    expect(result.isWordComplete).toBe(true);
+  });
+
+  it('や行すべてを入力できる', () => {
+    let state = createInitialState('やゆよ');
+
+    let result = processKeyInput(state, 'y');
+    result = processKeyInput(result.newState, 'a');
+    expect(result.isTokenComplete).toBe(true);
+
+    result = processKeyInput(result.newState, 'y');
+    result = processKeyInput(result.newState, 'u');
+    expect(result.isTokenComplete).toBe(true);
+
+    result = processKeyInput(result.newState, 'y');
+    result = processKeyInput(result.newState, 'o');
+    expect(result.isWordComplete).toBe(true);
+  });
+
+  it('ら行すべてを入力できる', () => {
+    let state = createInitialState('らりるれろ');
+
+    let result = processKeyInput(state, 'r');
+    result = processKeyInput(result.newState, 'a');
+    expect(result.isTokenComplete).toBe(true);
+
+    result = processKeyInput(result.newState, 'r');
+    result = processKeyInput(result.newState, 'i');
+    expect(result.isTokenComplete).toBe(true);
+
+    result = processKeyInput(result.newState, 'r');
+    result = processKeyInput(result.newState, 'u');
+    expect(result.isTokenComplete).toBe(true);
+
+    result = processKeyInput(result.newState, 'r');
+    result = processKeyInput(result.newState, 'e');
+    expect(result.isTokenComplete).toBe(true);
+
+    result = processKeyInput(result.newState, 'r');
+    result = processKeyInput(result.newState, 'o');
+    expect(result.isWordComplete).toBe(true);
+  });
+
+  it('わ行を入力できる', () => {
+    let state = createInitialState('わを');
+
+    let result = processKeyInput(state, 'w');
+    result = processKeyInput(result.newState, 'a');
+    expect(result.isTokenComplete).toBe(true);
+
+    result = processKeyInput(result.newState, 'w');
+    result = processKeyInput(result.newState, 'o');
+    expect(result.isWordComplete).toBe(true);
+  });
+
+  it('が行濁音を入力できる', () => {
+    let state = createInitialState('がぎぐげご');
+
+    let result = processKeyInput(state, 'g');
+    result = processKeyInput(result.newState, 'a');
+    expect(result.isTokenComplete).toBe(true);
+
+    result = processKeyInput(result.newState, 'g');
+    result = processKeyInput(result.newState, 'i');
+    expect(result.isTokenComplete).toBe(true);
+
+    result = processKeyInput(result.newState, 'g');
+    result = processKeyInput(result.newState, 'u');
+    expect(result.isTokenComplete).toBe(true);
+
+    result = processKeyInput(result.newState, 'g');
+    result = processKeyInput(result.newState, 'e');
+    expect(result.isTokenComplete).toBe(true);
+
+    result = processKeyInput(result.newState, 'g');
+    result = processKeyInput(result.newState, 'o');
+    expect(result.isWordComplete).toBe(true);
+  });
+
+  it('ざ行濁音を入力できる', () => {
+    let state = createInitialState('ざじずぜぞ');
+
+    let result = processKeyInput(state, 'z');
+    result = processKeyInput(result.newState, 'a');
+    expect(result.isTokenComplete).toBe(true);
+
+    result = processKeyInput(result.newState, 'z');
+    result = processKeyInput(result.newState, 'i');
+    expect(result.isTokenComplete).toBe(true);
+
+    result = processKeyInput(result.newState, 'z');
+    result = processKeyInput(result.newState, 'u');
+    expect(result.isTokenComplete).toBe(true);
+
+    result = processKeyInput(result.newState, 'z');
+    result = processKeyInput(result.newState, 'e');
+    expect(result.isTokenComplete).toBe(true);
+
+    result = processKeyInput(result.newState, 'z');
+    result = processKeyInput(result.newState, 'o');
+    expect(result.isWordComplete).toBe(true);
+  });
+
+  it('だ行濁音を入力できる', () => {
+    let state = createInitialState('だぢづでど');
+
+    let result = processKeyInput(state, 'd');
+    result = processKeyInput(result.newState, 'a');
+    expect(result.isTokenComplete).toBe(true);
+
+    result = processKeyInput(result.newState, 'd');
+    result = processKeyInput(result.newState, 'i');
+    expect(result.isTokenComplete).toBe(true);
+
+    result = processKeyInput(result.newState, 'd');
+    result = processKeyInput(result.newState, 'u');
+    expect(result.isTokenComplete).toBe(true);
+
+    result = processKeyInput(result.newState, 'd');
+    result = processKeyInput(result.newState, 'e');
+    expect(result.isTokenComplete).toBe(true);
+
+    result = processKeyInput(result.newState, 'd');
+    result = processKeyInput(result.newState, 'o');
+    expect(result.isWordComplete).toBe(true);
+  });
+
+  it('ば行濁音を入力できる', () => {
+    let state = createInitialState('ばびぶべぼ');
+
+    let result = processKeyInput(state, 'b');
+    result = processKeyInput(result.newState, 'a');
+    expect(result.isTokenComplete).toBe(true);
+
+    result = processKeyInput(result.newState, 'b');
+    result = processKeyInput(result.newState, 'i');
+    expect(result.isTokenComplete).toBe(true);
+
+    result = processKeyInput(result.newState, 'b');
+    result = processKeyInput(result.newState, 'u');
+    expect(result.isTokenComplete).toBe(true);
+
+    result = processKeyInput(result.newState, 'b');
+    result = processKeyInput(result.newState, 'e');
+    expect(result.isTokenComplete).toBe(true);
+
+    result = processKeyInput(result.newState, 'b');
+    result = processKeyInput(result.newState, 'o');
+    expect(result.isWordComplete).toBe(true);
+  });
+
+  it('ぱ行半濁音を入力できる', () => {
+    let state = createInitialState('ぱぴぷぺぽ');
+
+    let result = processKeyInput(state, 'p');
+    result = processKeyInput(result.newState, 'a');
+    expect(result.isTokenComplete).toBe(true);
+
+    result = processKeyInput(result.newState, 'p');
+    result = processKeyInput(result.newState, 'i');
+    expect(result.isTokenComplete).toBe(true);
+
+    result = processKeyInput(result.newState, 'p');
+    result = processKeyInput(result.newState, 'u');
+    expect(result.isTokenComplete).toBe(true);
+
+    result = processKeyInput(result.newState, 'p');
+    result = processKeyInput(result.newState, 'e');
+    expect(result.isTokenComplete).toBe(true);
+
+    result = processKeyInput(result.newState, 'p');
+    result = processKeyInput(result.newState, 'o');
+    expect(result.isWordComplete).toBe(true);
+  });
+
+  it('き行拗音すべてを入力できる', () => {
+    let state = createInitialState('きゃきゅきょ');
+
+    let result = processKeyInput(state, 'k');
+    result = processKeyInput(result.newState, 'y');
+    result = processKeyInput(result.newState, 'a');
+    expect(result.isTokenComplete).toBe(true);
+
+    result = processKeyInput(result.newState, 'k');
+    result = processKeyInput(result.newState, 'y');
+    result = processKeyInput(result.newState, 'u');
+    expect(result.isTokenComplete).toBe(true);
+
+    result = processKeyInput(result.newState, 'k');
+    result = processKeyInput(result.newState, 'y');
+    result = processKeyInput(result.newState, 'o');
+    expect(result.isWordComplete).toBe(true);
+  });
+
+  it('し行拗音すべてを入力できる', () => {
+    let state = createInitialState('しゃしゅしょ');
+
+    let result = processKeyInput(state, 's');
+    result = processKeyInput(result.newState, 'y');
+    result = processKeyInput(result.newState, 'a');
+    expect(result.isTokenComplete).toBe(true);
+
+    result = processKeyInput(result.newState, 's');
+    result = processKeyInput(result.newState, 'y');
+    result = processKeyInput(result.newState, 'u');
+    expect(result.isTokenComplete).toBe(true);
+
+    result = processKeyInput(result.newState, 's');
+    result = processKeyInput(result.newState, 'y');
+    result = processKeyInput(result.newState, 'o');
+    expect(result.isWordComplete).toBe(true);
+  });
+
+  it('ち行拗音すべてを入力できる', () => {
+    let state = createInitialState('ちゃちゅちょ');
+
+    let result = processKeyInput(state, 't');
+    result = processKeyInput(result.newState, 'y');
+    result = processKeyInput(result.newState, 'a');
+    expect(result.isTokenComplete).toBe(true);
+
+    result = processKeyInput(result.newState, 't');
+    result = processKeyInput(result.newState, 'y');
+    result = processKeyInput(result.newState, 'u');
+    expect(result.isTokenComplete).toBe(true);
+
+    result = processKeyInput(result.newState, 't');
+    result = processKeyInput(result.newState, 'y');
+    result = processKeyInput(result.newState, 'o');
+    expect(result.isWordComplete).toBe(true);
+  });
+
+  it('に行拗音すべてを入力できる', () => {
+    let state = createInitialState('にゃにゅにょ');
+
+    let result = processKeyInput(state, 'n');
+    result = processKeyInput(result.newState, 'y');
+    result = processKeyInput(result.newState, 'a');
+    expect(result.isTokenComplete).toBe(true);
+
+    result = processKeyInput(result.newState, 'n');
+    result = processKeyInput(result.newState, 'y');
+    result = processKeyInput(result.newState, 'u');
+    expect(result.isTokenComplete).toBe(true);
+
+    result = processKeyInput(result.newState, 'n');
+    result = processKeyInput(result.newState, 'y');
+    result = processKeyInput(result.newState, 'o');
+    expect(result.isWordComplete).toBe(true);
+  });
+
+  it('ひ行拗音すべてを入力できる', () => {
+    let state = createInitialState('ひゃひゅひょ');
+
+    let result = processKeyInput(state, 'h');
+    result = processKeyInput(result.newState, 'y');
+    result = processKeyInput(result.newState, 'a');
+    expect(result.isTokenComplete).toBe(true);
+
+    result = processKeyInput(result.newState, 'h');
+    result = processKeyInput(result.newState, 'y');
+    result = processKeyInput(result.newState, 'u');
+    expect(result.isTokenComplete).toBe(true);
+
+    result = processKeyInput(result.newState, 'h');
+    result = processKeyInput(result.newState, 'y');
+    result = processKeyInput(result.newState, 'o');
+    expect(result.isWordComplete).toBe(true);
+  });
+
+  it('み行拗音すべてを入力できる', () => {
+    let state = createInitialState('みゃみゅみょ');
+
+    let result = processKeyInput(state, 'm');
+    result = processKeyInput(result.newState, 'y');
+    result = processKeyInput(result.newState, 'a');
+    expect(result.isTokenComplete).toBe(true);
+
+    result = processKeyInput(result.newState, 'm');
+    result = processKeyInput(result.newState, 'y');
+    result = processKeyInput(result.newState, 'u');
+    expect(result.isTokenComplete).toBe(true);
+
+    result = processKeyInput(result.newState, 'm');
+    result = processKeyInput(result.newState, 'y');
+    result = processKeyInput(result.newState, 'o');
+    expect(result.isWordComplete).toBe(true);
+  });
+
+  it('り行拗音すべてを入力できる', () => {
+    let state = createInitialState('りゃりゅりょ');
+
+    let result = processKeyInput(state, 'r');
+    result = processKeyInput(result.newState, 'y');
+    result = processKeyInput(result.newState, 'a');
+    expect(result.isTokenComplete).toBe(true);
+
+    result = processKeyInput(result.newState, 'r');
+    result = processKeyInput(result.newState, 'y');
+    result = processKeyInput(result.newState, 'u');
+    expect(result.isTokenComplete).toBe(true);
+
+    result = processKeyInput(result.newState, 'r');
+    result = processKeyInput(result.newState, 'y');
+    result = processKeyInput(result.newState, 'o');
+    expect(result.isWordComplete).toBe(true);
+  });
+
+  it('小文字を x で入力できる', () => {
+    let state = createInitialState('ぁぃぅぇぉ');
+
+    let result = processKeyInput(state, 'x');
+    result = processKeyInput(result.newState, 'a');
+    expect(result.isTokenComplete).toBe(true);
+
+    result = processKeyInput(result.newState, 'x');
+    result = processKeyInput(result.newState, 'i');
+    expect(result.isTokenComplete).toBe(true);
+
+    result = processKeyInput(result.newState, 'x');
+    result = processKeyInput(result.newState, 'u');
+    expect(result.isTokenComplete).toBe(true);
+
+    result = processKeyInput(result.newState, 'x');
+    result = processKeyInput(result.newState, 'e');
+    expect(result.isTokenComplete).toBe(true);
+
+    result = processKeyInput(result.newState, 'x');
+    result = processKeyInput(result.newState, 'o');
+    expect(result.isWordComplete).toBe(true);
+  });
+});
+
+// ===== 不正入力のテスト =====
+describe('不正入力のテスト', () => {
+  it('数字キーの入力はミスになる', () => {
+    const state = createInitialState('あ');
+
+    const result = processKeyInput(state, '1');
+    expect(result.isMiss).toBe(true);
+    expect(result.isValid).toBe(false);
+  });
+
+  it('記号キーの入力はミスになる（@）', () => {
+    const state = createInitialState('あ');
+
+    const result = processKeyInput(state, '@');
+    expect(result.isMiss).toBe(true);
+    expect(result.isValid).toBe(false);
+  });
+
+  it('記号キーの入力はミスになる（#）', () => {
+    const state = createInitialState('あ');
+
+    const result = processKeyInput(state, '#');
+    expect(result.isMiss).toBe(true);
+    expect(result.isValid).toBe(false);
+  });
+
+  it('記号キーの入力はミスになる（!）', () => {
+    const state = createInitialState('あ');
+
+    const result = processKeyInput(state, '!');
+    expect(result.isMiss).toBe(true);
+    expect(result.isValid).toBe(false);
+  });
+
+  it('スペースキーの入力はミスになる', () => {
+    const state = createInitialState('あ');
+
+    const result = processKeyInput(state, ' ');
+    expect(result.isMiss).toBe(true);
+    expect(result.isValid).toBe(false);
+  });
+
+  it('同じキーの連続入力は適切に処理される（aaa）', () => {
+    let state = createInitialState('あ');
+
+    // 最初の a で完了
+    let result = processKeyInput(state, 'a');
+    expect(result.isWordComplete).toBe(true);
+
+    // 2回目の a は完了後なので無視（ミスではない）
+    result = processKeyInput(result.newState, 'a');
+    expect(result.isMiss).toBe(false);
+    expect(result.isValid).toBe(false);
+
+    // 3回目の a も無視
+    result = processKeyInput(result.newState, 'a');
+    expect(result.isMiss).toBe(false);
+    expect(result.isValid).toBe(false);
+  });
+
+  it('同じキーの連続入力は適切に処理される（nnn）', () => {
+    let state = createInitialState('ん');
+
+    // 最初の n
+    let result = processKeyInput(state, 'n');
+    expect(result.isTokenComplete).toBe(false);
+
+    // 2回目の n で完了
+    result = processKeyInput(result.newState, 'n');
+    expect(result.isWordComplete).toBe(true);
+
+    // 3回目の n は完了後なので無視
+    result = processKeyInput(result.newState, 'n');
+    expect(result.isMiss).toBe(false);
+    expect(result.isValid).toBe(false);
+  });
+});

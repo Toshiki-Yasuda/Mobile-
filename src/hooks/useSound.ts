@@ -9,12 +9,18 @@ import { useSettingsStore } from '@/stores/settingsStore';
 // 効果音のプリロード用キャッシュ
 const audioCache: Record<string, HTMLAudioElement[]> = {};
 
+// ベースパスを取得
+const getBasePath = () => import.meta.env.BASE_URL;
+
 // 効果音のパス（複数用意してランダム再生）
-const SOUND_PATHS = {
-  type: ['/Mobile-/se-type1.mp3', '/Mobile-/se-type2.mp3'],
-  heavy: ['/Mobile-/se-heavy1.mp3', '/Mobile-/se-heavy2.mp3', '/Mobile-/se-heavy3.mp3'],
-  complete: ['/Mobile-/se-complete.mp3'],
-  select: ['/Mobile-/cut.mp3'],
+const getSoundPaths = () => {
+  const basePath = getBasePath();
+  return {
+    type: [`${basePath}se-type1.mp3`, `${basePath}se-type2.mp3`],
+    heavy: [`${basePath}se-heavy1.mp3`, `${basePath}se-heavy2.mp3`, `${basePath}se-heavy3.mp3`],
+    complete: [`${basePath}se-complete.mp3`],
+    select: [`${basePath}cut.mp3`],
+  };
 };
 
 // 効果音をプリロード
@@ -33,6 +39,7 @@ function preloadSound(key: string, paths: string[], poolSize: number = 3): void 
 
 // 初期化時にすべての効果音をプリロード
 function initializeSounds(): void {
+  const SOUND_PATHS = getSoundPaths();
   preloadSound('type', SOUND_PATHS.type, 5);
   preloadSound('heavy', SOUND_PATHS.heavy, 3);
   preloadSound('complete', SOUND_PATHS.complete, 2);
