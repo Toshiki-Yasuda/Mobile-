@@ -6,6 +6,7 @@
 import React, { useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useGameStore } from '@/stores/gameStore';
+import { selectNavigateTo } from '@/stores/selectors/gameSelectors';
 import { useSettingsStore } from '@/stores/settingsStore';
 import { useButtonClick } from '@/utils/soundUtils';
 import { BackgroundEffect } from '@/components/common/BackgroundEffect';
@@ -27,7 +28,7 @@ const PARTICLE_QUALITY_OPTIONS: { value: ParticleQuality; label: string; descrip
 ];
 
 export const SettingsScreen: React.FC = () => {
-  const { navigateTo } = useGameStore();
+  const navigateTo = useGameStore(selectNavigateTo);
   const {
     soundEnabled,
     bgmEnabled,

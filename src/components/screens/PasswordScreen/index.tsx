@@ -6,11 +6,12 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { useGameStore } from '@/stores/gameStore';
+import { selectNavigateTo } from '@/stores/selectors/gameSelectors';
 
 const CORRECT_PASSWORD = 'SAKI';
 
 export const PasswordScreen: React.FC = () => {
-  const { navigateTo } = useGameStore();
+  const navigateTo = useGameStore(selectNavigateTo);
   const [input, setInput] = useState('');
   const [error, setError] = useState(false);
 

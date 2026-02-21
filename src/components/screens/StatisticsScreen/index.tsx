@@ -6,6 +6,7 @@
 import React, { useMemo, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useGameStore } from '@/stores/gameStore';
+import { selectNavigateTo } from '@/stores/selectors/gameSelectors';
 import { useProgressStore } from '@/stores/progressStore';
 import { useButtonClick } from '@/utils/soundUtils';
 import { BackgroundEffect } from '@/components/common/BackgroundEffect';
@@ -28,7 +29,7 @@ const formatDate = (dateStr: string): string => {
 };
 
 export const StatisticsScreen: React.FC = () => {
-  const { navigateTo } = useGameStore();
+  const navigateTo = useGameStore(selectNavigateTo);
   const {
     statistics,
     keyStatistics,

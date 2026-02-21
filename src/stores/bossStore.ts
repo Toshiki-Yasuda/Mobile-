@@ -5,6 +5,7 @@
 
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+import { createSafeStorage } from '@/utils/safeStorage';
 import type { BossBattleState, BossBattleResult, BossCharacter, BossStatistics } from '@/types/boss';
 import { ALL_BOSS_CHARACTERS, ALL_BOSS_DIFFICULTIES, calculateBossHP } from '@/constants/bossConfigs';
 
@@ -197,6 +198,7 @@ export const useBossStore = create<BossStoreState>()(
     }),
     {
       name: 'boss-store',
+      storage: createSafeStorage(),
       partialize: (state) => ({
         battleHistory: state.battleHistory,
         bossStatistics: state.bossStatistics,

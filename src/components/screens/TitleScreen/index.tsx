@@ -6,6 +6,7 @@
 import React, { useEffect, useRef, useCallback, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useGameStore } from '@/stores/gameStore';
+import { selectNavigateTo } from '@/stores/selectors/gameSelectors';
 import { useSettingsStore } from '@/stores/settingsStore';
 import { useButtonClick } from '@/utils/soundUtils';
 import { useHaptics } from '@/hooks/useHaptics';
@@ -22,7 +23,7 @@ const MENU_ITEMS = [
 ];
 
 export const TitleScreen: React.FC = () => {
-  const { navigateTo } = useGameStore();
+  const navigateTo = useGameStore(selectNavigateTo);
   const {
     soundEnabled,
     bgmEnabled,

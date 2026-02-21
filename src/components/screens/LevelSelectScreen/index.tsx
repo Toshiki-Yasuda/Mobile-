@@ -6,6 +6,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { useGameStore } from '@/stores/gameStore';
+import { selectNavigateTo, selectSelectChapter } from '@/stores/selectors/gameSelectors';
 import { useProgressStore } from '@/stores/progressStore';
 import { useButtonClick, useMenuSelect } from '@/utils/soundUtils';
 import { BackgroundEffect } from '@/components/common/BackgroundEffect';
@@ -21,7 +22,8 @@ const CHAPTERS = [
 ];
 
 export const LevelSelectScreen: React.FC = () => {
-  const { navigateTo, selectChapter } = useGameStore();
+  const navigateTo = useGameStore(selectNavigateTo);
+  const selectChapter = useGameStore(selectSelectChapter);
   const { isChapterUnlocked, clearedStages } = useProgressStore();
   const { handleClick } = useButtonClick();
   const { handleSelect } = useMenuSelect();

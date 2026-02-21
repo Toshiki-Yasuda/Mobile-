@@ -20,9 +20,9 @@ import { useSound } from '@/hooks/useSound';
 import { bgmManager } from '@/utils/bgmManager';
 import { ScreenFlash, ComboEffect, ScreenShake } from '@/components/effects';
 import { calculateBossPhase } from '@/utils/bossCalculations';
+import { useKeyboardInput } from '@/hooks/useKeyboardInput';
 import {
   createInitialState,
-  processKeyInput,
   getCurrentValidKeys,
   getDisplayRomaji,
 } from '@/engine/romajiEngine';
@@ -221,42 +221,21 @@ export const BossBattleContainer: React.FC<BossBattleContainerProps> = ({
     setTimeout(() => setFeedback({ type: 'none', message: '' }), 500);
   }, [battle, playMissSound]);
 
-  // === キーボード入力（battleフェーズのみ有効） ===
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      // battleフェーズ以外はキー入力無効
-      if (battlePhase !== 'battle') return;
+  // キーボード入力処理（battleフェーズのみ有効）
+  const handleValidInput = useCallback((result: import('@/types/romaji').InputResult) => {
+    setTypingState(result.newState);
+    playTypeSound(currentBattle?.comboCount || 0);
+    if (result.isWordComplete) {
+      handleWordComplete();
+    }
+  }, [playTypeSound, currentBattle?.comboCount, handleWordComplete]);
 
-      if (!typingState || typingState.isComplete || !battle.isBattleActive() || !currentWord) {
-        return;
-      }
-
-      if (e.metaKey || e.ctrlKey || e.altKey) return;
-      if (e.key.length !== 1) return;
-
-      e.preventDefault();
-      const key = e.key.toLowerCase();
-
-      const result = processKeyInput(typingState, key);
-
-      if (result.isMiss) {
-        handleMiss();
-        return;
-      }
-
-      if (result.isValid) {
-        setTypingState(result.newState);
-        playTypeSound(currentBattle?.comboCount || 0);
-
-        if (result.isWordComplete) {
-          handleWordComplete();
-        }
-      }
-    };
-
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [battlePhase, typingState, battle, handleMiss, handleWordComplete, playTypeSound, currentBattle?.comboCount, currentWord]);
+  useKeyboardInput({
+    typingState,
+    enabled: battlePhase === 'battle' && battle.isBattleActive() && !!currentWord,
+    onValidInput: handleValidInput,
+    onMiss: handleMiss,
+  });
 
   /** バトル退出 */
   const handleBattleExit = useCallback(() => {

@@ -5,8 +5,9 @@
  */
 
 import { create } from 'zustand';
-import { persist, createJSONStorage } from 'zustand/middleware';
+import { persist } from 'zustand/middleware';
 import { STORAGE_KEYS, STORAGE_VERSION } from '@/constants/storageKeys';
+import { createSafeStorage } from '@/utils/safeStorage';
 import { DEFAULT_SETTINGS } from '@/constants/config';
 
 // ===== ローマ字ガイドレベル =====
@@ -103,7 +104,7 @@ export const useSettingsStore = create<SettingsStore>()(
     {
       name: STORAGE_KEYS.SETTINGS,
       version: STORAGE_VERSION.SETTINGS,
-      storage: createJSONStorage(() => localStorage),
+      storage: createSafeStorage(),
       // マイグレーション
       migrate: (persistedState: unknown, version: number) => {
         if (version === 0) {

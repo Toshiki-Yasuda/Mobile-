@@ -5,8 +5,9 @@
  */
 
 import { create } from 'zustand';
-import { persist, createJSONStorage } from 'zustand/middleware';
+import { persist } from 'zustand/middleware';
 import { STORAGE_KEYS, STORAGE_VERSION } from '@/constants/storageKeys';
+import { createSafeStorage } from '@/utils/safeStorage';
 import { DEFAULT_STATISTICS } from '@/constants/config';
 import type { StageResult, Statistics, KeyStatistics, DailyLog } from '@/types/progress';
 import type { Rank } from '@/types/game';
@@ -290,7 +291,7 @@ export const useProgressStore = create<ProgressStore>()(
     {
       name: STORAGE_KEYS.PROGRESS,
       version: STORAGE_VERSION.PROGRESS,
-      storage: createJSONStorage(() => localStorage),
+      storage: createSafeStorage(),
       // Setをシリアライズ可能な形式に変換
       partialize: (state) => ({
         ...state,

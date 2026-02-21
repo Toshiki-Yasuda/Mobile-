@@ -6,6 +6,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
 import { useGameStore } from '@/stores/gameStore';
+import { selectNavigateTo } from '@/stores/selectors/gameSelectors';
 import { useProgressStore } from '@/stores/progressStore';
 import { useButtonClick } from '@/utils/soundUtils';
 import { bgmManager } from '@/utils/bgmManager';
@@ -24,7 +25,7 @@ const CHAPTERS = [
 const STAGES_PER_CHAPTER = 6;
 
 export const AdminScreen: React.FC = () => {
-  const { navigateTo } = useGameStore();
+  const navigateTo = useGameStore(selectNavigateTo);
   const {
     isChapterUnlocked,
     unlockChapter,
